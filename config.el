@@ -179,11 +179,7 @@
 
 ;;; }}}
 
-;;; Libraries {{{
-
-;;; }}}
-
-;;; Plugins {{{
+;;; Libraries & Dependencies {{{
 
 ;; Exec Path
 ;; Start off with exec-path-from-shell in case we need it early.  Otherwise things
@@ -197,12 +193,74 @@
   (when (memq window-system '(mac ns))
     (exec-path-from-shell-initialize)))
 
-;; Magit for version control
+;; Crux - a collection of ridiculously useful extensions.
+(use-package crux
+  :config
+  (crux-reopen-as-root-mode))
 
+;; popwin
+;; https://github.com/m2ym/popwin-el
+;; A popup window manager for Emacs; helps with all of the windows that magically pop in and out.
+;; (use-package popwin
+;;  :config
+;;  (popwin-mode 1))
+
+;;; }}}
+
+;;; Minor Modes {{{
+
+;;; }}}
+
+
+;;; Plugins {{{
+
+;; ivy, counsel and swiper
+;; https://github.com/abo-abo/swiper
+;; ivy, counsel and swiper]] from the great abo-abo; who also came up with hydra.
+
+;; - Ivy, a generic completion mechanism for Emacs.
+;; - Counsel, a collection of Ivy-enhanced versions of common Emacs commands.
+;; - Swiper, an Ivy-enhanced alternative to isearch.
+(use-package counsel
+    :ensure t
+    :bind (("C-h f" . counsel-describe-function)
+           ("C-h v" . counsel-describe-variable)
+           ("C-h i" . counsel-info-lookup-symbol)))
+
+(use-package swiper
+    :ensure t
+    :bind (:map ivy-minibuffer-map
+                ("C-w" . ivy-yank-word)
+                ([escape] . minibuffer-keyboard-quit))
+    :config
+    (ivy-mode 1))
+
+(use-package avy
+    :ensure avy
+    :config
+    (setq avy-background t
+          avy-all-windows nil))
+
+;; Magit for version control
+(use-package magit
+  :defer t
+  :config
+  (setq  magit-log-arguments '("--graph" "--decorate" "--color")
+          magit-save-repository-buffers 'dontask
+          magit-revert-buffers 'silent)
+    (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
+
+;; zzz-to-char
+;; Quickly select the char you want to zap to.
+(use-package zzz-to-char)
 
 ;;; }}}
 
 ;;; Keybindings {{{
+
+(global-unset-key (kbd "s-z"))
+(global-set-key (kbd "s-z") 'zzz-up-to-char)
+
 
 ;;; }}}
 
