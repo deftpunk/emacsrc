@@ -205,6 +205,15 @@
 ;;  :config
 ;;  (popwin-mode 1))
 
+;; which-key
+;; https://github.com/justbur/emacs-which-key
+;; Displays available keybindings in a popup.
+(use-package which-key
+    :defer t
+    :init
+    (setq which-key-idle-delay 0.5)
+    (which-key-mode))
+
 ;;; }}}
 
 ;;; Minor Modes {{{
@@ -214,6 +223,56 @@
 
 ;;; Plugins {{{
 
+;; ace-window
+;; https://github.com/abo-abo/ace-window
+;; Selecting a window to switch to
+(use-package ace-window
+  :defer t
+  :config
+  (setq aw-keys '(?a ?s ?d ?f ?j ?k ?l)
+	aw-leading-char-style 'path)
+  (set-face-attribute 'aw-leading-char-face nil :height 3.0))
+
+;; Helm
+;; https://github.com/emacs-helm-helm
+(use-package helm
+  :init
+  (use-package helm-config)
+  (use-package helm-man)
+  (use-package helm-org)
+  (use-package helm-mt)
+  (use-package helm-ring)
+  (use-package helm-ag
+    :init
+    (setq helm-ag-fuzzy-match t
+	  helm-ag-use-agignore t
+	  helm-ag-command-option "--ignore-dir elpa"))
+
+  ;; options
+  (setq helm-idle-delay                        0.0    ; Update fast sources immediately (doesn't).
+            helm-move-to-line-cycle-in source
+            helm-input-idle-delay                  0.01   ; This actually updates things reeeelatively quickly.
+            helm-quick-update                      t
+            helm-M-x-requires-pattern              nil
+            helm-candidate-number-limit            99     ; Setting this above 100 will slow down fuzzy matching
+            helm-autoresize-max-height             45     ; Set the max window height to 45% of current frame.
+            helm-mode-fuzzy-match                  t      ; Turn on fuzzy matching for buffers, semantic, recentf
+            helm-completion-in-region-fuzzy-match  t      ; Completion, imenu, apropos, M-x
+            helm-buffer-skip-remote-checking       t      ; Ignore checking if file exists on remote files, ie. Tramp
+            helm-tramp-verbose                     6      ; See Tramp messages in helm
+            helm-ff-skip-boring-files              t)
+
+      (helm-autoresize-mode t)
+
+      ;; helm-ag and find-grep in find-files or helm-mini
+      (when (executable-find "ag")
+        (setq helm-grep-default-command "ag "))
+
+      ;; Save the current position to mark ring when jumping around.
+      (add-hook 'helm-goto-line-before-hook 'helm-save-current-pos-to-mark-ring)
+
+      (helm-mode))
+  
 ;; ivy, counsel and swiper
 ;; https://github.com/abo-abo/swiper
 ;; ivy, counsel and swiper]] from the great abo-abo; who also came up with hydra.
@@ -222,13 +281,11 @@
 ;; - Counsel, a collection of Ivy-enhanced versions of common Emacs commands.
 ;; - Swiper, an Ivy-enhanced alternative to isearch.
 (use-package counsel
-    :ensure t
     :bind (("C-h f" . counsel-describe-function)
            ("C-h v" . counsel-describe-variable)
            ("C-h i" . counsel-info-lookup-symbol)))
 
 (use-package swiper
-    :ensure t
     :bind (:map ivy-minibuffer-map
                 ("C-w" . ivy-yank-word)
                 ([escape] . minibuffer-keyboard-quit))
@@ -236,7 +293,6 @@
     (ivy-mode 1))
 
 (use-package avy
-    :ensure avy
     :config
     (setq avy-background t
           avy-all-windows nil))
@@ -247,8 +303,7 @@
   :config
   (setq  magit-log-arguments '("--graph" "--decorate" "--color")
           magit-save-repository-buffers 'dontask
-          magit-revert-buffers 'silent)
-    (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
+          magit-revert-buffers 'silent))
 
 ;; zzz-to-char
 ;; Quickly select the char you want to zap to.
@@ -258,9 +313,19 @@
 
 ;;; Keybindings {{{
 
+(global-set-key (kbd "s-i") 'helm-mini)
+
+(global-unset-key (kbd "s-l"))
+(bind-keys :map global-map
+	   :prefix "s-l"
+	   :prefix-map super-l-map
+	   ("f" . avy-goto-char-in-line))
+
 (global-unset-key (kbd "s-z"))
 (global-set-key (kbd "s-z") 'zzz-up-to-char)
 
+(global-unset-key (kbd "s--"))
+(global-set-key (kbd "s--") 'ace-window)
 
 ;;; }}}
 
