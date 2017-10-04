@@ -1,0 +1,599 @@
+* Introduction
+* Initialization
+** Crumbs
+
+Keep all of the extraneous Emacs files/dirs in a single location.
+
+#+begin_src emacs-lisp :name crumbs
+(defconst deftmacs-crumbs-directory
+  (expand-file-name (concat user-emacs-directory "crumbs/"))
+  "Deftmacs crumbs directory.")
+(unless (file-exists-p deftmacs-crumbs-directory)
+  (make-directory deftmacs-crumbs-directory))
+#+end_src
+
+** Packaging
+
+Initialize the package plumbing -> so that we can use-package.
+
+#+begin_src emacs-lisp :name package-plumbing
+(require 'package)
+(setq package-enable-at-startup nil
+      package--init-file-ensured t)
+(unless (assoc-default "melpa" package-archives)
+  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t))
+(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+(package-initialize nil)
+#+end_src
+
+** use-package
+
+[[https://github.com/jwiegley/use-package][use-package]] - the best way to isolate package configuration in Emacs.
+
+#+begin_src emacs-lisp :name use-package
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(eval-when-compile
+  (require 'use-package))
+
+(setq use-package-verbose t
+      use-package-always-ensure t)
+#+end_src
+
+** Custom
+
+Set up the custom file early so that custom stuff doesn't get written to this file.
+
+#+begin_src emacs-lisp :name custom
+(setq custom-file (expand-file-name "custom.el" deftmacs-crumbs-directory))
+(unless (file-exists-p custom-file)
+  (with-temp-buffer (write-file custom-file)))
+(load custom-file 'noerror)
+#+end_src
+
+** gc-cons-threshold optimization
+
+Optimize the gc-cons-threshold once configuration is complete.  See the init.el file for source of these
+optimizations.
+
+#+begin_src emacs-lisp :name gc-cons-threshold
+(add-hook 'minibuffer-setup-hook
+	  (lambda ()
+	    (setq gc-cons-threshold most-positive-fixnum)))
+(dolist (hook '(after-init-hook minibuffer-exit-hook))
+  (add-hook hook
+	    (lambda ()
+	      (setq gc-cons-threshold (* 1000 1000 10)))))
+#+end_src
+
+** Display
+
+All of the goofy stuff related to making Emacs pretty ... in my eyes.
+
+*** GUI elements
+
+Get some annoying GUI elements out of the way.  The menu-bar mostly stays out of the way on Mac so I am
+leaving it enabled.
+
+#+begin_src emacs-lisp :name gui-elements
+(menu-bar-mode 1)
+(tool-bar-mode 0)
+(scroll-bar-mode 0)
+(setq ring-bell-function 'ignore
+      inhibit-splash-screen t
+      inhibit-startup-screen t
+      inhibit-startup-echo-area-message t
+      initial-scratch-message nil
+      use-dialog-box nil                        ; All questions in the minibuffer
+      display-time-default-load-average nil)
+(fset 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+*** Transparency
+
+frame transparency for Mac.
+
+#+begin_src emacs-lisp :name transparency
+(set-frame-parameter (selected-frame) 'alpha '(92 92))
+(add-to-list 'default-frame-alist '(alpha 92 92))
+#+end_src
+
+*** Frame title
+
+Set the frame title to the full path of the buffer we are working on.
+
+#+begin_src emacs-lisp :name frame-title
+(setq frame-title-format
+      '((:eval (if (buffer-file-name)
+                   (abbreviate-file-name (buffer-file-name))
+                 "%b"))))
+#+end_src
+
+*** Hide the modeline
+
+This makes the graphics less jerky at startup.  I got this from Spacemacs, which got it from
+http://bzg.fr/emacs-hide-mode-line.html
+
+#+begin_src emacs-lisp :name hide modeline
+(defvar-local hidden-mode-line-mode nil)
+(defvar-local hide-mode-line nil)
+(define-minor-mode hidden-mode-line-mode
+  "Minor mode to hide the mode-line in the current buffer."
+  :init-value nil
+  :global t
+  :variable hidden-mode-line-mode
+  :group 'editing-basics
+  (if hidden-mode-line-mode
+      (setq hide-mode-line mode-line-format
+            mode-line-format nil)
+    (setq mode-line-format hide-mode-line
+          hide-mode-line nil))
+  (force-mode-line-update)
+  ;; Apparently force-mode-line-update is not always enough to
+  ;; redisplay the mode-line
+  (redraw-display)
+  (when (and (called-interactively-p 'interactive)
+             hidden-mode-line-mode)
+    (run-with-idle-timer
+     0 nil 'message
+     (concat "Hidden Mode Line Mode enabled.  "
+             "Use M-x hidden-mode-line-mode to make the mode-line appear."))))
+ (hidden-mode-line-mode)
+#+end_src
+
+*** Themes
+
+Gruvbox, challenger-deep, etc.
+
+#+begin_src emacs-lisp :name gruvbox
+(use-package gruvbox-theme)
+#+end_src
+
+*** Fonts
+
+I use Roboto Mono and also use Symbola as a fallback to display unicode characters.
+https://github.com/ryanoasis/nerd-fonts
+http://www.fontspace.com/unicode-fonts-for-ancient-scripts/symbola
+
+#+begin_src emacs-lisp :name fonts
+(set-frame-font "RobotoMono Nerd Font 12")
+(when (member "Symbola" (font-family-list))
+	      (set-fontset-font t 'unicode "Symbola" nil 'prepend))
+#+end_src
+
+*** Spaceline dependencies
+
+Some things that Spaceline and Spaceline-all-the-icons need before initializing.
+
+[[https://github.com/domtronn/all-the-icons.el][all-the-icons]] - A utility package to collect various
+Icon Fonts and propertize them within Emacs.
+
+#+begin_src emacs-lisp :name all-the-icons.el
+(use-package all-the-icons)
+#+end_src
+
+[[https://github.com/syohex/emacs-anzu][Anzu]] - Show the total number of search hits and where you are in the modeline.
+
+#+begin_src emacs-lisp :name anzu
+(use-package anzu
+  :defer t
+  :config
+  (global-anzu-mode +1))
+#+end_src
+
+[[https://www.emacswiki.org/emacs/info+.el][info+]] - Extensions to info.el by Drew Adams.
+
+#+begin_src emacs-lisp :name info+
+(use-package info+)
+#+end_src
+
+*** Spaceline
+
+[[https://github.com/TheBB/spaceline][Spaceline]] - The Powerline theme from Spacemacs
+
+#+begin_src emacs-lisp :name Spaceline
+(use-package spaceline)
+(require 'spaceline-config)
+(spaceline-emacs-theme)
+(spaceline-helm-mode)
+(spaceline-info-mode)  ; depends on info+
+
+(spaceline-toggle-anzu-on)
+(spaceline-toggle-auto-compile-on)
+(spaceline-toggle-buffer-modified-on)
+(spaceline-toggle-buffer-size-on)
+(spaceline-toggle-buffer-id-on)
+(spaceline-toggle-remote-host-on)
+(spaceline-toggle-major-mode-on)
+(spaceline-toggle-flycheck-error-on)
+(spaceline-toggle-flycheck-warning-on)
+(spaceline-toggle-flycheck-info-on)
+(spaceline-toggle-minor-modes-on)
+(spaceline-toggle-version-control-on)
+(spaceline-toggle-which-function-on)
+(spaceline-toggle-python-pyvenv-on)
+(spaceline-toggle-selection-info-on)
+(spaceline-toggle-buffer-encoding-abbrev-on)
+(spaceline-toggle-line-column-on)
+(spaceline-toggle-buffer-position-on)
+(spaceline-toggle-projectile-root-on)
+
+(spaceline-toggle-process-off)
+
+(spaceline-compile)
+#+end_src
+
+*** spaceline-all-the-icons
+
+[[https://github.com/domtronn/spaceline-all-the-icons.el][spaceline-all-the-icons]] - A Spaceline mode line theme using All The Icons for Emacs.
+
+NOTE: The combination of Spaceline and spaceline-all-the-icons adds a significant amount of time to the
+startup of Emacs.
+
+#+begin_src emacs-lisp :name spaceline-all-the-icons
+(use-package spaceline-all-the-icons
+  :after spaceline
+  :config
+  (spaceline-all-the-icons--setup-package-updates)
+  (spaceline-all-the-icons--setup-git-ahead)
+
+  ;; enable some segments
+  (spaceline-toggle-all-the-icons-bookmark-on)
+
+  (spaceline-all-the-icons-theme))
+#+end_src
+
+** Libraries and general dependencies
+
+*** Exec Path
+
+[[https://github.com/purcell/exec-path-from-shell][exec-path-from-shell]] - Make Emacs use the $PATH set up by the users shell.
+Load exec-path-from-shell early in case we need it.  Otherwise things like magit have a hard time
+finding git in MacOSX.
+
+#+begin_src emacs-lisp :name exec-path-from-shell
+(use-package exec-path-from-shell
+  :init
+  (setq exec-path-from-shell-check-startup-files nil)
+  ;; Set up correct PATH, etc. for Mac
+  (when (memq window-system '(mac ns))
+    (exec-path-from-shell-initialize)))
+#+end_src
+
+*** Crux
+
+[[https://github.com/bbatsov/crux][Crux]] - A collection of ridiculously useful extensions.
+
+#+begin_src emacs-lisp :name crux library
+(use-package crux
+  :config
+  (crux-reopen-as-root-mode))
+#+end_src
+
+*** popwin
+
+[[https://github.com/m2ym/popwin-el][popwin-el]] - A popup window manager for Emacs; helps with all of the windows that magically pop in and out.
+
+#+begin_src emacs-lisp :name popwin
+(use-package popwin
+ :config
+ (popwin-mode 1))
+#+end_src
+
+*** which-key
+
+[[https://github.com/justbur/emacs-which-key][emacs-which-key]] - Displays available keybindings in a popup.
+
+#+begin_src emacs-lisp :name which-key
+(use-package which-key
+    :defer t
+    :init
+    (setq which-key-idle-delay 0.5)
+    (which-key-mode))
+#+end_src
+
+*** Deftmacs Libraries
+
+Add my library of functions and miscellaneous.
+
+#+begin_src emacs-lisp :name deftlisp
+(defconst my-library (expand-file-name "lib" user-emacs-directory))
+(add-to-list 'load-path my-library)
+#+end_src
+
+** Defaults and Settings
+
+*** Autosave
+
+*** Backups
+
+*** Encoding
+
+Set all the things to utf-8
+
+#+begin_src emacs-lisp :name Encoding
+(setq locale-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-selection-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
+(set-language-environment "UTF-8")
+#+end_src
+
+** Emacs minor modes
+
+*** saveplace
+
+Save our position between sessions
+
+#+begin_src emacs-lisp :name saveplace
+(use-package saveplace
+  :init
+  (setq-default save-place t)
+  (setq save-place-file (expand-file-name "savedplaces" deftmacs-crumbs-directory)))
+#+end_src
+
+** Org mode
+
+The manual: [[http://orgmode.org/manual/index.html][Org Manual]]
+
+[[http://orgmode.org/manual/Easy-templates.html#Easy-templates][Easy templates:]]
+
+<s <TAB> expands/completes the 'src' block
+<e <TAB> -> example block
+<q <TAB> -> quote
+<v <TAB> -> verse; renders block quotes and newline breaks
+
+Possibilities for adding unicode characters:
+http://heikkil.github.io/blog/2015/03/22/hydra-for-unicode-input-in-emacs/
+http://thewanderingcoder.com/2015/03/emacs-org-mode-styling-non-smart-quotes-zero-width-space-and-tex-input-method/
+
+Markup:
+
+http://ergoemacs.org/emacs/emacs_org_markup.html
+
+*** library of functions for Org mode
+
+TODO: Change the size or the screenshot before pasting it in.
+
+#+begin_src emacs-lisp :name deftmacs-org-functions
+  ;; Modified from -> http://stackoverflow.com/a/31868530
+  (defun defmacs::org-paste-screenshot ()
+    "Paste the screenshot previously taken by the OS."
+    (interactive)
+    (org-display-inline-images)
+    (setq filename
+          (concat
+           (make-temp-name
+            (concat (file-name-nondirectory (buffer-file-name))
+                    "_imgs/"
+                    (format-time-string "%Y%m%d_%H%M%S_")) ) ".png"))
+    (unless (file-exists-p (file-name-directory filename))
+      (make-directory (file-name-directory filename)))
+                                          ; take screenshot
+    (if (eq system-type 'darwin)
+        (call-process "pngpaste" nil nil nil filename))
+                                          ;(call-process "screencapture" nil nil nil "-i" filename))
+    (if (eq system-type 'gnu/linux)
+        (call-process "import" nil nil nil filename))
+                                          ; insert into file if correctly taken
+    (if (file-exists-p filename)
+        (insert (concat "[[file:" filename "]]"))))
+#+end_src
+
+*** Initial configuration
+
+#+begin_src emacs-lisp :name Org mode
+  (use-package org-plus-contrib
+    :defer t
+    :mode (("\\.org$" . org-mode))
+    :init
+    (setq org-startup-indented t
+          org-startup-folded "showall"
+          org-ellipsis "⤵"              ;; Make the outline fold more compact.
+          )
+
+    ;; Modifications to Org mode Speed Keys - from Sacha Chau
+    ;; To list all of the Speed Keys, go to the begining of a header and press ?
+    (defun my/org-use-speed-commands-for-headings-and-lists ()
+      "Activate speed commands on list items too."
+      (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
+          (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
+    (setq org-use-speed-commands 'my/org-use-speed-commands-for-headings-and-lists)
+
+    :config
+
+    (use-package org-bullets
+      :defer t
+      :init
+      (add-hook 'org-mode-hook (lambda ()
+                                 (org-bullets-mode 1))))
+
+    ;; Some general configuration.
+    (add-hook 'org-mode-hook '(lambda ()
+                                (visual-line-mode 1)  ;; soft wrap
+                                (setq fill-column 120))))
+  (eval-after-load 'org-mode
+    (diminish 'org-indent-mode))
+#+end_src
+
+*** Tags
+
+Display TAGS from column 72
+
+#+begin_src emacs-lisp :name org-tags
+  (setq org-tags-column -72)
+#+end_src
+
+** Navigation
+
+*** ace-window
+
+[[https://github.com/abo-abo/ace-window][ace-window]] - Selecting a window to switch to
+
+#+begin_src emacs-lisp :name ace-window
+(use-package ace-window
+  :defer t
+  :config
+  (setq aw-keys '(?a ?s ?d ?f ?j ?k ?l)
+	aw-leading-char-style 'path)
+  (set-face-attribute 'aw-leading-char-face nil :height 3.0))
+#+end_src
+
+*** counsel/ivy/avy/swiper
+
+[[https://github.com/abo-abo/swiper][avy, ivy, counsel and swiper]] - avy, ivy, counsel and swiper from the great abo-abowho also came up with hydra.
+
+- Ivy, a generic completion mechanism for Emacs.
+- Counsel, a collection of Ivy-enhanced versions of common Emacs commands.
+- Swiper, an Ivy-enhanced alternative to isearch.
+
+#+begin_src emacs-lisp :name counsel
+(use-package counsel
+    :bind (("C-h f" . counsel-describe-function)
+           ("C-h v" . counsel-describe-variable)
+           ("C-h i" . counsel-info-lookup-symbol)))
+#+end_src
+
+#+begin_src emacs-lisp :name swiper
+(use-package swiper
+    :bind (:map ivy-minibuffer-map
+                ("C-w" . ivy-yank-word)
+                ([escape] . minibuffer-keyboard-quit))
+    :config
+    (ivy-mode 1))
+#+end_src
+
+#+begin_src emacs-lisp :name avy
+(use-package avy
+    :config
+    (setq avy-background t
+          avy-all-windows nil))
+#+end_src
+
+*** Helm
+
+[[https://github.com/emacs-helm-helm][Helm]]
+
+#+begin_src emacs-lisp :name Helm
+(use-package helm
+  :init
+  (use-package helm-config)
+  (use-package helm-man)
+  (use-package helm-org)
+  (use-package helm-mt)
+  (use-package helm-ring)
+  (use-package helm-ag
+    :init
+    (setq helm-ag-fuzzy-match t
+	  helm-ag-use-agignore t
+	  helm-ag-command-option "--ignore-dir elpa"))
+
+  ;; options
+  (setq helm-idle-delay                        0.0    ; Update fast sources immediately (doesn't).
+            helm-move-to-line-cycle-in source
+            helm-input-idle-delay                  0.01   ; This actually updates things reeeelatively quickly.
+            helm-quick-update                      t
+            helm-M-x-requires-pattern              nil
+            helm-candidate-number-limit            99     ; Setting this above 100 will slow down fuzzy matching
+            helm-autoresize-max-height             45     ; Set the max window height to 45% of current frame.
+            helm-mode-fuzzy-match                  t      ; Turn on fuzzy matching for buffers, semantic, recentf
+            helm-completion-in-region-fuzzy-match  t      ; Completion, imenu, apropos, M-x
+            helm-buffer-skip-remote-checking       t      ; Ignore checking if file exists on remote files, ie. Tramp
+            helm-tramp-verbose                     6      ; See Tramp messages in helm
+            helm-ff-skip-boring-files              t)
+
+      (helm-autoresize-mode t)
+
+      ;; helm-ag and find-grep in find-files or helm-mini
+      (when (executable-find "ag")
+        (setq helm-grep-default-command "ag "))
+
+      ;; Save the current position to mark ring when jumping around.
+      (add-hook 'helm-goto-line-before-hook 'helm-save-current-pos-to-mark-ring)
+
+      (helm-mode))
+#+end_src
+
+** Version Control
+
+*** Magit
+
+[[https://github.com/magit/magit][Magit]] - The best git porcelain in the world!
+https://magit.vc/
+
+#+begin_src emacs-lisp :name magit
+(use-package magit
+  :defer t
+  :config
+  (setq  magit-log-arguments '("--graph" "--decorate" "--color")
+          magit-save-repository-buffers 'dontask
+          magit-revert-buffers 'silent))
+#+end_src
+
+** Editing with Ginzu knives
+
+*** zzz-to-char
+
+[[https://github.com/mrkkrp/zzz-to-char][zzz-to-char]] - Fancy replacement for zap-to-char in Emacs.  Allows you to
+quickly select the exact char you want to zap to.
+
+#+begin_src emacs-lisp :name zzz-to-char
+(use-package zzz-to-char)
+#+end_src
+
+** Software Engineering Utilities
+
+*** flycheck
+
+** Software Engineering
+
+*** Golang
+
+*** Python
+
+** Various file types
+
+** Keybindings
+
+We get bind-keys for "free" with the install of use-package.
+
+#+begin_src emacs-lisp :name keybindings
+;; a
+(global-set-key (kbd "C-a") 'crux-move-beginning-of-line)
+
+;;i
+(global-set-key (kbd "s-i") 'helm-mini)
+
+;; j
+
+;; k
+(global-unset-key (kbd "s-k"))
+(bind-keys :map global-map
+	   :prefix "s-k"
+	   :prefix-map super-k-map
+	   ("k" . kill-buffer)
+	   ("s-k" . kill-buffer))
+
+;; l
+(global-unset-key (kbd "s-l"))
+(bind-keys :map global-map
+	   :prefix "s-l"
+	   :prefix-map super-l-map
+	   ("f" . avy-goto-char-in-line))
+
+;; o
+(global-unset-key (kbd "C-o"))
+(global-set-key (kbd "C-o") 'crux-smart-open-line)
+(global-set-key (kbd "C-S-o") 'crux-smart-open-line-above)
+
+;; z
+(global-unset-key (kbd "s-z"))
+(global-set-key (kbd "s-z") 'zzz-up-to-char)
+
+;; -
+(global-unset-key (kbd "s--"))
+(global-set-key (kbd "s--") 'ace-window)
+#+end_src

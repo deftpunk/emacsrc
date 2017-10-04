@@ -13,3 +13,6 @@
 crumbs/
 elpa/
 url/
+
+# The generated elisp config file
+config.el
