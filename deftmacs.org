@@ -1,8 +1,45 @@
+#+STARTUP: content
+#+OPTIONS: toc:4 :num:nil ^:nil
+#+AUTHOR: Deftpunk
+#+TITLE: Deftmacs
+
 * Introduction
+
+** Versions of Emacs for Mac
+
+I do most of my work on MacOSX these days and have tried several different builds
+of Emacs on Mac.
+
+*** The GNU versions, homebrew or build from scratch
+
+=brew install emacs --with-cocoa --with-modules --with-gnutls --with-librsvg --with-imagemagick=
+
+=brew cask install emacs=
+
+*** The railwaycat version
+
+Wed Aug 23 11:54:20 2017 - Tried the [[https://github.com/railwaycat/homebrew-emacsmacport][railwaycat emacsmacport]] port.  Ultimately decided
+not to use it.
+
+- didn't solve my ansi-term problem with full configuration
+- the Command key is now Alt; I liked having Alt & Super keys
+- looks really, really nice
+- the devicons package did not work out of the box, nor did the flycheck, etc. images
+
+*** The emacs-plus version
+
+[[https://github.com/d12frosted/homebrew-emacs-plus][Emacs Plus]]
+* Init
+** Preliminaries
+
+Get some constants, libraries and support code out of the way.
+
 * Initialization
 ** Crumbs
 
 Keep all of the extraneous Emacs files/dirs in a single location.
+
+I tried out [[https://github.com/tarsius/no-littering][no-littering]] but found that it didn't work as well as I expected.
 
 #+begin_src emacs-lisp :name crumbs
 (defconst deftmacs-crumbs-directory
@@ -305,6 +342,14 @@ Add my library of functions and miscellaneous.
 
 ** Defaults and Settings
 
+What Operating System are we on?
+
+#+begin_src emacs-lisp :name operating-systems
+(defconst *is-a-mac* (eq system-type 'darwin))
+(defconst *is-a-penguin* (eq system-type 'gnu/linux))
+(defconst *is-a-windoze* (eq system-type 'windwos-nt))
+#+end_src
+
 *** Autosave
 
 *** Backups
@@ -322,6 +367,14 @@ Set all the things to utf-8
 (set-language-environment "UTF-8")
 #+end_src
 
+*** Fringe
+
+Set the left fringe width to something big enough for line numbers, flycheck and git-gutter
+
+#+begin_src emacs-lisp :name fringe-width
+  (setq-default left-fringe-width 15)
+#+end_src
+
 ** Emacs minor modes
 
 *** saveplace
@@ -333,6 +386,116 @@ Save our position between sessions
   :init
   (setq-default save-place t)
   (setq save-place-file (expand-file-name "savedplaces" deftmacs-crumbs-directory)))
+#+end_src
+
+** Highlighting
+
+*** beacon
+
+[[https://github.com/Malabarba/beacon][Never lose your cursor again]]
+
+#+begin_src emacs-lisp :name beacon
+  (use-package beacon
+    :config
+    (beacon-mode 1))
+#+end_src
+
+*** Current line
+
+#+begin_src emacs-lisp :name highlight current line
+  (global-hl-line-mode 1)
+#+end_src
+
+*** Escape sequences
+
+[[https://github.com/dgutov/highlight-escape-sequences/blob/master/highlight-escape-sequences.el][highlight-escape-sequences]] - what the title says.
+
+#+begin_src emacs-lisp :name highlight-escape
+  (use-package highlight-escape-sequences
+    :defer t
+    :init
+    (add-hook 'prog-mode-hook 'hes-mode)
+    :config
+    (put 'hes-escape-backslash-face 'face-alias 'font-lock-builtin-face)
+    (put 'hes-escape-sequence-face 'face-alias 'font-lock-builtin-face)
+    )
+#+end_src
+
+*** Numbers
+
+[[https://github.com/Fanael/highlight-numbers][highlight-numbers]] - Highlight numeric literals in source code.
+
+#+begin_src emacs-lisp :name highlight-numbers
+  (use-package highlight-numbers
+    :ensure t
+    :defer t
+    :init (add-hook 'prog-mode-hook #'highlight-numbers-mode))
+#+end_src
+
+*** Parenthesis
+
+#+begin_src emacs-lisp :name highlight parenthesis
+  (setq show-paren-delay 0)
+  (show-paren-mode 1)
+#+end_src
+
+*** Quotes
+
+[[https://github.com/Fanael/highlight-quoted][highlight-quoted]] - Highlight Lisp quotes and quoted symbols
+
+#+begin_src emacs-lisp :name highlight-quoted
+  (use-package highlight-quoted
+    :ensure t
+    :config
+    (add-hook 'emacs-lisp-mode-hook 'highlight-quoted-mode))
+#+end_src
+
+*** Symbols
+
+[[https://github.com/gennad/auto-highlight-symbol][highlight-symbol]] - Highlight the symbol under point.
+
+#+begin_src emacs-lisp :name highlight-symbol
+  (use-package auto-highlight-symbol
+    :ensure t
+    :diminish auto-highlight-symbol-mode
+    :init
+    (setq ahs-case-fold-search nil
+          ahs-default-range 'ahs-range-whole-buffer
+          ahs-idle-interval 0.25
+          ahs-inhibit-face-list nil)
+    (add-hook 'prog-mode-hook 'auto-highlight-symbol-mode)
+    ;; but a box around the face.
+    (custom-set-faces `(ahs-face ((t (:box t)))))
+    (custom-set-faces `(ahs-definition-face ((t (:box t)))))
+    (custom-set-faces `(ahs-plugin-whole-buffer-face ((t (:box t)))))
+    )
+
+  (defun toggle-auto-highlight-symbol ()
+    "Toggle the auto-highlight-symbol-mode"
+    (interactive)
+    (if auto-highlight-symbol-mode
+        (auto-highlight-symbol-mode -1)
+      (auto-highlight-symbol-mode)))
+#+end_src
+
+*** Volatile highlights
+
+[[https://www.emacswiki.org/emacs/VolatileHighlights][Volatile highlights]] - temporarily highlights changes to the buffer associated with certain commands that
+add blocks of text at once. An example is that if you paste (yank) a block of text, it will be
+highlighted until you press the next key.
+
+#+begin_src emacs-lisp :naame volatile-highlights
+  (use-package volatile-highlights
+    :ensure t
+    :config
+    (volatile-highlights-mode 1))
+#+end_src
+*** Window changes
+
+Indicate buffer boundaries and scrolling.  
+
+#+begin_src emacs-lisp :name window changes
+  (setq-default inidicate-buffer-boundaries 'right)
 #+end_src
 
 ** Org mode
@@ -517,6 +680,8 @@ Display TAGS from column 72
       (helm-mode))
 #+end_src
 
+*** Projectile
+
 ** Version Control
 
 *** Magit
@@ -558,11 +723,16 @@ quickly select the exact char you want to zap to.
 
 ** Keybindings
 
+*** Ctrl/Alt/Super
+
 We get bind-keys for "free" with the install of use-package.
 
 #+begin_src emacs-lisp :name keybindings
 ;; a
 (global-set-key (kbd "C-a") 'crux-move-beginning-of-line)
+
+;; d
+(global-set-key (kbd "s-d") 'crux-kill-whole-line)
 
 ;;i
 (global-set-key (kbd "s-i") 'helm-mini)
@@ -574,7 +744,9 @@ We get bind-keys for "free" with the install of use-package.
 (bind-keys :map global-map
 	   :prefix "s-k"
 	   :prefix-map super-k-map
+	   ("d" . crux-kill-whole-line)
 	   ("k" . kill-buffer)
+	   ("s-d" . crux-kill-whole-line)
 	   ("s-k" . kill-buffer))
 
 ;; l
@@ -582,7 +754,8 @@ We get bind-keys for "free" with the install of use-package.
 (bind-keys :map global-map
 	   :prefix "s-l"
 	   :prefix-map super-l-map
-	   ("f" . avy-goto-char-in-line))
+	   ("f" . avy-goto-char-in-line)
+	   ("l" . deftmacs/copy-current-line-or-region))
 
 ;; o
 (global-unset-key (kbd "C-o"))

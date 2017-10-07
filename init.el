@@ -18,6 +18,9 @@
 	  (expand-file-name "config.el" user-emacs-directory)
 	  "The generated elisp configuration file.")
 
+;; Change the *Messages* log size so that we can see everything we want.
+(setq message-log-max t)
+
 ;; The following functions for tangling/untangling Org files and ignoring CANCELED sections within the
 ;; Org files comes from http://www.holgerschurig.de/en/emacs-efficiently-untangling-elisp/
 ;; They are GPLv2, you can find license details here:
@@ -57,8 +60,10 @@
          (while (re-search-forward org-babel-src-block-regexp nil t)
                 (let ((lang (match-string 2))
                       (args (match-string 4))
+		      (switches (match-string 3))
                       (body (match-string 5))
                       (canc (my-tangle-section-canceled)))
+		  (message "switches:> %s" switches)
                   ; (message "blah:> %s" body)
                   (when (and (string= lang "emacs-lisp")
                              (not (string-match-p ":tangle\\s-+no" args))
