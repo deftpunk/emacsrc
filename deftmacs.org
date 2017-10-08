@@ -354,6 +354,67 @@ What Operating System are we on?
 
 *** Backups
 
+*** Bells
+
+Bells should never go off.
+
+#+begin_src emacs-lisp :name bells
+  (setq ring-bell-function 'ignore)
+  (setq visible-bell t)
+#+end_src
+
+*** Clipboard
+
+All of the mess that we have to do to make system clipboard access work.
+
+#+begin_src emacs-lisp :name clipboard
+  ;; Some functions from http://writequit.org/org/settings.html#sec-1
+  ;; for copy/paste on a Mac.
+  (setq x-select-enable-clipboard t
+        x-select-enable-primary t
+        x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING)
+        save-interprogram-paste-before-kill t
+        mouse-yank-at-point t)
+
+  (defun copy-from-osx ()
+    "Handle copy/paste intelligently on osx."
+    (let ((pbpaste (purecopy "/usr/bin/pbpaste")))
+      (if (and (eq system-type 'darwin)
+               (file-exists-p pbpaste))
+          (let ((tramp-mode nil)
+                (default-directory "~"))
+            (shell-command-to-string pbpaste)))))
+
+  (defun paste-to-osx (text &optional push)
+    (let ((process-connection-type nil))
+      (let ((proc (start-process "pbcopy" "*Messages*" "/usr/bin/pbcopy")))
+        (process-send-string proc text)
+        (process-send-eof proc))))
+
+  (setq interprogram-cut-function 'paste-to-osx
+        interprogram-paste-function 'copy-from-osx)
+#+end_src
+
+*** Comment column
+
+Column to indent right-margins to.
+
+#+begin_src emacs-lisp :name Emacs defaults
+  (setq-default comment-column 79)
+#+end_src
+
+*** Cursors
+
+Cursors should *NEVER* blink.
+
+#+begin_src emacs-lisp :name cursors
+  (blink-cursor-mode 0)
+  (when (display-graphic-p)
+    (setq-default cursor-type 'box))
+  (setq x-stretch-cursor 1)          ; draw the block cursor as wide as the glyph under it.
+#+end_src
+
+
 *** Encoding
 
 Set all the things to utf-8
