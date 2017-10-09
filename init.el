@@ -18,7 +18,7 @@
 	  (expand-file-name "config.el" user-emacs-directory)
 	  "The generated elisp configuration file.")
 
-;; Change the *Messages* log size so that we can see everything we want.
+;; Don't truncate the *Messages* buffer.
 (setq message-log-max t)
 
 ;; The following functions for tangling/untangling Org files and ignoring CANCELED sections within the

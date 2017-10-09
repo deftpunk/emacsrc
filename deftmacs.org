@@ -29,11 +29,6 @@ not to use it.
 *** The emacs-plus version
 
 [[https://github.com/d12frosted/homebrew-emacs-plus][Emacs Plus]]
-* Init
-** Preliminaries
-
-Get some constants, libraries and support code out of the way.
-
 * Initialization
 ** Crumbs
 
@@ -121,7 +116,7 @@ leaving it enabled.
 (setq ring-bell-function 'ignore
       inhibit-splash-screen t
       inhibit-startup-screen t
-      inhibit-startup-echo-area-message t
+      inhibit-startup-echo-area-message ()
       initial-scratch-message nil
       use-dialog-box nil                        ; All questions in the minibuffer
       display-time-default-load-average nil)
@@ -354,6 +349,22 @@ What Operating System are we on?
 
 *** Backups
 
+Change where all of the backup files go.  Usually Emacs dumps them in the current directory with a ~
+ending, cluttering up the file system.  The following dumps in a directory under our crumbs directory.
+
+#+begin_src emacs-lisp :name Backups
+  (defconst deftmacs-backups-dir (expand-file-name "backups/" deftmacs-crumbs-directory))
+  (make-directory deftmacs-backups-dir t)
+  (setq backup-directory-alist `(("." . ,deftmacs-backups-dir)))
+  (setq tramp-backup-directory-alist `(("." . ,deftmacs-backups-dir)))
+
+  (setq backup-by-copying   t                         ; don't clobber symlinks
+        delete-old-versions -1
+        kept-new-versions   6
+        kept-old-versions   2
+        version-control     t)
+#+end_src
+
 *** Bells
 
 Bells should never go off.
@@ -414,7 +425,6 @@ Cursors should *NEVER* blink.
   (setq x-stretch-cursor 1)          ; draw the block cursor as wide as the glyph under it.
 #+end_src
 
-
 *** Encoding
 
 Set all the things to utf-8
@@ -428,6 +438,20 @@ Set all the things to utf-8
 (set-language-environment "UTF-8")
 #+end_src
 
+*** Files and buffers
+
+#+begin_src emacs-lisp :name files and buffers
+  (setq kill-read-only-ok                  t            ; don't error when killing a read-only text
+        large-file-warning-threshold       100000000    ; warn when opening files bigger than 100MB
+        confirm-nonexistent-file-or-buffer nil          ; don't ask to create files/buffers
+        )
+
+  ;; don't ask to kill buffers
+  (setq kill-buffer-query-functions
+        (remq 'process-kill-buffer-query-function
+              kill-buffer-query-functions))
+#+end_src
+
 *** Fringe
 
 Set the left fringe width to something big enough for line numbers, flycheck and git-gutter
@@ -436,7 +460,115 @@ Set the left fringe width to something big enough for line numbers, flycheck and
   (setq-default left-fringe-width 15)
 #+end_src
 
+*** Miscellaneous settings
+
+#+begin_src emacs-lisp :name miscellaneous settings
+  ;; Enable disabled commands
+  ;; To protect new users from destructive commands, some commands are turned
+  ;; off by default, turn them back on.
+  (setq disabled-command-function nil)
+
+  ;; Some miscellaneous settings
+  (setq transient-mark-mode   t                     ; if you change focus disable the current mark
+        line-move-visual      t                     ; move around lines based on how they are displayed
+        random                t                     ; seed the random number generator
+        apropos-do-all        t                     ; search for everything.
+        fill-column           105
+        recenter-positions    '(top middle bottom)  ; make =C-l= start at the top instead of the middle.
+        )
+
+  (setq tab-always-indent 'complete
+        confirm-nonexistent-file-or-buffer nil   ; don't ask to create a buffer
+        vc-follow-symlinks t                     ; follow symlinks automatically
+        recentf-max-saved-items 5000             ; same up to 5000 recent files
+        eval-expression-print-length nil         ; do not truncate printed expressions
+        eval-expression-print-level nil          ; print nested expressions
+        kill-ring-max 5000                       ; truncate kill ring after 5000 entries
+        mark-ring-max 5000                       ; truncate mark ring after 5000 entries
+        load-prefer-newer t                      ; prefer newer .el instead of the .elc
+        switch-to-buffer-preserve-window-point t
+        )
+
+  ;; don't ask to kill buffers
+  (setq kill-buffer-query-functions
+        (remq 'process-kill-buffer-query-function
+              kill-buffer-query-functions))
+
+
+  ;;
+  (setq set-mark-command-repeat-pop 't)
+#+end_src
+
+*** Mouse
+
+#+begin_src emacs-lisp :name Emacs defaults
+  (setq mouse-yank-at-point nil                  ; yank at mouse click
+        confirm-nonexistent-file-or-buffer nil   ; don't ask to create files/buffers
+        make-pointer-invisible t                 ; hide the mouse while typing
+        )
+#+end_src
+
+*** Scrolling
+
+Smooth scrolling is another detail that is somehow a mess in Emacs.
+
+#+begin_src emacs-lisp :name scrolling
+  (setq scroll-margin                    0
+        scroll-conservatively            100000
+        scroll-preserve-screen-position  1
+        mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))) ;make mouse scrolling smooth
+        )
+#+end_src
+
+*** tabs vs spaces
+
+That other religious war - tabs and spaces - I am on team spaces.
+
+#+begin_src emacs-lisp :name spaces
+  (setq-default tab-width 4)
+  (setq-default indent-tabs-mode nil)
+  (setq c-basic-offset 4)
+#+end_src
+
 ** Emacs minor modes
+
+Configuration for Emacs minor modes.
+
+*** abbreviations
+
+#+begin_src emacs-lisp :name abbreviations
+  (setq abbrev-file-name (expand-file-name "abbrev_defs" user-emacs-directory)
+        default-abbrev-mode t
+        save-abbrevs 'silently)
+  (diminish 'abbrev-mode)
+#+end_src
+
+*** auto-fill
+
+#+begin_src emacs-lisp :name auto-fill
+  (diminish 'auto-fill-mode)
+  (diminish 'auto-fill-function)
+#+end_src
+
+*** auto-revert
+
+Automatically reload a file if its changed outside of Emacs.
+
+#+begin_src emacs-lisp :name auto-revert
+  (global-auto-revert-mode 1)
+  (diminish 'auto-revert-mode)
+#+end_src
+
+*** bookmarks
+
+#+begin_src emacs-lisp :name bookmarks
+  (setq bookmark-default-file (expand-file-name "bookmarks" user-emacs-directory))
+  (use-package bookmark+
+    :ensure t
+    :config
+    (setq bookmark-version-control t
+          bookmark-save-flag 1))
+#+end_src
 
 *** saveplace
 
@@ -447,6 +579,39 @@ Save our position between sessions
   :init
   (setq-default save-place t)
   (setq save-place-file (expand-file-name "savedplaces" deftmacs-crumbs-directory)))
+#+end_src
+
+*** whitespace
+
+Manage and show whitespace.
+
+#+begin_src emacs-lisp :name whitespace
+  (use-package whitespace
+    :defer t
+    :diminish global-whitespace-mode
+    :init
+    (progn
+      (setq whitespace-style '(face tabs trailing lines tab-mark)
+            whitespace-line-column 105))
+    :config
+    (progn
+      (add-hook 'prog-mode-hook '(lambda ()
+                                   (setq show-trailing-whitespace 1)))))
+#+end_src
+
+Delete trailing whitespace just before saving.
+
+#+begin_src emacs-lisp :name trailing_whitespace
+  (add-hook 'before-save-hook 'delete-trailing-whitespace)
+#+end_src
+
+*** Winner mode
+
+THis is handy for when window splits go off the rails or you want to get the
+original split layout back.
+
+#+begin_src emacs-lisp :name winner mode
+  (winner-mode 1)
 #+end_src
 
 ** Highlighting
@@ -553,7 +718,7 @@ highlighted until you press the next key.
 #+end_src
 *** Window changes
 
-Indicate buffer boundaries and scrolling.  
+Indicate buffer boundaries and scrolling.
 
 #+begin_src emacs-lisp :name window changes
   (setq-default inidicate-buffer-boundaries 'right)
@@ -768,6 +933,128 @@ quickly select the exact char you want to zap to.
 
 #+begin_src emacs-lisp :name zzz-to-char
 (use-package zzz-to-char)
+#+end_src
+
+** General Utilities
+
+*** list-environment
+
+[[https://github.com/dgtized/list-environment.el][list-environment]] - List out the current environment variables.  You can also
+modify them in the *Process Environment* buffer.  =M-x list-environment=
+
+#+begin_src emacs-lisp :name list-environment
+  (use-package list-environment
+    :defer t)
+#+end_src
+
+*** lorem-ipsum
+
+[[https://github.com/jschaf/emacs-lorem-ipsum][Lorem Ipsum]] add filler text to whatever you are working on.  The following
+commands are available:
+=lorem-ipsum-insert-sentences=
+=lorem-ipsum-insert-paragraphs=
+=lorem-ipsum-insert-list=
+
+#+begin_src emacs-lisp :name lorem ipsum
+  (use-package lorem-ipsum
+    :defer t)
+#+end_src
+
+*** Paradox
+
+Use Paradox to make package management nicer.
+TODO: How do I make better use of this?  Should rebind some keys as well.
+See spacemacs/layers/+distribution/spacemacs/package.el for usage.
+
+#+begin_src emacs-lisp :name Paradox
+(use-package paradox
+  :commands paradox-list-packages
+  :init
+  (progn
+    ;; Shamelessly cribed from Spacemacs - this makes all of the
+    ;; security token be handled gracefully.
+    (defun spacemacs/paradox-list-packages ()
+      "Load depdendencies for auth and open the package list."
+      (interactive)
+      (require 'epa-file)
+      (require 'auth-source)
+      (when (and (not (boundp 'paradox-github-token))
+                 (file-exists-p "~/.authinfo.gpg"))
+        (let ((authinfo-result (car (auth-source-search
+                                     :max 1
+                                     :host "github.com"
+                                     :port "paradox"
+                                     :user "paradox"
+                                     :require '(:secret)))))
+          (let ((paradox-token (plist-get authinfo-result :secret)))
+            (setq paradox-github-token (if (functionp paradox-token)
+                                           (funcall paradox-token)
+                                         paradox-token)))))
+      (paradox-list-packages nil))))
+#+end_src
+*** Persistent Scratch
+[[https://github.com/Fanael/persistent-scratch][
+persistent-scratch]] is an Emacs package that preserves the state of scratch buffers across
+Emacs sessions by saving the state to and restoring it from a file.
+
+#+begin_src emacs-lisp :name persistent-scratch
+  (use-package persistent-scratch
+    :config
+    (persistent-scratch-setup-default))
+#+end_src
+
+*** Quickrun
+
+[[https://github.com/syohex/emacs-quickrun][Quickrun]] - Run command quickly. This packages is inspired quickrun.vim
+
+#+begin_src emacs-lisp :name quickrun
+  (use-package quickrun
+    :commands (quickrun
+               quickrun-region
+               quickrun-with-arg
+               quickrun-shell
+               quickrun-compile-only
+               quickrun-replace-region))
+#+end_src
+
+*** Rainbow mode
+
+[[https://julien.danjou.info/projects/emacs-packages][rainbow-mode]] - Show hex codes as their actual color.
+
+#+begin_src emacs-lisp :name rainbow-mode
+  (use-package rainbow-mode
+    :defer t
+    :commands rainbow-turn-on
+    :init
+    (add-hook 'prog-mode-hook 'rainbow-turn-on)
+    :config
+    (setq rainbow-x-colors nil))
+#+end_src
+
+*** Undo Tree
+
+[[https://www.emacswiki.org/emacs/UndoTree][Undo Tree]] - Make undo something more like the undo/redo you get in other
+editors.  There is also =undo-tree-visualize= that allows you to visually
+walk through the changes that you have made.
+
+#+begin_src emacs-lisp :name undo-tree
+  (use-package undo-tree
+    :defer t
+    :diminish undo-tree-mode
+    :init
+    (setq undo-tree-visualizer-timestamps t)
+    (setq undo-tree-visualizer-diff t)
+    (global-undo-tree-mode)
+    :config
+    ;; Get rid of linum glitches with undo-tree
+    (defun undo-tree-visualizer-update-linum (&rest args)
+      (linum-update undo-tree-visualizer-parent-buffer))
+    (advice-add 'undo-tree-visualize-undo :after #'undo-tree-visualizer-update-linum)
+    (advice-add 'undo-tree-visualize-redo :after #'undo-tree-visualizer-update-linum)
+    (advice-add 'undo-tree-visualize-undo-to-x :after #'undo-tree-visualizer-update-linum)
+    (advice-add 'undo-tree-visualize-redo-to-x :after #'undo-tree-visualizer-update-linum)
+    (advice-add 'undo-tree-visualizer-mouse-set :after #'undo-tree-visualizer-update-linum)
+    (advice-add 'undo-tree-visualizer-set :after #'undo-tree-visualizer-update-linum))
 #+end_src
 
 ** Software Engineering Utilities
