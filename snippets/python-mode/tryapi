@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: tryapi
+# key: tryapi
+# --
+try:
+    api = API(api_key)
+    return api.$0().get('results')
+
+except (KeyError, APIError) as api_error:
+    raise APIHelperError("{}".format(api_error))
