@@ -1257,16 +1257,6 @@ Emacs sessions by saving the state to and restoring it from a file.
     (setq rainbow-x-colors nil))
 #+end_src
 
-*** Rainbow Delimiters
-
-[[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]] - rainbow parenthesis
-
-#+begin_src emacs-lisp :name rainbow-delimiters
-  (use-package rainbow-delimiters
-    :defer t
-    :config
-    (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
-#+end_src
 
 *** Undo Tree
 
@@ -1332,6 +1322,49 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
 ** Software Engineering Utilities
 
 *** flycheck
+
+[[http://www.flycheck.org/en/latest/][flycheck]] - on the fly syntax checking
+
+#+begin_src emacs-lisp :name flycheck
+  (use-package flycheck
+    :defer t
+    :diminish flycheck-mode
+    :init
+    (setq flycheck-standard-error-navigation      nil
+          flycheck-idle-change-delay              15
+          flycheck-disabled-checkers              '(tex-chktex emacs-lisp-checkdoc)
+          flycheck-emacs-lisp-initialize-packages t
+          flycheck-check-syntax-automatically     '(mode-enabled idle-change save))
+    (add-hook 'after-init-hook #'global-flycheck-mode)
+    :config
+    (push '("^\\*Flycheck.+\\*$" :regexp t :dedicated t :position bottom :stick t :noselect t) popwin:special-display-config))
+
+  ;; flycheck for clojure
+  (use-package flycheck-clojure
+    :defer t
+    :config
+    (flycheck-clojure-setup))
+
+  ;; so that linting and type errors don't mess with eldoc
+  (use-package flycheck-pos-tip
+    :defer t
+    :diminish flycheck-pos-tip-mode
+    :config (flycheck-pos-tip-mode))
+
+  (use-package helm-flycheck
+    :defer t)
+#+end_src
+
+*** Rainbow Delimiters
+
+[[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]] - rainbow parenthesis
+
+#+begin_src emacs-lisp :name rainbow-delimiters
+  (use-package rainbow-delimiters
+    :defer t
+    :config
+    (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+#+end_src
 
 ** Software Engineering
 
@@ -1450,6 +1483,7 @@ keys will be highlighted with the appropriate color.
 (use-package hydra)
 #+end_src
 
+*** Hydra maps
 **** hydra-files-projectile
 
 #+begin_src emacs-lisp :name hydra-files-projectile
@@ -1629,11 +1663,87 @@ Hydra for window/frame control and movements.
       )
 #+end_src
 
-**** hydra-jk
+*** Hydra mode maps
+**** hydra-emacs-lisp
+
+A hydra for Elisp modes.  It inherits the smartparens hydra.
+
+#+begin_src emacs-lisp :name hydra-emacs-lisp
+  (defhydra hydra-emacs-lisp (:color red)
+    "
+                                                             ,-----------------.
+     Docs               Utilities                            | Emacs Lisp Mode |
+,------------------------------------------------------------'-----------------'
+  [_d_] Describe        [_i_] ELM
+                        [_p_] ELP
+ "
+    ("d" describe-foo-at-point :exit t)
+    ("e" eval-expression :exit t)
+    ("i" ielm :exit t)
+    ("p" hydra-emacs-lisp-profiler/body :exit t)
+    ("r" eval-region :exit t)
+    ("x" eval-defun :exit t)
+    ("<ESC>" nil "Quit" :exit t)
+    )
+#+end_src
+
+**** hydra-org-mode
+
+A hydra for Org mode
+
+#+begin_src emacs-lisp :name hydra-orgmode
+  (defhydra hydra-orgmode-mode (:color blue
+                                :hint nil)
+    "
+                                                                          .-----------.
+                                                                          |  Org Mode |
+    ,---------------------------------------------------------------------'-----------'
+    [_h_] Helm buffer headings
+  "
+    ("h" helm-org-in-buffer-headings)
+    ("<ESC>" nil "Quit" :exit t))
+#+end_src
+
+**** hydra-python-mode
+
+A hydra for python.
+
+#+begin_src emacs-lisp :name hydra-python
+  (defhydra hydra-python-mode (:color blue
+                                      :hint nil)
+    "
+                                                                            .----------.
+                                                                            |  Python  |
+      ,---------------------------------------------------------------------'----------'
+      [_d_] Jedi - goto definition
+      [_m_] Python Mark function
+      [_p_] Jedi - Pop goto definition
+      [_w_] Pyvenv workon Env
+    "
+    ("d" jedi:goto-definition)
+    ("m" python-mark-defun)
+    ("p" jedi:goto-definition-pop-marker)
+    ("w" pyvenv-workon)
+    ("<ESC>" nil "Quit" :exit t))
+#+end_src
+
+*** hydra-jk
 
 A Hydra for the jk keychord - see Keychord below for more information.
 
 #+begin_src emacs-lisp :name hydra-jk
+  (defun deftpunk/hydra-major-mode-hack ()
+    "Mucho hackiness to get different hydras for different modes but the same
+  prefix key.  There has to be a better way."
+    (interactive)
+    (let ((my-hmodes '((lisp-interaction-mode . hydra-emacs-lisp/body)
+                       (python-mode . hydra-python-mode/body)
+                       (org-mode . hydra-orgmode-mode/body)
+                       (emacs-lisp-mode . hydra-emacs-lisp/body))))
+      (condition-case error
+          (funcall (assoc-default major-mode my-hmodes))
+        ('error (message "No Hydra for this major mode: %s" major-mode)))))
+
   (defhydra hydra-jk (:color blue :hint nil)
     "
                                                                                      ,----------------.
@@ -1683,3 +1793,10 @@ A Hydra for the jk keychord - see Keychord below for more information.
     (key-chord-mode 1)
     (key-chord-define-global "jk" 'hydra-jk/body))
 #+end_src
+** Evil
+
+Going to give this another try.
+
+Pain points with Evil in Emacs for me from last time:
+1. Org mode - messes with the shortcuts
+2. Smartparens - messes up smartparens
