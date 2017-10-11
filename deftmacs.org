@@ -415,6 +415,14 @@ Column to indent right-margins to.
   (setq-default comment-column 79)
 #+end_src
 
+*** Compilation
+
+#+begin_src emacs-lisp :name compilation
+  (setq compilation-context-lines 2
+        compilation-error-screen-columns nil
+        compilation-scroll-output t)
+#+end_src
+
 *** Cursors
 
 Cursors should *NEVER* blink.
@@ -873,43 +881,43 @@ Display TAGS from column 72
 [[https://github.com/emacs-helm-helm][Helm]]
 
 #+begin_src emacs-lisp :name Helm
-(use-package helm
-  :init
-  (use-package helm-config)
-  (use-package helm-man)
-  (use-package helm-org)
-  (use-package helm-mt)
-  (use-package helm-ring)
-  (use-package helm-ag
+  (use-package helm
     :init
-    (setq helm-ag-fuzzy-match t
-	  helm-ag-use-agignore t
-	  helm-ag-command-option "--ignore-dir elpa"))
+  ;  (use-package helm-config)
+   ; (use-package helm-man)
+   ; (use-package helm-org)
+   ; (use-package helm-mt)
+   ; (use-package helm-ring)
+    (use-package helm-ag
+      :init
+      (setq helm-ag-fuzzy-match t
+            helm-ag-use-agignore t
+            helm-ag-command-option "--ignore-dir elpa"))
 
-  ;; options
-  (setq helm-idle-delay                        0.0    ; Update fast sources immediately (doesn't).
-            helm-move-to-line-cycle-in source
-            helm-input-idle-delay                  0.01   ; This actually updates things reeeelatively quickly.
-            helm-quick-update                      t
-            helm-M-x-requires-pattern              nil
-            helm-candidate-number-limit            99     ; Setting this above 100 will slow down fuzzy matching
-            helm-autoresize-max-height             45     ; Set the max window height to 45% of current frame.
-            helm-mode-fuzzy-match                  t      ; Turn on fuzzy matching for buffers, semantic, recentf
-            helm-completion-in-region-fuzzy-match  t      ; Completion, imenu, apropos, M-x
-            helm-buffer-skip-remote-checking       t      ; Ignore checking if file exists on remote files, ie. Tramp
-            helm-tramp-verbose                     6      ; See Tramp messages in helm
-            helm-ff-skip-boring-files              t)
+    ;; options
+    (setq helm-idle-delay                        0.0    ; Update fast sources immediately (doesn't).
+          helm-move-to-line-cycle-in source
+          helm-input-idle-delay                  0.01   ; This actually updates things reeeelatively quickly.
+          helm-quick-update                      t
+          helm-M-x-requires-pattern              nil
+          helm-candidate-number-limit            99     ; Setting this above 100 will slow down fuzzy matching
+          helm-autoresize-max-height             45     ; Set the max window height to 45% of current frame.
+          helm-mode-fuzzy-match                  t      ; Turn on fuzzy matching for buffers, semantic, recentf
+          helm-completion-in-region-fuzzy-match  t      ; Completion, imenu, apropos, M-x
+          helm-buffer-skip-remote-checking       t      ; Ignore checking if file exists on remote files, ie. Tramp
+          helm-tramp-verbose                     6      ; See Tramp messages in helm
+          helm-ff-skip-boring-files              t)
 
-      (helm-autoresize-mode t)
+    (helm-autoresize-mode t)
 
-      ;; helm-ag and find-grep in find-files or helm-mini
-      (when (executable-find "ag")
-        (setq helm-grep-default-command "ag "))
+    ;; helm-ag and find-grep in find-files or helm-mini
+    (when (executable-find "ag")
+      (setq helm-grep-default-command "ag "))
 
-      ;; Save the current position to mark ring when jumping around.
-      (add-hook 'helm-goto-line-before-hook 'helm-save-current-pos-to-mark-ring)
+    ;; Save the current position to mark ring when jumping around.
+    (add-hook 'helm-goto-line-before-hook 'helm-save-current-pos-to-mark-ring)
 
-      (helm-mode))
+    (helm-mode))
 #+end_src
 
 *** Projectile
@@ -957,6 +965,77 @@ find files & buffers in projectile with a good explanation [[http://tuhdo.github
     (helm-projectile-on))
 
   (setq projectile-indexing-method 'native)
+#+end_src
+
+** Completion
+
+*** Company
+
+[[http://company-mode.github.io/][Company Completion]] - text completion framework.
+
+#+begin_src emacs-lisp :name company
+    (use-package company
+      :defer t
+      :diminish company-mode
+      :init
+      (setq company-idle-delay 0.1
+            company-tooltip-limit 99
+            company-minimum-prefix-length 2
+            company-echo-delay 0                ; Remove annoying blinking
+            company-selection-wrap-around t
+            company-show-numbers t
+            ;; change the navigation direction if the popup is near the bottom of
+            ;; of the window
+            company-tooltip-flip-when-above t
+            company-dabbrev-downcase nil
+            company-dabbrev-code-everywhere t
+            company-backends '((company-capf
+                                company-dabbrev
+                                company-dabbrev-code)))
+
+  ;; The current candidate isn't displayed inline except when there's only one
+  ;; left. You can rectify this by switching out
+  ;; company-preview-if-just-one-frontend for company-preview-frontend:
+  ;; (setq company-frontends
+  ;;       '(company-pseudo-tooltip-unless-just-one-frontend
+  ;;         company-preview-frontend
+  ;;         company-echo-metadata-frontend))
+
+  ;; (setq company-auto-complete nil)
+
+      :config
+      (bind-keys :map company-active-map
+                 ("M-n" . nil)
+                 ("M-p" . nil)
+                 ([tab] . company-complete)
+                 ("C-n" . company-select-next)
+                 ("C-p" . company-select-previous)
+                 )
+      (global-company-mode))
+#+end_src
+
+**** company-jedi
+
+[[https://github.com/syohex/emacs-company-jedi][company-jedi]] - a company mode completion backend for Python Jedi.
+
+Use a python-mode-hook to add company-jedi backend as a local variable when
+python files are opened.
+
+#+begin_src emacs-lisp :name company-jedi
+    (use-package company-jedi
+      :defer t)
+#+end_src
+
+**** company-quickhelp
+
+[[https://github.com/expez/company-quickhelp][company-quickhelp]] - Documentation popup for company mode.
+
+#+begin_src emacs-lisp :name company-quickhelp
+  (use-package company-quickhelp
+    :init
+    (setq company-quickhelp-delay 1.0
+          company-quickhelp-max-lines 30)
+    :config (company-quickhelp-mode 1))
 #+end_src
 
 ** Version Control
@@ -1151,7 +1230,6 @@ quickly select the exact char you want to zap to.
 #+end_src
 
 ** General Utilities
-
 *** Expand region
 
 Gradually expand the region.
@@ -1225,8 +1303,15 @@ Emacs sessions by saving the state to and restoring it from a file.
 
 #+begin_src emacs-lisp :name persistent-scratch
   (use-package persistent-scratch
+    :init
+    (setq persistent-scratch-save-file (expand-file-name "persistent-scratch" deftmacs-crumbs-directory))
     :config
     (persistent-scratch-setup-default))
+
+  ;; *scratch* is immortal - dont kill it accidentally
+  (add-hook 'kill-buffer-query-functions
+            (lambda ()
+              (not (member (buffer-name) '("*scratch*" "scratch.el")))))
 #+end_src
 
 *** Quickrun
@@ -1256,7 +1341,6 @@ Emacs sessions by saving the state to and restoring it from a file.
     :config
     (setq rainbow-x-colors nil))
 #+end_src
-
 
 *** Undo Tree
 
@@ -1335,8 +1419,15 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
           flycheck-disabled-checkers              '(tex-chktex emacs-lisp-checkdoc)
           flycheck-emacs-lisp-initialize-packages t
           flycheck-check-syntax-automatically     '(mode-enabled idle-change save))
+
+    ;; Turn off for some modes
+    ;; Turns off for *scratch* buffer.
+    (setq flycheck-global-modes '(not lisp-interaction-mode))
+
+    ;; Turn on everywhere else.
     (add-hook 'after-init-hook #'global-flycheck-mode)
     :config
+
     (push '("^\\*Flycheck.+\\*$" :regexp t :dedicated t :position bottom :stick t :noselect t) popwin:special-display-config))
 
   ;; flycheck for clojure
@@ -1493,11 +1584,11 @@ keys will be highlighted with the appropriate color.
   CURRENT PROJECT: %(no-projectile-project-p)
 
 
-  _a_ Ag
+  _a_ Ag                                             _m_ Go to *Messages*     _s_ Go to *scratch*
 
   _c_ Clear Projectile Cache
 
-
+                                _k_ Kill Buffer
   _f_ Find Files
 
   "
@@ -1513,7 +1604,12 @@ keys will be highlighted with the appropriate color.
          (if (no-projectile-project-p)
              (helm-find-files-1 default-directory)
            (helm-projectile-find-file))))
-
+  ("k" (kill-buffer (current-buffer)))
+  ("m" (lambda ()
+         (interactive)
+         (let ((messages-buffer (get-buffer-create "*Messages*")))
+           (switch-to-buffer messages-buffer))))
+  ("s" eme-goto-scratch)
 
   ("<ESC" nil "Quit" :exit t))
 #+end_src
@@ -1699,8 +1795,10 @@ A hydra for Org mode
                                                                           |  Org Mode |
     ,---------------------------------------------------------------------'-----------'
     [_h_] Helm buffer headings
+    [_o_] Ace link
   "
     ("h" helm-org-in-buffer-headings)
+    ("o" ace-link-org)
     ("<ESC>" nil "Quit" :exit t))
 #+end_src
 
@@ -1755,7 +1853,7 @@ A Hydra for the jk keychord - see Keychord below for more information.
     ;; ("b" )
     ;; ("c" hydra-cee/body)
     ;; ("d" hydra-delete-duplicate-mark-copy/body)
-    ;; ("e" deftpunk/hydra-major-mode-hack)
+    ("e" deftpunk/hydra-major-mode-hack)
     ("f" hydra-files-projectile/body)
     ;; ("g" hydra-gee/body)
     ;; ("h" )
@@ -1780,7 +1878,6 @@ A Hydra for the jk keychord - see Keychord below for more information.
 
     ("<ESC>" nil "Quit" :exit t)
     )
-
 #+end_src
 
 *** key-chord
