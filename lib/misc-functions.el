@@ -59,3 +59,20 @@
     (this-command-keys)
     'toggle-kbd-macro-recording-on)
   (end-kbd-macro))
+
+;;
+(defun no-projectile-project-p ()
+  "Catch the projectile-project-root signal to check if we are in a project"
+  (interactive)
+  (deftpunk/catch-error-p 'projectile-project-root))
+
+;;
+(defun deftpunk/catch-error-p (func-symbol)
+  "Call the passed function solely for the purpose of catching its error."
+  (let (retval)
+    (condition-case error
+        (funcall func-symbol)
+      ('error (setq retval error)))
+    retval))
+
+(provide 'misc-functions)
