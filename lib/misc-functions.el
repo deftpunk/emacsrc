@@ -75,4 +75,14 @@
       ('error (setq retval error)))
     retval))
 
+;; Full history of this function is foggy and lost to time.
+;; https://stackoverflow.com/questions/234963/re-open-scratch-buffer-in-emacs
+(defun eme-goto-scratch ()
+  "this sends you to the scratch buffer"
+  (interactive)
+  (let ((eme-scratch-buffer (get-buffer-create "*scratch*")))
+    (switch-to-buffer eme-scratch-buffer)
+    (lisp-interaction-mode)))
+
+
 (provide 'misc-functions)
