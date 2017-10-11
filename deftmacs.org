@@ -333,6 +333,7 @@ Add my library of functions and miscellaneous.
 #+begin_src emacs-lisp :name deftlisp
 (defconst my-library (expand-file-name "lib" user-emacs-directory))
 (add-to-list 'load-path my-library)
+(require 'misc-functions)
 #+end_src
 
 ** Defaults and Settings
@@ -564,7 +565,6 @@ Automatically reload a file if its changed outside of Emacs.
 #+begin_src emacs-lisp :name bookmarks
   (setq bookmark-default-file (expand-file-name "bookmarks" user-emacs-directory))
   (use-package bookmark+
-    :ensure t
     :config
     (setq bookmark-version-control t
           bookmark-save-flag 1))
@@ -653,7 +653,6 @@ original split layout back.
 
 #+begin_src emacs-lisp :name highlight-numbers
   (use-package highlight-numbers
-    :ensure t
     :defer t
     :init (add-hook 'prog-mode-hook #'highlight-numbers-mode))
 #+end_src
@@ -671,7 +670,6 @@ original split layout back.
 
 #+begin_src emacs-lisp :name highlight-quoted
   (use-package highlight-quoted
-    :ensure t
     :config
     (add-hook 'emacs-lisp-mode-hook 'highlight-quoted-mode))
 #+end_src
@@ -682,7 +680,6 @@ original split layout back.
 
 #+begin_src emacs-lisp :name highlight-symbol
   (use-package auto-highlight-symbol
-    :ensure t
     :diminish auto-highlight-symbol-mode
     :init
     (setq ahs-case-fold-search nil
@@ -712,7 +709,6 @@ highlighted until you press the next key.
 
 #+begin_src emacs-lisp :naame volatile-highlights
   (use-package volatile-highlights
-    :ensure t
     :config
     (volatile-highlights-mode 1))
 #+end_src
@@ -818,6 +814,16 @@ Display TAGS from column 72
 
 ** Navigation
 
+*** ace-link
+
+[[https://github.com/abo-abo/ace-link][ace-link]] - Select a link to jump to in Info, help, woman, org or eww modes
+
+#+begin_src emacs-lisp :name ace-link
+  (use-package ace-link
+    :commands ace-link-setup-default
+    :init (ace-link-setup-default))
+#+end_src
+
 *** ace-window
 
 [[https://github.com/abo-abo/ace-window][ace-window]] - Selecting a window to switch to
@@ -908,8 +914,198 @@ Display TAGS from column 72
 
 *** Projectile
 
+[[https://github.com/bbatsov/projectile][Projectile]] for sane project management.
+
+#+begin_src emacs-lisp :name Projectile
+  (use-package projectile
+    :defer t
+    :commands (projectile-project-root)
+    :init (add-hook 'after-init-hook 'projectile-global-mode)
+    :config
+    (setq projectile-completion-system 'ivy
+          projectile-enable-caching t
+          projectile-use-git-grep t
+          ;; projectile-indexing-method 'native
+          projectile-remember-window-configs t
+          projectile-switch-project-action 'projectile-find-file)
+    (add-to-list 'projectile-globally-ignored-files ".DS_Store")
+    (add-to-list 'projectile-globally-ignored-files "*.i")
+    (setq projectile-globally-ignored-directories
+          (append projectile-globally-ignored-directories '(".git"
+                                                            ".hg"
+                                                            ".cache"
+                                                            "__pycache__"
+                                                            ".mypy_cache"
+                                                            "elpa")))
+    )
+#+end_src
+
+***** helm-projectile
+
+[[http://tuhdo.github.io/helm-projectile.html][helm-projectile]] use helm to
+find files & buffers in projectile with a good explanation [[http://tuhdo.github.io/helm-projectile.html][Exploring large projects]]
+
+#+begin_src emacs-lisp :name helm-projectile
+  (use-package helm-projectile
+    :defer t
+    :config
+    (setq helm-projectile-sources-list
+          '(helm-source-projectile-projects
+            helm-source-projectile-recentf-list
+            helm-source-projectile-buffers-list
+            helm-source-projectile-files-list))
+    (helm-projectile-on))
+
+  (setq projectile-indexing-method 'native)
+#+end_src
+
 ** Version Control
 
+*** Settings
+
+Follow symlinks
+
+#+begin_src emacs-lisp :name follow symlinks
+  (setq vc-follow-symlinks t)
+#+end_src
+
+*** git-gutter
+
+[[https://github.com/syohex/emacs-git-gutter][git-gutter]] - highlight uncomitted changes to the buffer - works with Hg & Git.
+
+#+begin_src emacs-lisp :name git-gutter
+  (use-package git-gutter
+    :commands global-git-gutter-mode
+    :diminish git-gutter-mode
+    :init
+    (setq git-gutter:update-interval 0.1
+          git-gutter:ask-p nil
+          git-gutter:verbosity 0
+          git-gutter:handled-backends '(git))
+
+    (add-hook 'git-gutter:update-hooks 'magit-after-revert-hook)
+    (add-hook 'git-gutter:update-hooks 'magit-not-reverted-hook)
+    (add-hook 'git-gutter:update-hooks 'vc-checkin-hook)
+    (add-hook 'git-gutter:update-hooks 'focus-in-hook)
+    (add-hook 'git-gutter:update-hooks 'auto-revert-mode-hook)
+    (add-hook 'git-gutter:update-hooks 'after-revert-hook)
+    (global-git-gutter-mode 1))
+
+  (use-package fringe-helper
+    :load-path "~/tmp/fringe-helper.el")
+
+  (use-package git-gutter-fringe)
+  (require 'git-gutter-fringe)
+
+  ;; Update git-gutter on focus (in case I was using git externally) - from hlissner's emacs config.
+  (add-hook 'focus-in-hook #'git-gutter:update-all-windows)
+
+  (set-face-foreground 'git-gutter-fr:modified "blue3")
+  (set-face-foreground 'git-gutter:modified "blue3")
+#+end_src
+
+**** git-gutter hunks and ivy mode
+
+[[http://blog.binchen.org/posts/enhance-emacs-git-gutter-with-ivy-mode.html][git-gutter and ivy mode]] - traverse git-gutter hunks using ivy mode.
+
+#+begin_src emacs-lisp :name git-gutter and ivy
+  (require 'ivy)
+  (require 'git-gutter)
+
+  (defun my-reshape-git-gutter (gutter)
+    "Re-shape gutter for `ivy-read'."
+    (let* ((linenum-start (aref gutter 3))
+           (linenum-end (aref gutter 4))
+           (target-line "")
+           (target-linenum 1)
+           (tmp-line "")
+           (max-line-length 0))
+      (save-excursion
+        ;; find out the longest stripped line in the gutter
+        (while (<= linenum-start linenum-end)
+          (goto-line linenum-start)
+          (setq tmp-line (replace-regexp-in-string "^[ \t]*" ""
+                                                   (buffer-substring (line-beginning-position)
+                                                                     (line-end-position))))
+          (when (> (length tmp-line) max-line-length)
+            (setq target-linenum linenum-start)
+            (setq target-line tmp-line)
+            (setq max-line-length (length tmp-line)))
+
+          (setq linenum-start (1+ linenum-start))))
+      ;; build (key . linenum-start)
+      (cons (format "%s %d: %s"
+                    (if (eq 'deleted (aref gutter 1)) "-" "+")
+                    target-linenum target-line)
+            target-linenum)))
+
+  (defun my-goto-git-gutter ()
+    (interactive)
+    (if git-gutter:diffinfos
+        (let* ((collection (mapcar 'my-reshape-git-gutter
+                                   git-gutter:diffinfos)))
+          (ivy-read "git-gutters:"
+                    collection
+                    :action (lambda (linenum)
+                              (goto-line linenum))))
+      (message "NO git-gutters!")))
+#+end_src
+
+*** git-messenger
+
+[[https://github.com/syohex/emacs-git-messenger][git-messenger]] provides a function that pops up the commit message of the current
+line.  Useful for quickly seeing why a line has changed.
+
+#+begin_src emacs-lisp :name git-messenger
+(use-package git-messenger
+  :defer t
+  :init
+  (progn
+    (setq git-messenger:show-detail t
+          git-messenger:handled-backends '(git)))
+  :config (define-key git-messenger-map (kbd "m") 'git-messenger:copy-message))
+#+end_src
+
+*** git-timemachine
+
+[[https://github.com/pidu/git-timemachine][git-timemachine]] - allows you to go back and forth to the revisions of a file.
+
+#+begin_src emacs-lisp :name git-timemachine
+(use-package git-timemachine
+  :defer t
+  :bind ("C-c t" . git-timemachine))
+
+;; From redguardtoo - http://blog.binchen.org/posts/new-git-timemachine-ui-based-on-ivy-mode.html
+(defun my-git-timemachine-show-selected-revision ()
+  "Show last (current) revision of file."
+  (interactive)
+  (let (collection)
+    (setq collection
+          (mapcar (lambda (rev)
+                    ;; re-shape list for the ivy-read
+                    (cons (concat (substring (nth 0 rev) 0 7) "|" (nth 5 rev) "|" (nth 6 rev)) rev))
+                  (git-timemachine--revisions)))
+    (ivy-read "commits:"
+              collection
+              :action (lambda (rev)
+                        (git-timemachine-show-revision rev)))))
+
+(defun my-git-timemachine ()
+  "Open git snapshot with the selected version.  Based on ivy-mode."
+  (interactive)
+  (unless (featurep 'git-timemachine)
+    (require 'git-timemachine))
+  (git-timemachine--start #'my-git-timemachine-show-selected-revision))
+#+end_src
+
+*** gitignore-mode
+
+[[https://github.com/magit/git-modes][git-modes]] - pull in the mode for editing .gitignore files.
+
+#+begin_src emacs-lisp :name gitignore-mode
+(use-package gitignore-mode
+  :defer t)
+#+end_src
 *** Magit
 
 [[https://github.com/magit/magit][Magit]] - The best git porcelain in the world!
@@ -926,6 +1122,25 @@ https://magit.vc/
 
 ** Editing with Ginzu knives
 
+*** easy-kill
+
+[[https://github.com/leoliu/easy-kill][easy-kill]] kill or mark things easily
+
+#+BEGIN_SRC emacs-lisp :name easy-kill
+(use-package easy-kill
+  :defer t)
+#+END_SRC
+
+*** move-text
+
+[[https://github.com/emacsfodder/move-text][move-text]] - Move region or current line up or down.
+
+#+BEGIN_SRC emacs-lisp :name move-text
+(use-package move-text
+   :defer t
+   :config (move-text-default-bindings))
+#+END_SRC
+
 *** zzz-to-char
 
 [[https://github.com/mrkkrp/zzz-to-char][zzz-to-char]] - Fancy replacement for zap-to-char in Emacs.  Allows you to
@@ -936,6 +1151,17 @@ quickly select the exact char you want to zap to.
 #+end_src
 
 ** General Utilities
+
+*** Expand region
+
+Gradually expand the region.
+
+#+BEGIN_SRC emacs-lisp :name expand-region
+  (use-package expand-region
+:commands (er/mark-word er/mark-symbol er/mark-symbol-with-prefix er/mark-next-accessor er/mark-method-call er/mark-inside-quotes er/mark-outside-quotes er/mark-inside-pairs er/mark-outside-pairs er/mark-comment er/mark-url er/mark-email er/mark-defun er/mark-html-attribute er/mark-inner-tag er/mark-outer-tag)
+    :defer t
+    :bind ("C-=" . er/expand-region))
+#+END_SRC
 
 *** list-environment
 
@@ -1031,6 +1257,17 @@ Emacs sessions by saving the state to and restoring it from a file.
     (setq rainbow-x-colors nil))
 #+end_src
 
+*** Rainbow Delimiters
+
+[[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]] - rainbow parenthesis
+
+#+begin_src emacs-lisp :name rainbow-delimiters
+  (use-package rainbow-delimiters
+    :defer t
+    :config
+    (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+#+end_src
+
 *** Undo Tree
 
 [[https://www.emacswiki.org/emacs/UndoTree][Undo Tree]] - Make undo something more like the undo/redo you get in other
@@ -1057,6 +1294,41 @@ walk through the changes that you have made.
     (advice-add 'undo-tree-visualizer-set :after #'undo-tree-visualizer-update-linum))
 #+end_src
 
+*** wrap-region
+
+[[https://github.com/rejeep/wrap-region.el][wrap-region]] - Wrap a region with punctuation or tags
+
+#+begin_src emacs-lisp :name wrap-region
+  (use-package wrap-region
+    :diminish wrap-region-mode
+    :config
+    (wrap-region-add-wrappers
+     '(("*" "*" nil (org-mode))
+       ("~" "~" nil (org-mode))
+       ("/" "/" nil (org-mode))
+       ("=" "=" "+" (org-mode))
+       ("_" "_" nil (org-mode))
+       ("$" "$" nil (org-mode latex-mode))))
+    (add-hook 'org-mode-hook 'wrap-region-mode))
+#+end_src
+
+*** yasnippet
+
+I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snippet needs - the [[http://joaotavora.github.io/yasnippet/][manual]].
+
+#+begin_src emacs-lisp :name yasnippet
+  (use-package yasnippet
+    :defer t
+    :diminish yas-minor-mode
+    :mode ("/\\.emacs\\.d/snippets/" . snippet-mode)
+    :init
+    (setq yas-snippet-dirs '("~/.emacs.d/snippets"
+                             "~/.emacs.d/default-snippets")
+          yas-verbosity 3)
+    (yas-global-mode 1)
+    (use-package helm-c-yasnippet))
+#+end_src
+
 ** Software Engineering Utilities
 
 *** flycheck
@@ -1070,51 +1342,344 @@ walk through the changes that you have made.
 ** Various file types
 
 ** Keybindings
-
 *** Ctrl/Alt/Super
 
 We get bind-keys for "free" with the install of use-package.
 
 #+begin_src emacs-lisp :name keybindings
-;; a
-(global-set-key (kbd "C-a") 'crux-move-beginning-of-line)
+  ;; a
+  (global-set-key (kbd "C-a") 'crux-move-beginning-of-line)
 
-;; d
-(global-set-key (kbd "s-d") 'crux-kill-whole-line)
+  ;; d
+  (global-set-key (kbd "s-d") 'crux-kill-whole-line)
 
-;;i
-(global-set-key (kbd "s-i") 'helm-mini)
+  ;;i
+  (global-set-key (kbd "s-i") 'helm-mini)
 
-;; j
+  ;; j
 
-;; k
-(global-unset-key (kbd "s-k"))
-(bind-keys :map global-map
-	   :prefix "s-k"
-	   :prefix-map super-k-map
-	   ("d" . crux-kill-whole-line)
-	   ("k" . kill-buffer)
-	   ("s-d" . crux-kill-whole-line)
-	   ("s-k" . kill-buffer))
+  ;; k
+  (global-unset-key (kbd "s-k"))
+  (bind-keys :map global-map
+         :prefix "s-k"
+         :prefix-map super-k-map
+         ("d" . crux-kill-whole-line)
+         ("k" . kill-buffer)
+         ("s-d" . crux-kill-whole-line)
+         ("s-k" . kill-buffer))
 
-;; l
-(global-unset-key (kbd "s-l"))
-(bind-keys :map global-map
-	   :prefix "s-l"
-	   :prefix-map super-l-map
-	   ("f" . avy-goto-char-in-line)
-	   ("l" . deftmacs/copy-current-line-or-region))
+  ;; l
+  (global-unset-key (kbd "s-l"))
+  (bind-keys :map global-map
+         :prefix "s-l"
+         :prefix-map super-l-map
+         ("f" . avy-goto-char-in-line)
+         ("l" . deftmacs/copy-current-line-or-region))
 
-;; o
-(global-unset-key (kbd "C-o"))
-(global-set-key (kbd "C-o") 'crux-smart-open-line)
-(global-set-key (kbd "C-S-o") 'crux-smart-open-line-above)
+  ;; o
+  (global-unset-key (kbd "C-o"))
+  (global-set-key (kbd "C-o") 'crux-smart-open-line)
+  (global-set-key (kbd "C-S-o") 'crux-smart-open-line-above)
 
-;; z
-(global-unset-key (kbd "s-z"))
-(global-set-key (kbd "s-z") 'zzz-up-to-char)
+  ;; z
+  (global-unset-key (kbd "s-z"))
+  (global-set-key (kbd "s-z") 'zzz-up-to-char)
 
-;; -
-(global-unset-key (kbd "s--"))
-(global-set-key (kbd "s--") 'ace-window)
+  ;; -
+  (global-unset-key (kbd "s--"))
+  (global-set-key (kbd "s--") 'ace-window)
+
+  ;; ;
+  (global-set-key (kbd "s-;") (crux-with-region-or-line comment-or-uncomment-region))
+
+  ;; > & <
+  (global-set-key (kbd "s-<") 'beginning-of-buffer)
+  (global-set-key (kbd "s->") 'end-of-buffer)
+
+  ;; arrows
+  (global-set-key (kbd "M-<left>") 'backward-word)
+  (global-set-key (kbd "M-<right>") 'forward-word)
+  (global-set-key (kbd "s-<up>") 'windmove-up)
+  (global-set-key (kbd "s-<down>") 'windmove-down)
+  (global-set-key (kbd "s-<left>") 'windmove-left)
+  (global-set-key (kbd "s-<right>") 'windmove-right)
+#+end_src
+
+*** Escape
+
+Some code to use =Escape= to quit more things.  The minibuffer-keyboard-quit
+function lives in deft-functions.el
+
+#+begin_src emacs-lisp :name Escape keys
+  (define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
+  (define-key minibuffer-local-ns-map [escape] 'minibuffer-keyboard-quit)
+  (define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
+  (define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
+  (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
+
+  (defun my-helm-init ()
+    (interactive)
+    (define-key helm-map (kbd "ESC") 'helm-keyboard-quit))
+  (add-hook 'after-init-hook 'my-helm-init)
+
+  ;; Map Escape to cancel like C-g
+  (define-key isearch-mode-map [escape] 'isearch-abort)   ;; isearch
+  (define-key isearch-mode-map "\e" 'isearch-abort)       ;; \e seems to work better for terminals
+  ;; TODO Thu Jun 30 16:41:14 2016 - This causes splits to close for some reason???
+  ;;  (global-set-key [escape] 'keyboard-escape-quit)         ;; everywhere else
+#+end_src
+
+*** Hydra
+
+[[https://github.com/abo-abo/hydra][Hydra]] - Make Emacs bindings that stick around.
+
+The :color key is a shortcut. It aggregates :exit and :foreign-keys key in the following way:
+
+| color    | toggle                     |
+|----------+----------------------------|
+| red      |                            |
+| blue     | :exit t                    |
+| amaranth | :foreign-keys warn         |
+| teal     | :foreign-keys warn :exit t |
+| pink     | :foreign-keys run          |
+
+It's also a trick to make you instantly aware of the current hydra keys that you're about to press: the
+keys will be highlighted with the appropriate color.
+
+#+begin_src emacs-lisp :name Hydra
+(use-package hydra)
+#+end_src
+
+**** hydra-files-projectile
+
+#+begin_src emacs-lisp :name hydra-files-projectile
+  (defhydra hydra-files-projectile (:color blue
+                                    :hint nil)
+  "
+  CURRENT PROJECT: %(no-projectile-project-p)
+
+
+  _a_ Ag
+
+  _c_ Clear Projectile Cache
+
+
+  _f_ Find Files
+
+  "
+  ("<tab>" hydra-jk/body "back")
+  ("a" (lambda ()
+         (interactive)
+         (if (no-projectile-projectp)
+             (helm-do-ag)
+           (helm-projectile-ag))))
+  ("c" projectile-invalidate-cache)
+  ("f" (lambda ()
+         (interactive)
+         (if (no-projectile-project-p)
+             (helm-find-files-1 default-directory)
+           (helm-projectile-find-file))))
+
+
+  ("<ESC" nil "Quit" :exit t))
+#+end_src
+
+**** hydra-version-control
+
+Hydra for version control functions.
+
+#+begin_src emacs-lisp :name hydra-version-control
+  (defhydra hydra-version-control (:color blue :hint nil)
+    "
+  git-messenger
+  -------------
+  c - Copy commit ID        s - Pop up git show --stat
+  d - Pop up git diff       S - Pop up git show --stat -p
+  m - Copy commit message   q - Quit
+
+
+                                                                      ,-------------------.
+      General                    Git                                  | Version control   |
+    ,-----------------------------------------------------------------'-------------------'
+    [_v_] Magit status          [_m_] git-messenger
+    [_k_] Monky status
+    [_a_] vc-annotate           [_s_] stage file
+                                [_u_] unstage file
+                                [_b_] blame
+                                [_t_] timemachine
+
+  "
+    ("<tab>" hydra-master/body "back")
+
+    ("a" vc-annotate)
+
+    ;; If currently monky-blame-mode then quit it, else try to blame current
+    ;; file.  If no, check magit-blame-mode and either quit that or start
+    ;; magit-blame.
+    ("b" (lambda ()
+           (interactive)
+           (if (bound-and-true-p monky-blame-mode)
+               (monky-quit-window)
+             (progn
+               (if (deftpunk/catch-error-p 'monky-blame-current-file)
+                   (if (bound-and-true-p magit-blame-mode)
+                       (magit-blame-quit)
+                     (call-interactively 'magit-blame)))))))
+
+    ("k" monky-status)
+    ("m" git-messenger:popup-message)
+    ("s" magit-stage-file)
+    ("t" git-timemachine)
+    ("u" magit-unstage-file)
+    ("v" magit-status)
+
+    ("<ESC>" nil "quit")
+    )
+#+end_src
+**** hydra-window-sizing
+
+Resize windows dynamically
+
+#+begin_src emacs-lisp :name hydra-window-sizing
+    (defhydra hydra-window-sizing (:color blue)
+      "
+  .------------------,
+  | Window Re-sizing |
+  '------------------'--------------------------------------------------------------------.
+
+                         ^Enlarge Vertically^
+
+			     ^[_k_]^
+			      ^^↑^^
+
+   Shrink Horizontally [_h_] ←    → [_l_] Enlarge Horizontally
+
+                              ^^↓^^
+                             ^[_j_]^
+
+			Shrink Vertically
+    "
+      ("<tab>" hydra-windows/back "Back to windows")
+
+      ("h" (lambda ()
+             (interactive)
+             (shrink-window-horizontally 5)) :color pink)
+      ("j" (lambda ()
+             (interactive)
+             (shrink-window 5)) :color pink)
+      ("k" (lambda ()
+             (interactive)
+             (enlarge-window 5)) :color pink)
+      ("l" (lambda ()
+             (interactive)
+             (enlarge-window-horizontally 5)) :color pink)
+
+      ("<ESC>" nil "Quit"))
+#+end_src
+
+**** hydra-windows
+
+Hydra for window/frame control and movements.
+
+#+begin_src emacs-lisp :name hydra-windows
+    (defhydra hydra-windows (:color blue :hint nil)
+      "
+                                                                              ,-------------------.
+     Navigation               Movement                   Actions              | Window Management |
+  ,---------------------------------------------------------------------------'-------------------'
+       ^_k_^
+       ^^↑^^
+   _h_ ←   → _l_
+       ^^↓^^
+       ^_j_^
+
+       "
+       ("<tab>" hydra-master/back "Back to Main")
+
+       ;("a" yegge/swap-windows)
+       ("b" balance-windows  :exit t)
+      ("c" delete-window  :exit t)
+      ("d" ace-delete-window :exit t)
+      ("e" hydra-window-sizing/body)
+      ("i" ace-maximize-window)
+      ("h" windmove-left :color pink)
+      ("j" windmove-down :color pink)
+      ("k" windmove-up :color pink)
+      ("l" windmove-right :color pink)
+      ("n" scroll-other-window)
+      ("o" delete-other-windows  :exit t)
+      ("p" scroll-other-window-down)
+      ("r" winner-redo)
+      ("s" split-window-vertically  :exit t)
+      ("t" transpose-frame :exit t)
+      ("u" winner-undo)
+      ("v" split-window-horizontally  :exit t)
+      ("w" ace-window :exit t)
+      ("|" (lambda ()
+             (interactive)
+             (split-window-right)
+             (windmove-right)))
+      ("-" (lambda ()
+             (interactive)
+             (split-window-below)
+             (windmove-down)))
+      ("=" balance-windows)
+
+      ("<ESC>" nil "quit")
+      )
+#+end_src
+
+**** hydra-jk
+
+A Hydra for the jk keychord - see Keychord below for more information.
+
+#+begin_src emacs-lisp :name hydra-jk
+  (defhydra hydra-jk (:color blue :hint nil)
+    "
+                                                                                     ,----------------.
+                                                                                     | Master Blaster |
+  ,----------------------------------------------------------------------------------'----------------'
+
+  "
+    ("a" avy-goto-char-timer)
+    ;; ("b" )
+    ;; ("c" hydra-cee/body)
+    ;; ("d" hydra-delete-duplicate-mark-copy/body)
+    ;; ("e" deftpunk/hydra-major-mode-hack)
+    ("f" hydra-files-projectile/body)
+    ;; ("g" hydra-gee/body)
+    ;; ("h" )
+    ("i" helm-mini)
+    ;; ("j" )
+    ;; ("k" )
+    ("l" avy-goto-char-in-line)
+    ;; ("m" )
+    ;; ("n" hydra-toggle-stuff/body)
+    ;; ("o" )
+    ;; ("p" )
+    ("q" save-buffers-kill-terminal)
+    ;; ("r" )l
+    ("s" swiper)
+    ;; ("t" )
+    ;; ("u" )
+    ("v" hydra-version-control/body)
+    ("w" hydra-windows/body)
+    ("x" helm-M-x)
+    ;; ("y" )
+    ("z" zzz-up-to-char)
+
+    ("<ESC>" nil "Quit" :exit t)
+    )
+
+#+end_src
+
+*** key-chord
+
+[[https://www.emacswiki.org/emacs/key-chord.el][key-chord]] - Map pairs of simultaneously pressed keys to commands.
+
+#+begin_src emacs-lisp :name key-chord
+  (use-package key-chord
+    :init
+    (key-chord-mode 1)
+    (key-chord-define-global "jk" 'hydra-jk/body))
 #+end_src
