@@ -578,15 +578,111 @@ Automatically reload a file if its changed outside of Emacs.
           bookmark-save-flag 1))
 #+end_src
 
+*** debugger
+
+#+begin_src emacs-lisp :name debugger
+  ;; Hurray!  The debugger displays line numbers!!  Thank you
+  ;; https://github.com/wasamasa/dotemacs/blob/master/init.org
+  (with-eval-after-load 'debug
+    (defun debugger-setup-buffer (debugger-args)
+      "Initialize the `*Backtrace*' buffer for entry to the debugger.
+                            That buffer should be current already."
+      (setq buffer-read-only nil)
+      (erase-buffer)
+      (set-buffer-multibyte t)        ;Why was it nil ?  -stef
+      (setq buffer-undo-list t)
+      (let ((standard-output (current-buffer))
+            (print-escape-newlines t)
+            (print-level 8)
+            (print-length 50))
+        (backtrace))
+      (goto-char (point-min))
+      (delete-region (point)
+                     (progn
+                       (search-forward "\n  debug(")
+                       (forward-line (if (eq (car debugger-args) 'debug)
+                                         2    ; Remove implement-debug-on-entry frame.
+                                       1))
+                       (point)))
+      (insert "Debugger entered")
+      ;; lambda is for debug-on-call when a function call is next.
+      ;; debug is for debug-on-entry function called.
+      (pcase (car debugger-args)
+        ((or `lambda `debug)
+         (insert "--entering a function:\n"))
+        ;; Exiting a function.
+        (`exit
+         (insert "--returning value: ")
+         (setq debugger-value (nth 1 debugger-args))
+         (prin1 debugger-value (current-buffer))
+         (insert ?\n)
+         (delete-char 1)
+         (insert ? )
+         (beginning-of-line))
+        ;; Debugger entered for an error.
+        (`error
+         (insert "--Lisp error: ")
+         (prin1 (nth 1 debugger-args) (current-buffer))
+         (insert ?\n))
+        ;; debug-on-call, when the next thing is an eval.
+        (`t
+         (insert "--beginning evaluation of function call form:\n"))
+        ;; User calls debug directly.
+        (_
+         (insert ": ")
+         (prin1 (if (eq (car debugger-args) 'nil)
+                    (cdr debugger-args) debugger-args)
+                (current-buffer))
+         (insert ?\n)))
+      ;; After any frame that uses eval-buffer,
+      ;; insert a line that states the buffer position it's reading at.
+      (save-excursion
+        (let ((tem eval-buffer-list))
+          (while (and tem
+                      (re-search-forward "^  eval-\\(buffer\\|region\\)(" nil t))
+            (beginning-of-line)
+            (insert (format "Error at line %d in %s: "
+                            (with-current-buffer (car tem)
+                              (line-number-at-pos (point)))
+                            (with-current-buffer (car tem)
+                              (buffer-name))))
+            (pop tem))))
+      (debugger-make-xrefs)))
+#+end_src
+
+*** ediff
+
+I really like ediff but I want the split to be vertical not horizontal -
+perversly, in Emacs, "horizontal" is vertical everywhere else.
+
+[[https://coderwall.com/p/mcrwag/use-magit-ediff-to-resolve-merge-conflicts][magit + ediff]] - Use the two together to resolve merge conflicts.
+
+#+begin_src emacs-lisp :name ediff
+  (use-package ediff
+    :defer t
+    :init
+    (setq ediff-split-window-function 'split-window-horizontally
+          ediff-use-long-help-message 1
+          ediff-diff-options "-w"
+
+          ;; This makes the control panel show up inside the original frame.
+          ediff-window-setup-function 'ediff-setup-windows-plain)
+    :config
+    (add-hook 'ediff-after-quit-hook-internal 'winner-undo))
+#+end_src
+
 *** saveplace
 
 Save our position between sessions
 
 #+begin_src emacs-lisp :name saveplace
-(use-package saveplace
-  :init
-  (setq-default save-place t)
-  (setq save-place-file (expand-file-name "savedplaces" deftmacs-crumbs-directory)))
+  (use-package saveplace
+    :init
+    ;; Keep Emacs from being slow to exit after enabling saveplace.
+    (setq save-place-forget-unreadable-files nil)
+    (setq save-place-file (expand-file-name "savedplaces" deftmacs-crumbs-directory))
+    :config
+    (save-place-mode 1))
 #+end_src
 
 *** whitespace
@@ -1422,7 +1518,7 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
 
     ;; Turn off for some modes
     ;; Turns off for *scratch* buffer.
-    (setq flycheck-global-modes '(not lisp-interaction-mode))
+    (setq flycheck-global-modes '(not lisp-interaction-mode org-mode))
 
     ;; Turn on everywhere else.
     (add-hook 'after-init-hook #'global-flycheck-mode)
