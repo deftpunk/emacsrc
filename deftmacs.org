@@ -541,7 +541,7 @@ That other religious war - tabs and spaces - I am on team spaces.
 
 ** Emacs minor modes
 
-Configuration for Emacs minor modes.
+Configuration for Emacs minor modes that come with Emacs.
 
 *** abbreviations
 
@@ -670,6 +670,117 @@ perversly, in Emacs, "horizontal" is vertical everywhere else.
     :config
     (add-hook 'ediff-after-quit-hook-internal 'winner-undo))
 #+end_src
+
+*** ediff
+
+I really like ediff but I want the split to be vertical not horizontal -
+perversly, in Emacs, "horizontal" is vertical everywhere else.
+
+[[https://coderwall.com/p/mcrwag/use-magit-ediff-to-resolve-merge-conflicts][magit + ediff]] - Use the two together to resolve merge conflicts.
+
+#+begin_src emacs-lisp :name ediff
+  (use-package ediff
+    :defer t
+    :init
+    (setq ediff-split-window-function 'split-window-horizontally
+          ediff-use-long-help-message 1
+          ediff-diff-options "-w"
+
+          ;; This makes the control panel show up inside the original frame.
+          ediff-window-setup-function 'ediff-setup-windows-plain)
+    :config
+    (add-hook 'ediff-after-quit-hook-internal 'winner-undo))
+#+end_src
+
+*** eldoc
+
+minibuffer hints when working with emacs lisp.
+
+#+begin_src emacs-lisp :name eldoc
+  (use-package "eldoc"
+    :diminish eldoc-mode
+    :commands turn-on-eldoc-mode
+    :defer t
+    :init
+    (setq eldoc-idle-delay 0.1))
+#+end_src
+
+*** eww
+
+[[https://www.gnu.org/software/emacs/manual/html_node/eww/index.html#Top][Emacs Web Wowser]] - The Emacs web browser
+
+#+begin_src emacs-lisp :name eww
+  (use-package eww
+    :defer t
+    :config
+    (define-key eww-mode-map "o" 'eww)
+    (define-key eww-mode-map "O" 'eww-browse-with-external-browser)
+
+    ;; https://github.com/m00natic/eww-lnum
+    (use-package eww-lnum
+      :defer t
+      :init
+      (eval-after-load "eww"
+        '(progn
+           (define-key eww-mode-map "f" 'eww-lnum-follow)
+           (define-key eww-mode-map "F" 'eww-lnum-universal)))))
+#+end_src
+
+*** finder
+
+Adds a neat way to look at just the Commentary section - http://irreal.org/blog/?p=6248
+
+#+begin_src emacs-lisp :name finder
+  (use-package finder
+    :bind (
+           :map help-mode-map
+           ("C-c" . finder-commentary)
+           ("C-l" . find-library)))
+#+end_src
+
+*** Help Mode
+
+Some packages and utilities to help with Help Mode
+
+**** help+
+
+[[https://www.emacswiki.org/emacs/help+.el][help+]]
+
+The following bindings are made here:
+
+   `C-h u'      `manual-entry'
+   `C-h C-a'    `apropos'
+   `C-h C-l'    `locate-library'
+   `C-h RET'    `help-on-click/key'
+   `C-h M-a'    `apropos-documentation'
+   `C-h M-o'    `pop-to-help-toggle'
+   `C-h C-M-a'  `tags-apropos'
+   [mouse-1]    `mouse-help-on-click' (non-mode-line)
+   [mouse-1]    `mouse-help-on-mode-line-click' (mode-line)
+
+#+begin_src emacs-lisp :name help-plus
+  (use-package help+)
+#+end_src
+
+**** help-fns
+
+[[https://www.emacswiki.org/emacs/help-fns+.el][help-fns]]
+
+Keys bound here:
+
+   `C-h B'      `describe-buffer'
+   `C-h c'      `describe-command'     (replaces `describe-key-briefly')
+   `C-h o'      `describe-option'
+   `C-h C-c'    `describe-key-briefly' (replaces `C-h c')
+   `C-h C-o'    `describe-option-of-type'
+   `C-h M-c'    `describe-copying'     (replaces `C-h C-c')
+   `C-h M-f'    `describe-file'
+   `C-h M-k'    `describe-keymap'
+   `C-h M-l'    `find-function-on-key'
+
+   #+begin_src emacs-lisp :name help-fns
+     (use-package help-fns+)
+   #+end_src
 
 *** midnight
 
@@ -1592,7 +1703,6 @@ Borrowed from Sacha Chau who borrowed it from Steve Purcell.
 ;; elisp-slime-nav-find-elisp-thing-at-point
 ;; elisp-slime-nav-describe-thing-at-point
 (use-package elisp-slime-nav
-  :ensure t
   :defer t
   :diminish elisp-slime-nav-mode
   :config
@@ -1661,7 +1771,6 @@ Comma (or other delimiter) separated files.
 
 #+begin_src emacs-lisp :name csv
 (use-package csv-nav
-  :ensure t
   :defer t
   :mode ("\\.[Cc][Ss][Vv]\\'" . csv-mode)
   :init
@@ -1676,7 +1785,6 @@ Comma (or other delimiter) separated files.
 
 #+begin_src emacs-lisp :name markdown
   (use-package markdown-mode
-    :ensure t
     :commands (markdown-mode gfm-mode)
     :mode (("README\\.md\\'" . gfm-mode)
            ("\\.md\\'"       . markdown-mode)
@@ -1695,8 +1803,7 @@ can, for example, write your text in Markdown and then translate it to HTML for 
 reading, PDF for offline reading and Texinfo for reading in Emacs
 
 #+begin_src emacs-lisp :name Pandoc
-  (use-package pandoc-mode
-    :ensure t)
+  (use-package pandoc-mode)
 #+end_src
 
 [[https://github.com/blak3mill3r/vmd-mode][vmd-mode]] - Fast Github-flavored Markdown previews synchronized with changes to an
@@ -1706,8 +1813,7 @@ Dependencies: Node.js & vmd
 [[https://github.com/yoshuawuyts/vmd][vmd]] - can be installed with ```npm install -g vmd```
 
 #+begin_src emacs-lisp :name vmd-mode
-  (use-package vmd-mode
-    :ensure t)
+  (use-package vmd-mode)
 #+end_src
 
 *** Salt mode
@@ -1715,8 +1821,7 @@ Dependencies: Node.js & vmd
 [[https://github.com/glynnforrest/salt-mode][salt-mode]] - Mode for editing Salt states
 
 #+begin_src emacs-lisp :name salt-mode
-  (use-package salt-mode
-    :ensure t)
+  (use-package salt-mode)
 #+end_src
 
 *** SQL Mode
@@ -1749,7 +1854,6 @@ Json mode
 
 #+begin_src emacs-lisp :name json-mode
   (use-package json-mode
-    :ensure t
     :defer t
     :diminish json-mode)
 #+end_src
@@ -1758,7 +1862,6 @@ YAML mode
 
 #+begin_src emacs-lisp :name yaml-mode
   (use-package yaml-mode
-    :ensure t
     :mode ("\\.yml$" "\\.sls$")
     :diminish yaml-mode
     :config
