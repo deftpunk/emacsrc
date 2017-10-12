@@ -671,6 +671,14 @@ perversly, in Emacs, "horizontal" is vertical everywhere else.
     (add-hook 'ediff-after-quit-hook-internal 'winner-undo))
 #+end_src
 
+*** midnight
+
+Clean up obsolete buffers.
+
+#+begin_src emacs-lisp :name midnight
+  (use-package midnight)
+#+end_src
+
 *** saveplace
 
 Save our position between sessions
@@ -1554,6 +1562,93 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
 #+end_src
 
 ** Software Engineering
+*** Emacs Lisp
+**** Settings
+
+#+begin_src emacs-lisp :name Elisp Settings
+  ; (add-hook 'emacs-lisp-mode-hook 'comment-auto-fill)
+#+end_src
+
+**** Evaluation
+
+Borrowed from Sacha Chau who borrowed it from Steve Purcell.
+
+#+begin_src emacs-lisp :name emacs-lisp-evaluation
+  (defun sanityinc/eval-last-sexp-or-region (prefix)
+    "Eval region from BEG to END if active, otherwise the last sexp."
+    (interactive "P")
+    (if (and (mark) (use-region-p))
+        (eval-region (min (point) (mark)) (max (point) (mark)))
+      (pp-eval-last-sexp prefix)))
+
+  (bind-key "C-x C-e" 'sanityinc/eval-last-sexp-or-region emacs-lisp-mode-map)
+#+end_src
+
+**** elisp-slime-nav
+
+[[https://github.com/purcell/elisp-slime-nav][elisp-slime-nav]] - Slime-style navigation of Emacs Lisp source.
+
+#+begin_src emacs-lisp :name elisp-slime-nav
+;; elisp-slime-nav-find-elisp-thing-at-point
+;; elisp-slime-nav-describe-thing-at-point
+(use-package elisp-slime-nav
+  :ensure t
+  :defer t
+  :diminish elisp-slime-nav-mode
+  :config
+  (dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook lisp-interaction-mode-hook))
+    (add-hook hook 'elisp-slime-nav-mode)))
+#+end_src
+
+**** eval-sexp-fu
+
+Flash the region that is evaluated (visual feedback) in elisp.
+
+#+begin_src emacs-lisp :name eval-sexp-fu
+  (use-package eval-sexp-fu
+    :load-path "~/tmp/eval-sexp-fu.el"
+    :init
+    (setq eval-sexp-fu-flash-duration 0.4)
+    :config
+    (turn-on-eval-sexp-fu-flash-mode))
+#+end_src
+
+**** eldoc
+
+#+begin_src emacs-lisp :name eldoc
+(use-package "eldoc"
+  :diminish eldoc-mode
+  :commands turn-on-eldoc-mode
+  :init
+  (progn
+    (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)))
+#+end_src
+
+**** ielm
+
+REPL for elisp
+
+#+begin_src emacs-lisp :name ielm
+  (setq ielm-noisy nil)
+
+  ;; Attribution - https://masteringemacs.org/article/evaluating-elisp-emacs
+  ;; (defun ielm-auto-complete ()
+  ;;   "Enables `auto-complete' support in \\[ielm]."
+  ;;   (setq ac-sources '(ac-source-functions
+  ;;                      ac-source-variables
+  ;;                      ac-source-features
+  ;;                      ac-source-symbols
+  ;;                      ac-source-words-in-same-mode-buffers))
+  ;;   (add-to-list 'ac-modes 'inferior-emacs-lisp-mode)
+  ;;   (auto-complete-mode 1))
+  ;; (add-hook 'ielm-mode-hook 'ielm-auto-complete)
+
+  (use-package ielm
+    :config (add-hook 'ielm-mode-hook '(lambda ()
+                                         (smartparens-mode 1)
+                                         (eldoc-mode 1))))
+#+end_src
 
 *** Golang
 
