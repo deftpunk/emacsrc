@@ -1655,6 +1655,119 @@ REPL for elisp
 *** Python
 
 ** Various file types
+*** csv
+
+Comma (or other delimiter) separated files.
+
+#+begin_src emacs-lisp :name csv
+(use-package csv-nav
+  :ensure t
+  :defer t
+  :mode ("\\.[Cc][Ss][Vv]\\'" . csv-mode)
+  :init
+  (progn
+    (use-package csv-mode)
+    (setq csv-separators '("," ";" "|" " "))))
+#+end_src
+
+*** Mardown mode
+
+[[http://jblevins.org/projects/markdown-mode/][Markdown Mode]] - Major mode for editing [[http://daringfireball.net/projects/markdown/][Markdown]] formatted text.
+
+#+begin_src emacs-lisp :name markdown
+  (use-package markdown-mode
+    :ensure t
+    :commands (markdown-mode gfm-mode)
+    :mode (("README\\.md\\'" . gfm-mode)
+           ("\\.md\\'"       . markdown-mode)
+           ("\\.markdown\\'" . markdown-mode))
+    :init (setq markdown-command "multimarkdown"))
+
+  (smartparens-mode -1)
+
+  (setq-local helm-dash-docsets '("Markdown"))
+#+end_src
+
+[[http://joostkremers.github.io/pandoc-mode/][Pandoc]] - Convert text written in one markup language into another markup language.
+
+It is possible to create different output profiles for a single input file, so that you
+can, for example, write your text in Markdown and then translate it to HTML for online
+reading, PDF for offline reading and Texinfo for reading in Emacs
+
+#+begin_src emacs-lisp :name Pandoc
+  (use-package pandoc-mode
+    :ensure t)
+#+end_src
+
+[[https://github.com/blak3mill3r/vmd-mode][vmd-mode]] - Fast Github-flavored Markdown previews synchronized with changes to an
+           emacs buffer (no need to save).
+Dependencies: Node.js & vmd
+
+[[https://github.com/yoshuawuyts/vmd][vmd]] - can be installed with ```npm install -g vmd```
+
+#+begin_src emacs-lisp :name vmd-mode
+  (use-package vmd-mode
+    :ensure t)
+#+end_src
+
+*** Salt mode
+
+[[https://github.com/glynnforrest/salt-mode][salt-mode]] - Mode for editing Salt states
+
+#+begin_src emacs-lisp :name salt-mode
+  (use-package salt-mode
+    :ensure t)
+#+end_src
+
+*** SQL Mode
+
+The interactive SQL mode is based on ComintMode. The following interpreters are supported:
+
+    psql by PostgreSQL
+    mysql by MySQL
+    sqlite or sqlite3 for SQLite
+
+    #+begin_src emacs-lisp :name sql-mode
+      (add-to-list 'same-window-buffer-names "*SQL*")
+
+      (add-hook 'sql-interactive-mode-hook
+                (lambda ()
+                  (toggle-truncate-lines t)))
+    #+end_src
+
+*** Text mode
+
+#+begin_src emacs-lisp :name text mode
+  (add-hook 'text-mode-hook '(lambda ()
+                               (auto-fill-mode 1)
+                               (setq word-wrap 1)))
+#+end_src
+
+*** Yaml & Json
+
+Json mode
+
+#+begin_src emacs-lisp :name json-mode
+  (use-package json-mode
+    :ensure t
+    :defer t
+    :diminish json-mode)
+#+end_src
+
+YAML mode
+
+#+begin_src emacs-lisp :name yaml-mode
+  (use-package yaml-mode
+    :ensure t
+    :mode ("\\.yml$" "\\.sls$")
+    :diminish yaml-mode
+    :config
+    (with-eval-after-load 'yaml-mode
+      '(define-key yaml-mode-map (kbd "C-j""") nil))
+    (add-hook 'yaml-mode-hook
+              (lambda ()
+                (setq-local eclectric-indent-mode nil))))
+#+end_src
 
 ** Keybindings
 *** Ctrl/Alt/Super
