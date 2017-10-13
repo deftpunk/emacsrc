@@ -671,27 +671,6 @@ perversly, in Emacs, "horizontal" is vertical everywhere else.
     (add-hook 'ediff-after-quit-hook-internal 'winner-undo))
 #+end_src
 
-*** ediff
-
-I really like ediff but I want the split to be vertical not horizontal -
-perversly, in Emacs, "horizontal" is vertical everywhere else.
-
-[[https://coderwall.com/p/mcrwag/use-magit-ediff-to-resolve-merge-conflicts][magit + ediff]] - Use the two together to resolve merge conflicts.
-
-#+begin_src emacs-lisp :name ediff
-  (use-package ediff
-    :defer t
-    :init
-    (setq ediff-split-window-function 'split-window-horizontally
-          ediff-use-long-help-message 1
-          ediff-diff-options "-w"
-
-          ;; This makes the control panel show up inside the original frame.
-          ediff-window-setup-function 'ediff-setup-windows-plain)
-    :config
-    (add-hook 'ediff-after-quit-hook-internal 'winner-undo))
-#+end_src
-
 *** eldoc
 
 minibuffer hints when working with emacs lisp.
@@ -1557,6 +1536,40 @@ Emacs sessions by saving the state to and restoring it from a file.
     (setq rainbow-x-colors nil))
 #+end_src
 
+*** smartparens
+
+[[https://github.com/Fuco1/smartparens][smartparens]] - deals with parens pairs and tries to be smart about it.
+
+A [[https://ebzzry.github.io/emacs-pairs.html][great article]] showing how to use it effectively, extensive documentation
+in the [[https://github.com/Fuco1/smartparens/wiki][wiki]] and a [[https://www.reddit.com/r/emacs/comments/38k1j5/paredit_smartparens_autopair/][reddit article]] with comparisons to autopair, paredit & lispy.
+
+#+begin_src emacs-lisp :name smartparens
+  (use-package smartparens
+    :ensure t
+    :diminish smartparens-mode
+    :config
+    ;; Handle single quotes and apostrophes correctly in lisp like languages.
+    ;; From https://github.com/Fuco1/smartparens/issues/286
+    (sp-with-modes sp-lisp-modes
+      ;; disable ', it's the quote character!
+      (sp-local-pair "'" nil :actions nil)
+      ;; also only use the pseudo-quote inside strings where it serve as
+      ;; hyperlink.
+      (sp-local-pair "`" "'" :when '(sp-in-string-p sp-in-comment-p))
+      (sp-local-pair "`" nil
+                     :skip-match (lambda (ms mb me)
+                                   (cond
+                                    ((equal ms "'")
+                                     (or (sp--org-skip-markup ms mb me)
+                                         (not (sp-point-in-string-or-comment))))
+                                    (t (not (sp-point-in-string-or-comment)))))))
+
+    (show-smartparens-global-mode t))
+
+  (add-hook 'prog-mode-hook 'turn-on-smartparens-strict-mode)
+  (add-hook 'markdown-mode-hook 'turn-on-smartparens-strict-mode)
+#+end_src
+
 *** Undo Tree
 
 [[https://www.emacswiki.org/emacs/UndoTree][Undo Tree]] - Make undo something more like the undo/redo you get in other
@@ -1710,7 +1723,9 @@ Borrowed from Sacha Chau who borrowed it from Steve Purcell.
     (add-hook hook 'elisp-slime-nav-mode)))
 #+end_src
 
-**** eval-sexp-fu
+**** CANCELED eval-sexp-fu
+
+Thu Oct 12 19:34:50 2017 - canceled because it has some deprecation issues.
 
 Flash the region that is evaluated (visual feedback) in elisp.
 
