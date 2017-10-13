@@ -650,6 +650,29 @@ Automatically reload a file if its changed outside of Emacs.
       (debugger-make-xrefs)))
 #+end_src
 
+*** Dired
+
+Directory listing in Emacs.
+
+#+begin_src emacs-lisp :name Dired
+  (use-package dired
+    :init
+    ;; Omit the . and .. files.
+    (setq-default dired-omit-mode t)
+    (setq-default dired-omit-verbose nil)
+    (setq-default dired-omit-files "^\\.$\\|^\\.\\.$")
+
+    ;; Use gls on a Mac
+    (when *is-a-mac*
+      (if (executable-find "gls")
+          (progn
+            (setq insert-directory-program "gls")
+            (setq dired-listing-switches "-lFaGh1v --group-directories-first"))
+        (setq dired-listing-switches "-ahlF")))
+
+)
+#+end_src
+
 *** ediff
 
 I really like ediff but I want the split to be vertical not horizontal -
@@ -760,6 +783,25 @@ Keys bound here:
    #+begin_src emacs-lisp :name help-fns
      (use-package help-fns+)
    #+end_src
+*** info
+
+Do some fancy things with Info docs.  The "o" character in the Info mode map
+triggers ace-link.
+
+#+begin_src emacs-lisp :name Info
+  (use-package info
+    :bind (:map Info-mode-map
+                ("h" . backward-char)
+                ("l" . forward-char)
+                ("g" . beginning-of-buffer)
+                ("G" . end-of-buffer)
+                ("j" . next-line)
+                ("k" . previous-line)
+                ("a" . beginning-of-line)
+                ("e" . end-of-line)
+                ("]" . ora-para-down)
+                ("[" . ora-para-up)))
+#+end_src
 
 *** midnight
 
@@ -2287,10 +2329,14 @@ A hydra for Org mode
                                                                           .-----------.
                                                                           |  Org Mode |
     ,---------------------------------------------------------------------'-----------'
+    [_e_] Mark element
     [_h_] Helm buffer headings
+    [_s_] Mark subtree
     [_o_] Ace link
   "
+    ("e" org-mark-element)
     ("h" helm-org-in-buffer-headings)
+    ("s" org-mark-subtree)
     ("o" ace-link-org)
     ("<ESC>" nil "Quit" :exit t))
 #+end_src
