@@ -783,6 +783,49 @@ Save our position between sessions
     (save-place-mode 1))
 #+end_src
 
+*** size-inidication-mode
+
+Show the file size.
+
+#+begin_src emacs-lisp :name size-indication-mode
+  (size-indication-mode t)
+  (diminish 'size-indication-mode)
+#+end_src
+*** Tramp
+
+Transparent Remote (file) Access (where's the M) Protocol - SSH in Emacs.
+
+#+begin_src emacs-lisp :name Tramp
+  (use-package tramp
+    :defer t
+    :init
+    (setq tramp-default-user "ebodine"
+          ;; If Tramp makes backup files, keep them locally instead of remotely
+          tramp-backup-directory-alist backup-directory-alist)
+    :config
+    (progn
+      (setq tramp-default-user-alist '(("\\`su\\(do\\)?\\'" nil "root"))
+            ;; use the settings in ~/.ssh/config instead of Tramp's
+            tramp-use-ssh-controlmaster-options nil
+            backup-enable-predicate (lambda (name)
+                                      (and (normal-backup-enable-predicate name)
+                                           (not (let ((method (file-remote-p name 'method)))
+                                                  (when (stringp method)
+                                                    (member method '("su" "sudo"))))))))
+
+      (use-package tramp-sh
+        :config
+        (progn
+          (add-to-list 'tramp-remote-path "/usr/local/bin")
+          (add-to-list 'tramp-remote-path "/usr/local/sbin")
+          (add-to-list 'tramp-remote-path "/opt/java/current/bin")
+          (add-to-list 'tramp-remote-path "~/bin")))))
+
+  ;; As usual I want to fix up the file it’s storing its history in.
+  (with-eval-after-load 'tramp-cache
+    (setq tramp-persistency-file-name (expand-file-name "tramp" deftmacs-crumbs-directory)))
+#+end_src
+
 *** whitespace
 
 Manage and show whitespace.
@@ -1198,12 +1241,17 @@ find files & buffers in projectile with a good explanation [[http://tuhdo.github
   ;; (setq company-auto-complete nil)
 
       :config
+      (use-package helm-company)
+      (bind-keys :map company-mode-map
+                 ("C-;" . helm-company))
+
       (bind-keys :map company-active-map
                  ("M-n" . nil)
                  ("M-p" . nil)
                  ([tab] . company-complete)
                  ("C-n" . company-select-next)
                  ("C-p" . company-select-previous)
+                 ("C-;" . helm-company)
                  )
       (global-company-mode))
 #+end_src
@@ -1897,30 +1945,44 @@ We get bind-keys for "free" with the install of use-package.
   (global-set-key (kbd "C-a") 'crux-move-beginning-of-line)
 
   ;; d
-  (global-set-key (kbd "s-d") 'crux-kill-whole-line)
+  (defun deftpunk/kill-current-buffer ()
+    (interactive)
+    (kill-buffer (current-buffer)))
+
+  (global-unset-key (kbd "s-d"))
+  (bind-keys :map global-map
+             :prefix "s-d"
+             :prefix-map super-d-map
+             ("d" . crux-kill-whole-line)
+             ("k" . deftpunk/kill-current-buffer)
+             ("l" . deftmacs/copy-current-line-or-region)
+             ("s-d" . crux-kill-whole-line)
+             ("s-k" . deftpunk/kill-current-buffer)
+             ("s-l" . deftmacs/copy-current-line-or-region)
+             )
+
+  ;; f
+  (global-unset-key (kbd "s-f"))
+  (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
+
+  ;; h
+  (global-unset-key (kbd "s-h"))
+  (global-set-key (kbd "s-h") 'windmove-left)
 
   ;;i
   (global-set-key (kbd "s-i") 'helm-mini)
 
   ;; j
+  (global-unset-key (kbd "s-j"))
+  (global-set-key (kbd "s-j") 'windmove-down)
 
   ;; k
   (global-unset-key (kbd "s-k"))
-  (bind-keys :map global-map
-         :prefix "s-k"
-         :prefix-map super-k-map
-         ("d" . crux-kill-whole-line)
-         ("k" . kill-buffer)
-         ("s-d" . crux-kill-whole-line)
-         ("s-k" . kill-buffer))
+  (global-set-key (kbd "s-k") 'windmove-up)
 
   ;; l
   (global-unset-key (kbd "s-l"))
-  (bind-keys :map global-map
-         :prefix "s-l"
-         :prefix-map super-l-map
-         ("f" . avy-goto-char-in-line)
-         ("l" . deftmacs/copy-current-line-or-region))
+  (global-set-key (kbd "s-l") 'windmove-right)
 
   ;; o
   (global-unset-key (kbd "C-o"))
