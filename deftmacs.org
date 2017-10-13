@@ -826,6 +826,15 @@ Transparent Remote (file) Access (where's the M) Protocol - SSH in Emacs.
     (setq tramp-persistency-file-name (expand-file-name "tramp" deftmacs-crumbs-directory)))
 #+end_src
 
+*** visual-line-mode
+
+"Soft" wrapping of lines
+
+#+begin_src emacs-lisp :name visual-line-mode
+;; Little arrows in the fringe.
+(setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
+#+end_src
+
 *** whitespace
 
 Manage and show whitespace.
