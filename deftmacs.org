@@ -673,6 +673,39 @@ Directory listing in Emacs.
 )
 #+end_src
 
+**** WDired
+
+Writeable Dired - Edit a Dired buffer just like any other bother using a binding.
+
+Mastering Emacs has a good article on its configuration and usage - [[https://masteringemacs.org/article/wdired-editable-dired-buffers][WDired]]
+
+#+begin_src emacs-lisp :name wdired
+  (use-package wdired
+    :init
+    (setq wdired-allow-to-change-permissions t
+          wdired-use-interactive-rename t
+          wdired-confirm-overwrite t
+          wdired-use-dired-vertical-movement t))
+#+end_src
+
+**** peep-dired
+
+[[https://github.com/asok/peep-dired][peep-dired]] - Preview files from dired.
+
+#+begin_src emacs-lisp :name peep-dired
+  (use-package peep-dired
+    :ensure t
+    :defer t
+    :bind (:map dired-mode-map
+                ("P" . peep-dired))
+    :init
+    (setq peep-dired-cleanup-on-disable t
+          peep-dired-cleanup-eagerly t
+          peep-dired-enable-on-directories t
+          peep-dired-ignored-extensions '("mkv" "iso" "mp4" "pyc")))
+#+end_src
+
+
 *** ediff
 
 I really like ediff but I want the split to be vertical not horizontal -
@@ -1792,8 +1825,7 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
 
 **** cl-lib highlighting
 
-[[https://github.com/skeeto/cl-lib-highlight][cl-lib-highlight]] - Syntax highlighting for cl-lib
-=cl-loop=, =cl-defun=, =cl-defstruct= and the like get highlighted
+[[https://github.com/skeeto/cl-lib-highlight][cl-lib-highlight]] - Syntax highlighting for cl-lib, so that =cl-loop=, =cl-defun=, =cl-defstruct= and the like get highlighted
 
 #+begin_src emacs-lisp :name cl-lib highlighting
   (use-package cl-lib-highlight
@@ -1803,7 +1835,8 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
 
 **** Evaluation
 
-Borrowed from Sacha Chau who borrowed it from Steve Purcell.
+Borrowed from Sacha Chau who borrowed it from Steve Purcell - change
+=C-x C-e= to evaluate regions as well as last sexp.
 
 #+begin_src emacs-lisp :name emacs-lisp-evaluation
   (defun sanityinc/eval-last-sexp-or-region (prefix)
