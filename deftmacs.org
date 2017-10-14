@@ -912,6 +912,9 @@ original split layout back.
 
 ** Highlighting
 
+Non mode or file type specific highlighting, e.g. numbers, current
+line, etc.
+
 *** beacon
 
 [[https://github.com/Malabarba/beacon][Never lose your cursor again]]
@@ -1786,10 +1789,16 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
 
 ** Software Engineering
 *** Emacs Lisp
-**** Settings
 
-#+begin_src emacs-lisp :name Elisp Settings
-  ; (add-hook 'emacs-lisp-mode-hook 'comment-auto-fill)
+**** cl-lib highlighting
+
+[[https://github.com/skeeto/cl-lib-highlight][cl-lib-highlight]] - Syntax highlighting for cl-lib
+=cl-loop=, =cl-defun=, =cl-defstruct= and the like get highlighted
+
+#+begin_src emacs-lisp :name cl-lib highlighting
+  (use-package cl-lib-highlight
+    :config
+    (cl-lib-highlight-initialize))
 #+end_src
 
 **** Evaluation
