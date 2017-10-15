@@ -673,6 +673,18 @@ Directory listing in Emacs.
 )
 #+end_src
 
+**** dired-subtree
+
+[[https://github.com/Fuco1/dired-hacks#dired-subtree][dired-subtree]] - Show subtree under directory in dired
+
+#+begin_src emacs-lisp :name dired-subtree
+(use-package dired-subtree
+  :config
+  (bind-keys :map dired-mode-map
+             ("i" . dired-subtree-insert)
+             (";" . dired-subtree-remove)))
+#+end_src
+
 **** WDired
 
 Writeable Dired - Edit a Dired buffer just like any other bother using a binding.
@@ -1768,6 +1780,15 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
 
 ** Software Engineering Utilities
 
+*** aggressive-indent-mode
+
+[[https://github.com/Malabarba/aggressive-indent-mode][aggressive-indent-mode]] - keep your code nicely aligned while you type.
+
+#+begin_src emacs-lisp :name aggressive-indent-mode
+  (use-package aggressive-indent-mode
+    :defer t)
+#+end_src
+
 *** flycheck
 
 [[http://www.flycheck.org/en/latest/][flycheck]] - on the fly syntax checking
@@ -1821,7 +1842,103 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
 #+end_src
 
 ** Software Engineering
+*** Clojure
+
+**** clojure-mode
+
+[[https://github.com/clojure-emacs/clojure-mode/][clojure-mode]] - Emacs support for the Clojure[Script] programming language.
+
+#+begin_src emacs-lisp :name clojure-mode
+      (use-package clojure-mode
+        :defer t
+        :config
+
+        (defun deftpunk-clojure-hook ()
+          (interactive)
+          (setq-local helm-dash-docsets '("Clojure")
+                      comment-auto-fill-only-comments t)
+          (smartparens-strict-mode))
+
+        (add-hook 'clojure-mode-hook 'deftpunk-clojure-hook)
+        (add-hook 'clojure-mode-hook #'aggressive-indent-mode))
+#+end_src
+
+**** cider
+
+[[https://github.com/clojure-emacs/cider][Cider]] - The Clojure Interactive Development Environment - [[https://cider.readthedocs.io/en/latest/][readthedocs]]
+
+#+begin_src emacs-lisp :name cider
+      (use-package cider
+        :ensure cider
+        :init
+        (setq cider-history-file           "~/.nrepl-history"
+              cider-stacktrace-default-filters '(tooling dup)
+              cider-repl-pop-to-buffer-on-connect nil
+              cider-hide-special-buffers   t
+              cider-popup-stacktraces-in-repl t
+              cider-repl-popup-stacktraces t
+              cider-auto-select-error-buffer t
+              cider-repl-history-size      10000
+              cider-prompt-save-file-on-load nil
+              cider-repl-use-clojure-font-lock t
+              cider-prefer-local-resources t)
+        :config
+        (defun deftpunk-cider-hook ()
+          (interactive)
+          (rainbow-delimiters-mode)
+          (subword-mode))
+
+        (setq cider-repl-display-help-banner nil)
+
+        (add-hook 'cider-mode-hook 'deftpunk-cider-hook)
+        (add-hook 'cider-repl-mode-hook #'smartparens-strict-mode)
+
+        (defun deftpunk-clojure-hook ()
+          (interactive)
+          (setq-local helm-dash-docsets '("Clojure")
+                      comment-auto-fill-only-comments t)
+          (smartparens-strict-mode))
+
+        (add-hook 'clojure-mode-hook 'deftpunk-clojure-hook)
+
+        ;; Manage Cider (clojure) buffers using popwin.
+        (push '("*cider-error*" :dedicated t :position bottom :stick t :noselect nil :height 0.4)
+              popwin:special-display-config)
+        (push '("*cider-doc*" :dedicated t :position bottom :stick t :noselect nil :height 0.4)
+              popwin:special-display-config))
+#+end_src
+
+**** clj-refactor
+
+[[https://github.com/clojure-emacs/clj-refactor.el][clj-refactor.el]] - Provides refactoring suport for Clojure projects.
+
+#+begin_src emacs-lisp :name clj-refactor
+  (defun deftpunk/clj-refactor-hook ()
+    (interactive)
+    (clj-refactor-mode 1)
+    (yas-minor-mode 1))
+
+  (use-package clj-refactor
+    :defer t
+    :config
+    (add-hook 'clojure-mode-hook 'deftpunk/clj-refactor-hook))
+#+end_src
+
+**** clojure-snippets
+
+[[https://github.com/mpenet/clojure-snippets][clojure-snippets]] - yasnippet 0.7.0+ snippets for clojure
+
+#+begin_src emacs-lisp :name clojure-snippets
+  (use-package clojure-snippets
+    :defer t)
+#+end_src
+
 *** Emacs Lisp
+**** Settings
+
+#+begin_src emacs-lisp :name emacs-lisp-settings
+  (add-hook 'emacs-lisp-mode-hook #'aggressive-mode-hook)
+#+end_src
 
 **** cl-lib highlighting
 
