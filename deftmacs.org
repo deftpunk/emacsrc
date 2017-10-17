@@ -2052,6 +2052,16 @@ Comma (or other delimiter) separated files.
     (setq csv-separators '("," ";" "|" " "))))
 #+end_src
 
+*** Docker file mode
+
+[[https://github.com/spotify/dockerfile-mode][dockerfile-mode]] for editing Docker files
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dockerfile-mode
+    :ensure t
+    :config (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
+#+END_SRC
+
 *** Mardown mode
 
 [[http://jblevins.org/projects/markdown-mode/][Markdown Mode]] - Major mode for editing [[http://daringfireball.net/projects/markdown/][Markdown]] formatted text.
@@ -2281,7 +2291,7 @@ keys will be highlighted with the appropriate color.
   _a_ Ag                                             _m_ Go to *Messages*     _s_ Go to *scratch*
 
   _c_ Clear Projectile Cache
-
+                                                     _p_ Switch Projects
                                 _k_ Kill Buffer
   _f_ Find Files
 
@@ -2303,6 +2313,7 @@ keys will be highlighted with the appropriate color.
          (interactive)
          (let ((messages-buffer (get-buffer-create "*Messages*")))
            (switch-to-buffer messages-buffer))))
+  ("p" projectile-switch-project)
   ("s" eme-goto-scratch)
 
   ("<ESC" nil "Quit" :exit t))
@@ -2588,6 +2599,7 @@ A Hydra for the jk keychord - see Keychord below for more information.
     (key-chord-mode 1)
     (key-chord-define-global "jk" 'hydra-jk/body))
 #+end_src
+
 ** Evil
 
 Going to give this another try.
@@ -2595,3 +2607,264 @@ Going to give this another try.
 Pain points with Evil in Emacs for me from last time:
 1. Org mode - messes with the shortcuts
 2. Smartparens - messes up smartparens
+
+[[https://github.com/noctuid/evil-guide][evil-guide]] - using Emacs with Evil
+
+*** Basic Evil Configuration
+
+#+begin_src emacs-lisp :name basic-evil
+  (use-package evil
+    :commands evil-mode
+    :init
+    (setq evil-default-state    'normal
+          evil-want-C-u-scroll  t
+          evil-want-C-w-delete  t
+          evil-esc-delay        0
+          evil-shift-width      4
+          evil-want-C-i-jump    t)
+    (setq-default evil-symbol-word-search 1)
+
+    (evil-mode 1)
+
+    :config
+
+    ;; More Esc quits
+    (define-key evil-normal-state-map [escape] 'keyboard-quit)
+    (define-key evil-visual-state-map [escape] 'keyboard-quit)
+    (define-key evil-insert-state-map [escape] 'evil-normal-state)
+    (global-set-key [escape] 'evil-exit-emacs-state)
+
+    ;; Load my Evil related functions
+    (require 'evil-functions)
+
+    ;;; Emacs state keys
+
+    ;;; Insert state keys
+
+    ;;; Motion state keys
+    (define-key evil-motion-state-map [C-i] 'evil-jump-forward)
+
+    ;;; Normal state keys
+
+    ;; Make the current definition and/or comment visible.
+    (define-key evil-normal-state-map "zf" 'reposition-window)
+
+    ;;; Visual state keys.
+    (define-key evil-visual-state-map (kbd "<") (lambda ()
+						 (interactive)
+						 (evil-shift-left (region-beginning) (region-end))
+						 (evil-normal-state)
+						 (evil-visual-restore)))
+    (define-key evil-visual-state-map (kbd ">") (lambda ()
+						 (interactive)
+						 (evil-shift-right (region-beginning) (region-end))
+						 (evil-normal-state)
+						 (evil-visual-restore)))
+
+    )
+#+end_src
+
+*** evil-args
+
+[[https://github.com/wcsmith/evil-args][evil-args]] - Motions and text objects for delimited arguments in Evil.
+
+#+begin_src emacs-lisp :name evil-args
+(use-package evil-args
+  :config
+  ;; bind evil-args text objects
+  (define-key evil-inner-text-objects-map "a" 'evil-inner-arg)
+  (define-key evil-outer-text-objects-map "a" 'evil-outer-arg)
+
+  ;; bind evil-forward/backward-args
+  (define-key evil-normal-state-map "L" 'evil-forward-arg)
+  (define-key evil-normal-state-map "H" 'evil-backward-arg)
+  (define-key evil-motion-state-map "L" 'evil-forward-arg)
+  (define-key evil-motion-state-map "H" 'evil-backward-arg)
+
+  ;; bind evil-jump-out-args
+  (define-key evil-normal-state-map "K" 'evil-jump-out-args))
+#+end_src
+
+*** evil-ediff
+
+[[https://github.com/emacs-evil/evil-ediff][evil-ediff]] - Make ediff a little more evil
+
+Command                   	Original Binding	Evil-ediff
+ediff-next-difference     	n, SPC          	j, n, SPC
+ediff-previous-difference	p, DEL	k, N, p, DEL
+ediff-jump-to-difference	j	d
+jump to first difference	1j	gg, 1d
+jump to last difference	N/A	G
+copy region A to region B	a	a, l
+copy region B to region A	b	b, h
+scroll down 1 line	C-u 1 v	C-e
+scroll up 1 line	C-u 1 V	C-y
+scroll down half page	v, C-v	C-d, v, C-v
+scroll up half page	V, M-v	C-u, V, M-v
+scroll left	>	zh
+scroll right	<	zl
+toggle highlighting	h	H
+ediff-suspend	z	C-z
+
+#+begin_src emacs-lisp :name evil-ediff
+(use-package evil-ediff
+  :defer t)
+#+end_src
+
+*** evil-escape
+
+[[https://github.com/syl20bnr/evil-escape][evil-escape]] - "Escape" everything in Emacs.  Press quickly =fd= or customize.
+
+#+begin_src emacs-lisp :name evil-escape
+(use-package evil-escape
+  :config
+  (evil-escape-mode 1))
+#+end_src
+
+*** evil-exchange
+
+[[https://github.com/Dewdrops/evil-exchange][evil-exchange]] - Port of [[https://github.com/tommcdo/vim-exchange][vim-exchange]] by Tom McDonald
+
+#+begin_src emacs-lisp :name evil-exchange
+(use-package evil-exchange
+  :init
+  (evil-exchange-install))
+#+end_src
+
+*** evil-indent-plus
+
+[[https://github.com/TheBB/evil-indent-plus][evil-indent-plus]] - Adds new text objects:
+
+ii, ai: Block of text with same or higher indentation
+iI, aI: Block of text with same or higher indentation, including the first line
+        above with smaller indentation
+iJ, aJ: Block of text with same or higher indentation, including the first lines
+        above and below with smaller indentation
+
+#+begin_src emacs-lisp :name evil-indent-plus
+(use-package evil-indent-plus
+  :init
+  (evil-indent-plus-default-bindings))
+#+end_src
+
+*** evil-magit
+
+[[https://github.com/justbur/evil-magit][evil-magit]] - Black magic or evil keys for [[https://magit.vc/][magit]]
+
+#+begin_src emacs-lisp :name evil-magit
+(use-package evil-magit)
+#+end_src
+
+*** evil-matchit
+
+[[https://github.com/redguardtoo/evil-matchit][evil-matchit]] - Vim [[http://www.vim.org/scripts/script.php?script_id=39][matchit.vim]] by Benji Fisher ported to Emacs.  Press "%" to jump between matched tags.
+
+#+begin_src emacs-lisp :name evil-matchit
+(use-package evil-matchit
+  :config (global-evil-matchit-mode 1))
+#+end_src
+
+*** evil-nerd-commenter
+
+[[https://github.com/redguardtoo/evil-nerd-commenter][evil-nerd-commenter]] - Comment/uncomment lines efficiently. Like Nerd Commenter in Vim
+
+#+begin_src emacs-lisp :name evil-nerd-commenter
+(use-package evil-nerd-commenter
+  :config
+  (define-key evil-visual-state-map "gc" 'comment-or-uncomment-region)
+  (define-key evil-normal-state-map "gcc" 'evilnc-comment-or-uncomment-lines))
+#+end_src
+
+*** evil-numbers
+
+[[http://melpa.org/#/evil-numbers][evil-numbers]] - Increment / Decrement binary, octal, decimal and hex literals
+works like C-a/C-x in vim, i.e. searches for number up to eol and then increments or decrements and keep zero padding up.
+
+#+begin_src emacs-lisp :name evil-numbers
+(use-package evil-numbers
+  :config
+  (define-key evil-normal-state-map (kbd "C-a") 'evil-numbers/inc-at-pt)
+  (define-key evil-normal-state-map (kbd "C-x") 'evil-numbers/dec-at-pt))
+#+end_src
+
+*** evil-smartparens
+
+[[https://github.com/expez/evil-smartparens][evil-smartparens]] - Evil integration for smartparens
+
+#+begin_src emacs-lisp :name evil-smartparens
+(use-package evil-smartparens
+  :config
+  (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode))
+#+end_src
+
+*** evil-surround
+
+[[https://github.com/timcharper/evil-surround][evil-surround]] - emulates surround.vim by Tim Pope
+
+#+begin_src emacs-lisp :name evil-surround
+(use-package evil-surround
+  :config (global-evil-surround-mode 1))
+#+end_src
+
+*** evil-visualstars
+
+[[https://github.com/bling/evil-visualstar][evil-visualstar]] - Make a visual selection with v or V, and then hit * to
+search that selection forward, or # to search that selection backward. If the evil-visualstar/persistent option is not nil, visual-state will remain in
+effect, allowing for repeated * or #.  Note that you than have to exit
+visualstar-mode before hitting a direction key to avoid extending the selection.
+
+#+begin_src emacs-lisp :name evil-visualstar
+(use-package evil-visualstar
+  :ensure t
+  :config (global-evil-visualstar-mode 1))
+#+end_src
+
+*** evil-leader
+
+[[https://github.com/cofi/evil-leader][evil-leader]] - Provides the Vim =<leader>= feature.
+
+Goes last so tha we can hoover up all of the bindings we want.
+
+#+begin_src emacs-lisp :name evil-leader
+(use-package evil-leader
+  :ensure t
+  :init
+  :config
+
+  ;; Thu Sep  1 20:32:18 MDT 2016 - rearrange the execution ordering of the
+  ;; following == fix to get evil-leader to work properly in fundamental-mode
+  ;; buffers. https://github.com/cofi/evil-leader/issues/10
+  (setq evil-leader/in-all-states 1)
+  (evil-leader/set-leader "<SPC>")
+  (evil-mode nil)
+  (global-evil-leader-mode)
+  (evil-mode 1)
+
+  ;; leader keys
+  (evil-leader/set-key
+
+    "ci" 'evilnc-comment-or-uncomment-lines
+    "cl" 'evilnc-quick-comment-or-uncomment-to-the-line
+    "ll" 'evilnc-quick-comment-or-uncomment-to-the-line
+    "cc" 'evilnc-copy-and-comment-lines
+    "cp" 'evilnc-comment-or-uncomment-paragraphs
+    "cr" 'comment-or-uncomment-region
+    "cv" 'evilnc-toggle-invert-comment-line-by-line
+    "\\" 'evilnc-comment-operator ; if you prefer backslash key
+
+    "f" 'hydra-files-projectile/body
+
+    "s" 'swiper
+    "v" 'hydra-version-control/body
+    "w" 'save-buffer
+
+    ;; <SPC> bindings
+    "<SPC>a" 'avy-goto-char-timer
+    "<SPC>l" 'avy-goto-char-in-line
+    "<SPC>w" 'avy-goto-char-2
+
+    ;; bracket [] bindings
+    "[<SPC>" 'evil-open-above-no-insert
+    "]<SPC>" 'evil-open-below-no-insert
+    ))
+#+end_src
