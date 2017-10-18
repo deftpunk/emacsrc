@@ -2279,6 +2279,36 @@ keys will be highlighted with the appropriate color.
 #+end_src
 
 *** Hydra maps
+**** hydra-cee
+
+Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
+
+#+begin_src emacs-lisp :name hydra-cee
+  (defhydra hydra-cee (:color blue :hint nil)
+    "
+                                                                                    ,--------------------.
+                                                                                    | Ctrl-c or the like |
+      ,-----------------------------------------------------------------------------'--------------------'
+
+                                     [_i_] Semantic or Imenu
+                                     [_j_] Join line
+                                     [_k_] Show kill ring
+                                     [_l_] Flycheck            [_s_] Helm Snippets    [_y_] New Snippet
+                                     [_m_] Multiterm           [_t_] Todo/Note/Bug
+
+  "
+    ("i" helm-semantic-or-imenu)
+    ("j" crux-top-join-line)
+    ("k" helm-show-kill-ring)
+    ("l" hydra-flycheck/body :exit t)
+    ("m" helm-mt)
+    ("s" helm-yas-complete)
+    ("t" deftpunk/hltodo-swiper)
+    ("y" yas-new-snippet)
+    ("<ESC>" nil "Quit" :exit t)
+    )
+#+end_src
+
 **** hydra-files-projectile
 
 #+begin_src emacs-lisp :name hydra-files-projectile
@@ -2843,15 +2873,7 @@ Goes last so tha we can hoover up all of the bindings we want.
   ;; leader keys
   (evil-leader/set-key
 
-    "ci" 'evilnc-comment-or-uncomment-lines
-    "cl" 'evilnc-quick-comment-or-uncomment-to-the-line
-    "ll" 'evilnc-quick-comment-or-uncomment-to-the-line
-    "cc" 'evilnc-copy-and-comment-lines
-    "cp" 'evilnc-comment-or-uncomment-paragraphs
-    "cr" 'comment-or-uncomment-region
-    "cv" 'evilnc-toggle-invert-comment-line-by-line
-    "\\" 'evilnc-comment-operator ; if you prefer backslash key
-
+    "c" 'hydra-cee/body
     "f" 'hydra-files-projectile/body
 
     "s" 'swiper
@@ -2868,3 +2890,14 @@ Goes last so tha we can hoover up all of the bindings we want.
     "]<SPC>" 'evil-open-below-no-insert
     ))
 #+end_src
+
+**** evil-leader mode bindings
+
+
+#+begin_src emacs-lisp :name leader-mode-bindings
+  (evil-leader/set-key-for-mode 'org-mode "i" 'hydra-orgmode-mode/body)
+#+end_src
+
+*** Keybindings
+
+Bindings for the various states, e.g. motion, normal, visual, etc.
