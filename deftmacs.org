@@ -180,7 +180,8 @@ http://bzg.fr/emacs-hide-mode-line.html
 Gruvbox, challenger-deep, etc.
 
 #+begin_src emacs-lisp :name gruvbox
-(use-package gruvbox-theme)
+  ;; (use-package gruvbox-theme)
+(use-package challenger-deep-theme)
 #+end_src
 
 *** Fonts
@@ -2223,6 +2224,9 @@ We get bind-keys for "free" with the install of use-package.
   ;; > & <
   (global-set-key (kbd "s-<") 'beginning-of-buffer)
   (global-set-key (kbd "s->") 'end-of-buffer)
+
+  (global-set-key (kbd "s-}") 'forward-paragraph)
+  (global-set-key (kbd "s-{") 'backward-paragraph)
 
   ;; arrows
   (global-set-key (kbd "M-<left>") 'backward-word)
