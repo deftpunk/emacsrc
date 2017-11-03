@@ -46,6 +46,8 @@ I tried out [[https://github.com/tarsius/no-littering][no-littering]] but found 
 
 ** Packaging
 
+*** Initial Plumbing
+
 Initialize the package plumbing -> so that we can use-package.
 
 #+begin_src emacs-lisp :name package-plumbing
@@ -58,7 +60,7 @@ Initialize the package plumbing -> so that we can use-package.
 (package-initialize nil)
 #+end_src
 
-** use-package
+*** use-package
 
 [[https://github.com/jwiegley/use-package][use-package]] - the best way to isolate package configuration in Emacs.
 
@@ -72,6 +74,16 @@ Initialize the package plumbing -> so that we can use-package.
 
 (setq use-package-verbose t
       use-package-always-ensure t)
+#+end_src
+
+*** Paradox
+
+[[https://github.com/Malabarba/paradox/][Paradox]] - modernize the Emacs package menu
+
+#+begin_src emacs-lisp :name paradox
+  (use-package paradox
+    :config
+    (paradox-enable))
 #+end_src
 
 ** Custom
@@ -2218,6 +2230,10 @@ We get bind-keys for "free" with the install of use-package.
   (global-unset-key (kbd "C-o"))
   (global-set-key (kbd "C-o") 'crux-smart-open-line)
   (global-set-key (kbd "C-S-o") 'crux-smart-open-line-above)
+
+  ;; r
+  (global-set-key (kbd "s-r") 'recenter-positions)
+
 
   ;; z
   (global-unset-key (kbd "s-z"))
