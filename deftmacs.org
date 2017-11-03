@@ -2186,6 +2186,15 @@ We get bind-keys for "free" with the install of use-package.
   (global-unset-key (kbd "s-f"))
   (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
 
+  ;; g
+  (global-unset-key (kbd "s-g"))
+  (bind-keys :map global-map
+             :prefix "s-g"
+             :prefix-map super-g-map
+             ("g" . goto-line)
+             ("s-g" . goto-line)
+  )
+
   ;; h
   (global-unset-key (kbd "s-h"))
   (global-set-key (kbd "s-h") 'windmove-left)
