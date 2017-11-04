@@ -1954,6 +1954,43 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
     :defer t)
 #+end_src
 
+*** Common Lisp
+
+This is mostly about [[https://common-lisp.net/project/slime/][Slime]].  I tried [[https://github.com/joaotavora/sly][Sly]] but it don't go very well so I came back
+to Slime.
+
+I use [[https://www.quicklisp.org/beta/][Quicklisp]] as the package management system for Common Lisp
+libraries.
+
+Usage:
+#+BEGIN_EXAMPLE
+;; Update libraries
+(ql:update-all-dists)
+
+;; Update the Quicklisp client itself.
+(ql:update-client)
+
+;; Find what is available
+(ql:system-apropos <some string>)
+
+;; Load software
+(ql:quickload <system-name>)
+
+;; To remove software
+(ql:uninstall "<some-system>")
+#+END_EXAMPLE
+
+#+begin_src emacs-lisp :name Slime
+  ;; Quicklisp integration.
+  (load (expand-file-name "~/quicklisp/slime-helper.el"))
+  (setq inferior-lisp-program "sbcl")
+  (setq-local helm-dash-docsets '("Common Lisp"))
+  (slime-setup '(slime-fancy slime-repl slime-fuzzy))
+
+  ;; Keep track of Slime window.
+  (push '(slime-repl-mode :stick t) popwin:special-display-config)
+#+end_src
+
 *** Emacs Lisp
 **** Settings
 
