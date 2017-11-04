@@ -80,6 +80,14 @@ Initialize the package plumbing -> so that we can use-package.
 
 [[https://github.com/Malabarba/paradox/][Paradox]] - modernize the Emacs package menu
 
+Usage:
+=list-packages= or =paradox-list-packages=
+
+Some useful filters:
+=f u= Display only packages with upgrades
+=f k= Filter by keyword
+=f r= Filter by regexp
+
 #+begin_src emacs-lisp :name paradox
   (use-package paradox
     :config
