@@ -1799,7 +1799,7 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
     (use-package helm-c-yasnippet))
 #+end_src
 
-** Software Engineering Utilities
+** Software Development Utilities
 
 *** aggressive-indent-mode
 
@@ -1862,7 +1862,7 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
     (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 #+end_src
 
-** Software Engineering
+** Software Development
 *** Clojure
 
 **** clojure-mode
@@ -2092,8 +2092,34 @@ REPL for elisp
 #+end_src
 
 *** Golang
+*** PowerShell
+
+Because sometimes I have to look at Powershell for work, yuck.
+
+#+begin_src emacs-lisp :name powershell
+  (use-package powershell
+    :ensure t)
+#+end_src
 
 *** Python
+**** pyvenv
+
+Using [[https://github.com/jorgenschaefer/pyvenv][pyvenv]] to manage conda environments.
+
+#+begin_src emacs-lisp :name pyenv
+  (use-package pyvenv
+    :ensure t
+    :config
+    (setenv "WORKON_HOME" "/Users/ebodine/miniconda3/envs")
+    (pyvenv-mode 1)
+    (pyvenv-tracking-mode 1))
+#+end_src
+
+*** Shell
+
+#+begin_src emacs-lisp :name shell scripting
+  (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+#+end_src
 
 ** Various file types
 *** csv
@@ -2119,6 +2145,15 @@ Comma (or other delimiter) separated files.
     :ensure t
     :config (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
 #+END_SRC
+
+*** jinja2
+
+[[https://github.com/paradoxxxzero/jinja2-mode][jinja2-mode]] - A major mode for jinja2 templates.
+
+#+begin_src emacs-lisp :name jinja2-mode
+  (use-package jinja2-mode
+    :ensure t)
+#+end_src
 
 *** Mardown mode
 
@@ -2696,6 +2731,11 @@ A Hydra for the jk keychord - see Keychord below for more information.
 *** key-chord
 
 [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]] - Map pairs of simultaneously pressed keys to commands.
+
+Keychord has a couple of drawbacks
+1. Doesn't get recorded when recording macros.
+2. Can't use function keys in keychords
+3. Doesn't work well with internationalization packages.
 
 #+begin_src emacs-lisp :name key-chord
   (use-package key-chord
