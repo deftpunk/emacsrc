@@ -2100,6 +2100,16 @@ REPL for elisp
 #+end_src
 
 *** Golang
+*** Javascript
+
+Because work.
+
+#+begin_src emacs-lisp :name js2-mode
+(use-package js2-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode)))
+#+end_src
+
 *** PowerShell
 
 Because sometimes I have to look at Powershell for work, yuck.
