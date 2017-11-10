@@ -1610,6 +1610,13 @@ Gradually expand the region.
     :defer t
     :bind ("C-=" . er/expand-region))
 #+END_SRC
+*** goto-chg
+
+[[https://github.com/emacs-evil/goto-chg][goto-chg]] - Go to the last change in the buffer.
+
+#+begin_src emacs-lisp :name goto-chg
+(use-package goto-chg)
+#+end_src
 
 *** list-environment
 
@@ -2401,6 +2408,9 @@ We get bind-keys for "free" with the install of use-package.
 
   ;; ;
   (global-set-key (kbd "s-;") (crux-with-region-or-line comment-or-uncomment-region))
+
+  (global-set-key (kbd "C-.") 'goto-last-change)
+  (global-set-key (kbd "C-,") 'goto-last-change-reverse)
 
   ;; > & <
   (global-set-key (kbd "s-<") 'beginning-of-buffer)
