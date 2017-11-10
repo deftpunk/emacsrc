@@ -2624,14 +2624,17 @@ Hydra for window/frame control and movements.
 #+begin_src emacs-lisp :name hydra-windows
     (defhydra hydra-windows (:color blue :hint nil)
       "
-                                                                              ,-------------------.
-     Navigation               Movement                   Actions              | Window Management |
-  ,---------------------------------------------------------------------------'-------------------'
-       ^_k_^
-       ^^↑^^
-   _h_ ←   → _l_
-       ^^↓^^
-       ^_j_^
+                                                                                                                 ,-------------------.
+     Navigation        Movement + Winner                Actions                     More Actions                 | Window Management |
+  ,--------------------------------------------------------------------------------------------------------------'-------------------'
+       ^_k_^            [_|_] Vert split + move     [_b_] Balance windows           [_n_] Scroll other Window
+       ^^↑^^            [_-_] Horizon split + move  [_c_] Delete current Window     [_p_] Scroll other Window Up
+   _h_ ←   → _l_                                  [_d_] Ace delete windows
+       ^^↓^^            [_w_] Ace Window            [_e_] Resize Windows            [_s_] Horizontal Split
+       ^_j_^                                                                        [_v_] Vertical Split
+                        [_u_] Winner Undo
+                        [_r_] Winner redo           [_i_] Maximize Window           [_f_] New Frame
+                                                                                    [_t_] Transpose Frame
 
        "
        ("<tab>" hydra-master/back "Back to Main")
