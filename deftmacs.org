@@ -1177,6 +1177,14 @@ Display TAGS from column 72
   (setq org-tags-column -72)
 #+end_src
 
+*** org-download
+
+[[https://github.com/abo-abo/org-download][org-download]] - Drag/drop/download images into Org
+
+#+begin_src emacs-lisp :name org-download
+  (use-package org-download)
+#+end_src
+
 ** Navigation
 
 *** ace-link
@@ -2102,6 +2110,49 @@ Because sometimes I have to look at Powershell for work, yuck.
 #+end_src
 
 *** Python
+
+**** Initial Configuration
+
+#+begin_src emacs-lisp :name python
+(require 'smartparens-python)
+
+(defun deftmacs:python-mode ()
+    (interactive)
+    ;; (add-to-list (make-local-variable 'company-backends 'company-jedi))
+    ;; I prefer superword-mode for python
+    (superword-mode)
+    (diminish 'superword-mode)
+
+    ;; Jedi for autocomplete
+    ;; Thu Aug 10 09:25:28 2017 - commented jedi:setup out and now
+    ;; Python autocomplete works as expected
+    ;; (jedi:setup)
+    (setq jedi:complete-on-dot t)
+    (setq jedi:get-in-function-call-delay 500)
+    (setq jedi:tooltip-method '(popup))
+    (add-to-list 'company-backends '(company-jedi company-files))
+
+    ;; Turn off flyspell-mode - it interferes with jedi popup timing.
+    ;; NOTE: Also make sure NOT to enable flyspell-prog-mode as this will interfere as well.
+    (flyspell-mode 0)
+
+    ;; flycheck
+    (flycheck-mode 1)
+    (setq flycheck-flake8rc "~/.flake8"
+          flycheck-flake8-maximum-line-length 105
+          flycheck-checker 'python-flake8)
+
+    ;; autofill comments.
+    (setq-local comment-auto-fill-only-comments t)
+    (auto-fill-mode 1)
+
+    ;; line numbers
+    ;; (nlinum-mode)
+    )
+
+  (add-hook 'python-mode-hook 'deftmacs:python-mode)
+#+end_src
+
 **** pyvenv
 
 Using [[https://github.com/jorgenschaefer/pyvenv][pyvenv]] to manage conda environments.
@@ -2283,7 +2334,9 @@ We get bind-keys for "free" with the install of use-package.
   (bind-keys :map global-map
              :prefix "s-g"
              :prefix-map super-g-map
+             ("c" . goto-char)
              ("g" . goto-line)
+             ("s-c" . goto-char)
              ("s-g" . goto-line)
   )
 
@@ -2306,14 +2359,27 @@ We get bind-keys for "free" with the install of use-package.
   (global-unset-key (kbd "s-l"))
   (global-set-key (kbd "s-l") 'windmove-right)
 
+  ;; n
+  (global-unset-key (kbd "s-n"))
+  (global-set-key (kbd "s-n") 'next-error)
+
   ;; o
   (global-unset-key (kbd "C-o"))
   (global-set-key (kbd "C-o") 'crux-smart-open-line)
   (global-set-key (kbd "C-S-o") 'crux-smart-open-line-above)
 
+  ;; p
+  (global-unset-key (kbd "s-p"))
+  (global-set-key (kbd "s-p") 'previous-error)
+
   ;; r
   (global-set-key (kbd "s-r") 'recenter-positions)
 
+
+  ;; t
+  (global-unset-key (kbd "s-S-t"))
+  (global-unset-key (kbd "s-t"))
+  (global-set-key (kbd "s-S-t") 'helm-mt)
 
   ;; z
   (global-unset-key (kbd "s-z"))
@@ -2575,6 +2641,7 @@ Hydra for window/frame control and movements.
       ("c" delete-window  :exit t)
       ("d" ace-delete-window :exit t)
       ("e" hydra-window-sizing/body)
+      ("f" make-frame)
       ("i" ace-maximize-window)
       ("h" windmove-left :color pink)
       ("j" windmove-down :color pink)
