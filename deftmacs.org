@@ -1155,14 +1155,8 @@ TODO: Change the size or the screenshot before pasting it in.
 
     :config
 
-    (use-package org-bullets
-      :defer t
-      :init
-      (add-hook 'org-mode-hook (lambda ()
-                                 (org-bullets-mode 1))))
-
     ;; Some general configuration.
-    (add-hook 'org-mode-hook '(lambda ()
+    (add-hook 'org-mode-hook (lambda ()
                                 (visual-line-mode 1)  ;; soft wrap
                                 (setq fill-column 120))))
   (eval-after-load 'org-mode
@@ -1175,6 +1169,18 @@ Display TAGS from column 72
 
 #+begin_src emacs-lisp :name org-tags
   (setq org-tags-column -72)
+#+end_src
+
+*** org-bullets
+
+[[https://github.com/sabof/org-bullets][org-bullets]] - UTF-8 bullets for org-mode bullets
+
+#+begin_src emacs-lisp :name org-bullets
+(use-package org-bullets
+  :defer t
+  :init
+  (add-hook 'org-mode-hook (lambda ()
+                             (org-bullets-mode 1))))
 #+end_src
 
 *** org-download
@@ -2353,6 +2359,8 @@ We get bind-keys for "free" with the install of use-package.
              :prefix-map super-g-map
              ("c" . goto-char)
              ("g" . goto-line)
+             ("," . goto-last-change-reverse)
+             ("." . goto-last-change)
              ("s-c" . goto-char)
              ("s-g" . goto-line)
   )
@@ -2499,6 +2507,7 @@ Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
     ("m" helm-mt)
     ("s" helm-yas-complete)
     ("t" deftpunk/hltodo-swiper)
+    ("v" pyvenv-workon)
     ("y" yas-new-snippet)
     ("<ESC>" nil "Quit" :exit t)
     )
@@ -2789,7 +2798,7 @@ A Hydra for the jk keychord - see Keychord below for more information.
   "
     ("a" avy-goto-char-timer)
     ;; ("b" )
-    ;; ("c" hydra-cee/body)
+    ("c" hydra-cee/body)
     ;; ("d" hydra-delete-duplicate-mark-copy/body)
     ("e" deftpunk/hydra-major-mode-hack)
     ("f" hydra-files-projectile/body)
