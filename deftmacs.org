@@ -200,8 +200,10 @@ http://bzg.fr/emacs-hide-mode-line.html
 Gruvbox, challenger-deep, etc.
 
 #+begin_src emacs-lisp :name gruvbox
-  ;; (use-package gruvbox-theme)
-(use-package challenger-deep-theme)
+(use-package gruvbox-theme)
+  ;; (use-package challenger-deep-theme)
+  ;; (use-package monokai-emacs)
+  ;; (load-theme 'monokai t)
 #+end_src
 
 *** Fonts
@@ -671,6 +673,14 @@ Automatically reload a file if its changed outside of Emacs.
       (debugger-make-xrefs)))
 #+end_src
 
+*** delete-selection-mode
+
+Turn this on so that we can delete regions using the *Delete* key
+
+#+begin_src emacs-lisp :name delete-selection-mode
+  (delete-selection-mode 1)
+#+end_src
+
 *** Dired
 
 Directory listing in Emacs.
@@ -898,40 +908,6 @@ Show the file size.
 #+begin_src emacs-lisp :name size-indication-mode
   (size-indication-mode t)
   (diminish 'size-indication-mode)
-#+end_src
-*** Tramp
-
-Transparent Remote (file) Access (where's the M) Protocol - SSH in Emacs.
-
-#+begin_src emacs-lisp :name Tramp
-  (use-package tramp
-    :defer t
-    :init
-    (setq tramp-default-user "ebodine"
-          ;; If Tramp makes backup files, keep them locally instead of remotely
-          tramp-backup-directory-alist backup-directory-alist)
-    :config
-    (progn
-      (setq tramp-default-user-alist '(("\\`su\\(do\\)?\\'" nil "root"))
-            ;; use the settings in ~/.ssh/config instead of Tramp's
-            tramp-use-ssh-controlmaster-options nil
-            backup-enable-predicate (lambda (name)
-                                      (and (normal-backup-enable-predicate name)
-                                           (not (let ((method (file-remote-p name 'method)))
-                                                  (when (stringp method)
-                                                    (member method '("su" "sudo"))))))))
-
-      (use-package tramp-sh
-        :config
-        (progn
-          (add-to-list 'tramp-remote-path "/usr/local/bin")
-          (add-to-list 'tramp-remote-path "/usr/local/sbin")
-          (add-to-list 'tramp-remote-path "/opt/java/current/bin")
-          (add-to-list 'tramp-remote-path "~/bin")))))
-
-  ;; As usual I want to fix up the file it’s storing its history in.
-  (with-eval-after-load 'tramp-cache
-    (setq tramp-persistency-file-name (expand-file-name "tramp" deftmacs-crumbs-directory)))
 #+end_src
 
 *** visual-line-mode
@@ -1301,6 +1277,7 @@ Display TAGS from column 72
     :commands (projectile-project-root)
     :init (add-hook 'after-init-hook 'projectile-global-mode)
     :config
+    (setq projectile-globally-ignored-file-suffixes '("*.pyc"  "*.class"))
     (setq projectile-completion-system 'ivy
           projectile-enable-caching t
           projectile-use-git-grep t
@@ -1606,6 +1583,79 @@ quickly select the exact char you want to zap to.
 #+end_src
 
 ** General Utilities
+
+*** Shells and Terminals inside of Emacs
+
+#+BEGIN_SRC emacs-lisp :name terminals
+  (use-package ansi-color
+    :commands ansi-color-for-comint-mode-on
+    :init
+    (progn
+      (setq comint-scroll-to-bottom-on-input t
+            comint-scroll-to-bottom-on-output t
+            comint-scroll-show-maximum-output t
+            comint-completion-autolist t
+            comint-input-ignoredups t
+            comint-completion-addsuffix t
+            comint-promp-read-only nil
+            comint-completion-recexact nil
+            comint-buffer-maximum-size 100000
+            comint-input-ring-size 5000
+            term-default-bg-color "#080808"
+            term-default-fg-color "#00ff00"
+            comint-get-old-input (lambda () "")))
+    :config
+    (progn
+      (add-hook 'term-mode-hook
+            #'(lambda ()
+            (yas-minor-mode -1)  ; interferes w/ Tab
+            ;(autopair-mode -1)   ; interferes w/ Return
+            (setq term-mode-buffer-maximum-size 10000
+              show-trailing-whitespace nil)))
+
+      (use-package multi-term
+        :ensure multi-term
+        :init
+        (progn
+      (add-hook 'term-mode-hook
+            (lambda ()
+              (yas-minor-mode -1)
+              ;(autopair-mode -1)
+              (setq term-buffer-maximum-size 10000
+                show-trailing-whitespace nil)))
+      (setq multi-term-program "/bin/zsh"
+            multi-term-switch-after-close nil
+            term-bind-key-alist '(("C-c C-c" . term-interrupt-subjob)
+                      ("M-p" . previous-line)
+                      ("M-n" . next-line)
+                      ("C-s" . isearch-forward)
+                      ("C-r" . term-send-reverse-search-history)
+                      ("C-m" . term-send-raw)
+                      ("M-f" . term-send-forward-word)
+                      ("M-b" . term-send-backward-word)
+                      ("M-o" . term-send-backspace)
+                      ([backspace] . term-send-backspace)
+                      ("<RETURN>" . term-send-raw)
+                      ([del] . term-send-del)
+                      ("C-d" . term-send-eof)
+                      ([home] . term-send-home)
+                      ("C-a" . term-send-home)
+                      ([end] . term-send-end)
+                      ("C-e" . term-send-end)
+                      ("M-h" . windmove-left)
+                      ("M-j" . windmove-down)
+                      ("M-k" . windmove-up)
+                      ("M-l" . windmove-right)
+                      ("M-x" . execute-extended-command)
+                      ("C-p" . term-send-up)
+                      ("C-n" . term-send-down)
+                      ("M-M" . term-send-forward-kill-word)
+                      ("C-w" . term-send-backward-kill-word)
+                      ("M-r" . term-send-reverse-search-history)
+                      ("M-," . term-send-input)
+                      ("M-." . comint-dynamic-complete)))))))
+#+END_SRC
+
 *** Expand region
 
 Gradually expand the region.
@@ -2016,7 +2066,7 @@ Usage:
 **** Settings
 
 #+begin_src emacs-lisp :name emacs-lisp-settings
-  (add-hook 'emacs-lisp-mode-hook #'aggressive-mode-hook)
+  ;; (add-hook 'emacs-lisp-mode-hook #'aggressive-mode-hook)
 #+end_src
 
 **** cl-lib highlighting
@@ -2331,6 +2381,21 @@ We get bind-keys for "free" with the install of use-package.
   ;; a
   (global-set-key (kbd "C-a") 'crux-move-beginning-of-line)
 
+  (global-unset-key (kbd "s-a"))
+  (bind-keys :map global-map
+             :prefix "s-a"
+             :prefix-map super-a-map
+             ("a" . mark-whole-buffer)
+             ("f" . mark-defun)
+             ("p" . mark-paragraph)
+             ("s-a" . mark-whole-buffer)
+             ("s-f" . mark-defun)
+             ("s-p" . mark-paragraph)
+  )
+
+  ;; b
+
+
   ;; d
   (defun deftpunk/kill-current-buffer ()
     (interactive)
@@ -2346,7 +2411,10 @@ We get bind-keys for "free" with the install of use-package.
              ("s-d" . crux-kill-whole-line)
              ("s-k" . deftpunk/kill-current-buffer)
              ("s-l" . deftmacs/copy-current-line-or-region)
-             )
+  )
+
+  ;; e
+
 
   ;; f
   (global-unset-key (kbd "s-f"))
@@ -2481,7 +2549,7 @@ keys will be highlighted with the appropriate color.
 (use-package hydra)
 #+end_src
 
-*** Hydra maps
+*** Hydra mapse
 **** hydra-cee
 
 Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
@@ -2493,7 +2561,7 @@ Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
                                                                                     | Ctrl-c or the like |
       ,-----------------------------------------------------------------------------'--------------------'
 
-                                     [_i_] Semantic or Imenu
+                                     [_i_] Semantic or Imenu                          [_v_] Pyvenv Environment
                                      [_j_] Join line
                                      [_k_] Show kill ring
                                      [_l_] Flycheck            [_s_] Helm Snippets    [_y_] New Snippet
@@ -2551,6 +2619,39 @@ Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
   ("s" eme-goto-scratch)
 
   ("<ESC" nil "Quit" :exit t))
+#+end_src
+
+**** hydra-flycheck
+
+A hydra to open up flycheck errors and navigation through them - [[https://github.com/abo-abo/hydra/wiki/Flycheck][Source]]
+
+Made the following changes:
+- Added the change to disable flycheck-pos-tip-mode and renable it; it slowed
+  down the movement between errors.
+- Added the option t to quit-windows-on; this closes the created window.
+
+#+begin_src emacs-lisp :name hydra-flycheck
+  (defhydra hydra-flycheck
+    (:pre (progn (setq hydra-lv t) (flycheck-list-errors) (flycheck-pos-tip-mode -1))
+          flycheck-previous-error          :post (progn (setq hydra-lv nil) (quit-windows-on "*Flycheck errors*" t) (flycheck-pos-tip-mode 1))
+          :hint nil)
+    "
+                                                                            ,-----------------.
+                                                                            | Flycheck Errors |
+    ,-----------------------------------------------------------------------'-----------------'
+      [_f_] Filter
+      [_j_] Next Error
+      [_k_] Previous Error
+      [_gg_] First Error
+      [_G_] Last Error
+    "
+    ("f"  flycheck-error-list-set-filter)
+    ("j"  flycheck-next-error)
+    ("k"  flycheck-previous-error)
+    ("gg" flycheck-first-error)
+    ("G"  (progn (goto-char (point-max)) (flycheck-previous-error)))
+    ("q" nil "Quit")
+    ("<ESC>" nil "Quit"))
 #+end_src
 
 **** hydra-version-control
