@@ -11,7 +11,9 @@
 
 (define-abbrev-table 'apropos-mode-abbrev-table '())
 
-(define-abbrev-table 'awk-mode-abbrev-table '())
+(define-abbrev-table 'awk-mode-abbrev-table
+  '(
+   ))
 
 (define-abbrev-table 'bibtex-mode-abbrev-table '())
 
@@ -33,9 +35,13 @@
 
 (define-abbrev-table 'bs-mode-abbrev-table '())
 
-(define-abbrev-table 'c++-mode-abbrev-table '())
+(define-abbrev-table 'c++-mode-abbrev-table
+  '(
+   ))
 
-(define-abbrev-table 'c-mode-abbrev-table '())
+(define-abbrev-table 'c-mode-abbrev-table
+  '(
+   ))
 
 (define-abbrev-table 'calendar-mode-abbrev-table '())
 
@@ -49,11 +55,15 @@
 
 (define-abbrev-table 'cider-inspector-mode-abbrev-table '())
 
+(define-abbrev-table 'cider-repl-history-mode-abbrev-table '())
+
 (define-abbrev-table 'cider-repl-mode-abbrev-table '())
 
 (define-abbrev-table 'cider-stacktrace-mode-abbrev-table '())
 
 (define-abbrev-table 'cider-test-report-mode-abbrev-table '())
+
+(define-abbrev-table 'cljr--change-signature-mode-abbrev-table '())
 
 (define-abbrev-table 'clojure-mode-abbrev-table '())
 
@@ -80,6 +90,8 @@
 (define-abbrev-table 'conf-windows-mode-abbrev-table '())
 
 (define-abbrev-table 'conf-xdefaults-mode-abbrev-table '())
+
+(define-abbrev-table 'csv-mode-abbrev-table '())
 
 (define-abbrev-table 'debugger-mode-abbrev-table '())
 
@@ -144,6 +156,7 @@
     ("acroos" "across" nil 1)
     ("addign" "adding" nil 1)
     ("addtion" "addition" nil 1)
+    ("adn" "and" nil 1)
     ("associatins" "associations" nil 1)
     ("avaoid" "avoid" nil 1)
     ("bidnign" "binding" nil 1)
@@ -231,6 +244,7 @@
     ("scaffoldign" "scaffolding" nil 1)
     ("scoket" "socket" nil 1)
     ("scrifice" "sacrifice" nil 1)
+    ("scritp" "script" nil 1)
     ("scritps" "scripts" nil 1)
     ("sincle" "Single" nil 1)
     ("slef" "self" nil 6)
@@ -301,13 +315,19 @@
 
 (define-abbrev-table 'ivy-occur-mode-abbrev-table '())
 
-(define-abbrev-table 'java-mode-abbrev-table '())
+(define-abbrev-table 'java-mode-abbrev-table
+  '(
+   ))
 
 (define-abbrev-table 'jinja2-mode-abbrev-table '())
 
 (define-abbrev-table 'js-jsx-mode-abbrev-table '())
 
 (define-abbrev-table 'js-mode-abbrev-table '())
+
+(define-abbrev-table 'js2-jsx-mode-abbrev-table '())
+
+(define-abbrev-table 'js2-mode-abbrev-table '())
 
 (define-abbrev-table 'json-mode-abbrev-table '())
 
@@ -379,7 +399,9 @@
 
 (define-abbrev-table 'nrepl-messages-mode-abbrev-table '())
 
-(define-abbrev-table 'objc-mode-abbrev-table '())
+(define-abbrev-table 'objc-mode-abbrev-table
+  '(
+   ))
 
 (define-abbrev-table 'occur-edit-mode-abbrev-table '())
 
@@ -399,7 +421,9 @@
 
 (define-abbrev-table 'paradox-menu-mode-abbrev-table '())
 
-(define-abbrev-table 'pike-mode-abbrev-table '())
+(define-abbrev-table 'pike-mode-abbrev-table
+  '(
+   ))
 
 (define-abbrev-table 'powershell-mode-abbrev-table '())
 
