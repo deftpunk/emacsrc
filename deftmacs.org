@@ -29,6 +29,7 @@ not to use it.
 *** The emacs-plus version
 
 [[https://github.com/d12frosted/homebrew-emacs-plus][Emacs Plus]]
+
 * Initialization
 ** Crumbs
 
@@ -200,8 +201,8 @@ http://bzg.fr/emacs-hide-mode-line.html
 Gruvbox, challenger-deep, etc.
 
 #+begin_src emacs-lisp :name gruvbox
-(use-package gruvbox-theme)
-  ;; (use-package challenger-deep-theme)
+;; (use-package gruvbox-theme)
+(use-package challenger-deep-theme)
   ;; (use-package monokai-emacs)
   ;; (load-theme 'monokai t)
 #+end_src
@@ -747,7 +748,6 @@ Mastering Emacs has a good article on its configuration and usage - [[https://ma
           peep-dired-enable-on-directories t
           peep-dired-ignored-extensions '("mkv" "iso" "mp4" "pyc")))
 #+end_src
-
 
 *** ediff
 
@@ -1579,7 +1579,8 @@ https://magit.vc/
 quickly select the exact char you want to zap to.
 
 #+begin_src emacs-lisp :name zzz-to-char
-(use-package zzz-to-char)
+(use-package zzz-to-char
+  :init (setq zzz-to-char-reach 120))
 #+end_src
 
 ** General Utilities
@@ -2581,6 +2582,20 @@ Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
     )
 #+end_src
 
+**** hydra-dee
+
+#+begin_src emacs-lisp :name hydra-dee
+  (defhydra hydra-dee (:color blue :hint nil)
+  "
+
+  [_d_] Kill line
+  "
+  ("d" crux-kill-whole-line)
+  )
+
+#+end_src
+
+
 **** hydra-files-projectile
 
 #+begin_src emacs-lisp :name hydra-files-projectile
@@ -2652,6 +2667,32 @@ Made the following changes:
     ("G"  (progn (goto-char (point-max)) (flycheck-previous-error)))
     ("q" nil "Quit")
     ("<ESC>" nil "Quit"))
+#+end_src
+
+**** hydra-gee
+
+#+begin_src emacs-lisp :name hydra-gee
+  (defhydra hydra-gee (:color blue :hint nil)
+    "
+                                                         ,-----------------.
+                                                         | Gee, cool stuff |
+  ,------------------------------------------------------'-----------------'
+      [_d_] Helm Dash
+      [_g_] Goto Line
+      [_G_] End of buffer
+      [_l_] Goto line
+      [_x_] Open URL @ pnt
+    "
+    ("d" helm-dash :exit t)
+    ("g" beginning-of-buffer)
+    ("G" end-of-buffer)
+    ("l" goto-line)
+    ("x" (lambda ()
+           (if (eq major-mode 'org-mode)
+               (org-open-at-point)
+             (browse-url-at-point))))
+
+    ("<ESC>" nil "Quit" :exit t))
 #+end_src
 
 **** hydra-version-control
@@ -2776,10 +2817,10 @@ Hydra for window/frame control and movements.
       ("e" hydra-window-sizing/body)
       ("f" make-frame)
       ("i" ace-maximize-window)
-      ("h" windmove-left :color pink)
-      ("j" windmove-down :color pink)
-      ("k" windmove-up :color pink)
-      ("l" windmove-right :color pink)
+      ("h" windmove-left)
+      ("j" windmove-down)
+      ("k" windmove-up)
+      ("l" windmove-right)
       ("n" scroll-other-window)
       ("o" delete-other-windows  :exit t)
       ("p" scroll-other-window-down)
@@ -2900,10 +2941,10 @@ A Hydra for the jk keychord - see Keychord below for more information.
     ("a" avy-goto-char-timer)
     ;; ("b" )
     ("c" hydra-cee/body)
-    ;; ("d" hydra-delete-duplicate-mark-copy/body)
+    ("d" hydra-dee/body)
     ("e" deftpunk/hydra-major-mode-hack)
     ("f" hydra-files-projectile/body)
-    ;; ("g" hydra-gee/body)
+    ("g" hydra-gee/body)
     ;; ("h" )
     ("i" helm-mini)
     ;; ("j" )
