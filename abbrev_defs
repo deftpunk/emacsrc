@@ -43,6 +43,8 @@
   '(
    ))
 
+(define-abbrev-table 'calc-trail-mode-abbrev-table '())
+
 (define-abbrev-table 'calendar-mode-abbrev-table '())
 
 (define-abbrev-table 'change-log-mode-abbrev-table '())
@@ -101,6 +103,8 @@
 
 (define-abbrev-table 'diff-mode-abbrev-table '())
 
+(define-abbrev-table 'dig-mode-abbrev-table '())
+
 (define-abbrev-table 'direx:direx-mode-abbrev-table '())
 
 (define-abbrev-table 'docker-compose-ps-mode-abbrev-table '())
@@ -122,6 +126,10 @@
 (define-abbrev-table 'epa-key-list-mode-abbrev-table '())
 
 (define-abbrev-table 'epa-key-mode-abbrev-table '())
+
+(define-abbrev-table 'ert-results-mode-abbrev-table '())
+
+(define-abbrev-table 'ert-simple-view-mode-abbrev-table '())
 
 (define-abbrev-table 'eshell-mode-abbrev-table '())
 
@@ -156,9 +164,11 @@
     ("acroos" "across" nil 1)
     ("addign" "adding" nil 1)
     ("addtion" "addition" nil 1)
+    ("adimn" "admin" nil 1)
     ("adn" "and" nil 1)
     ("associatins" "associations" nil 1)
     ("avaoid" "avoid" nil 1)
+    ("bidn" "Bind" nil 1)
     ("bidnign" "binding" nil 1)
     ("bidning" "binding" nil 2)
     ("bindign" "binding" nil 1)
@@ -275,7 +285,13 @@
     ("workign" "working" nil 1)
    ))
 
+(define-abbrev-table 'gnus-article-edit-mode-abbrev-table '())
+
+(define-abbrev-table 'gnus-article-mode-abbrev-table '())
+
 (define-abbrev-table 'gnus-group-mode-abbrev-table '())
+
+(define-abbrev-table 'gnus-sticky-article-mode-abbrev-table '())
 
 (define-abbrev-table 'go-guru-output-mode-abbrev-table '())
 
@@ -479,6 +495,8 @@
 (define-abbrev-table 'slime-trace-dialog-mode-abbrev-table '())
 
 (define-abbrev-table 'slime-xref-mode-abbrev-table '())
+
+(define-abbrev-table 'smime-mode-abbrev-table '())
 
 (define-abbrev-table 'snippet-mode-abbrev-table '())
 
