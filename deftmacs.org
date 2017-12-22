@@ -2988,3 +2988,8 @@ Keychord has a couple of drawbacks
     (key-chord-mode 1)
     (key-chord-define-global "jk" 'hydra-jk/body))
 #+end_src
+* Notes
+** wrap around backward-kill-word to kill-region & sp-kill-region
+
+Currently <delete> will kill a region, should make other things do so
+as well, e.g. C-w
