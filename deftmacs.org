@@ -687,25 +687,25 @@ Turn this on so that we can delete regions using the *Delete* key
 Directory listing in Emacs.
 
 #+begin_src emacs-lisp :name Dired
-  (use-package dired
-    :init
-    ;; Omit the . and .. files.
-    (setq-default dired-omit-mode t)
-    (setq-default dired-omit-verbose nil)
-    (setq-default dired-omit-files "^\\.$\\|^\\.\\.$")
+  ;;   (use-package dired
+  ;;     :init
+  ;;     ;; Omit the . and .. files.
+  ;;     (setq-default dired-omit-mode t)
+  ;;     (setq-default dired-omit-verbose nil)
+  ;;     (setq-default dired-omit-files "^\\.$\\|^\\.\\.$")
 
-    ;; Use gls on a Mac
-    (when *is-a-mac*
-      (if (executable-find "gls")
-          (progn
-            (setq insert-directory-program "gls")
-            (setq dired-listing-switches "-lFaGh1v --group-directories-first"))
-        (setq dired-listing-switches "-ahlF")))
+  ;;     ;; Use gls on a Mac
+  ;;     (when *is-a-mac*
+  ;;       (if (executable-find "gls")
+  ;;           (progn
+  ;;             (setq insert-directory-program "gls")
+  ;;             (setq dired-listing-switches "-lFaGh1v --group-directories-first"))
+  ;;         (setq dired-listing-switches "-ahlF")))
 
-)
+  ;; )
 #+end_src
 
-**** dired-subtree
+**** CANCELED dired-subtree
 
 [[https://github.com/Fuco1/dired-hacks#dired-subtree][dired-subtree]] - Show subtree under directory in dired
 
@@ -1325,6 +1325,13 @@ find files & buffers in projectile with a good explanation [[http://tuhdo.github
     (use-package company
       :defer t
       :diminish company-mode
+      :bind (:map company-active-map
+                 ("M-n" . nil)
+                 ("M-p" . nil)
+                 ([tab] . company-complete)
+                 ("C-n" . company-select-next)
+                 ("C-p" . company-select-previous)
+                 ("C-;" . helm-company))
       :init
       (setq company-idle-delay 0.1
             company-tooltip-limit 99
@@ -1352,18 +1359,10 @@ find files & buffers in projectile with a good explanation [[http://tuhdo.github
   ;; (setq company-auto-complete nil)
 
       :config
-      (use-package helm-company)
-      (bind-keys :map company-mode-map
-                 ("C-;" . helm-company))
+      (use-package helm-company
+        :bind (:map company-mode-map
+                 ("C-;" . helm-company)))
 
-      (bind-keys :map company-active-map
-                 ("M-n" . nil)
-                 ("M-p" . nil)
-                 ([tab] . company-complete)
-                 ("C-n" . company-select-next)
-                 ("C-p" . company-select-previous)
-                 ("C-;" . helm-company)
-                 )
       (global-company-mode))
 #+end_src
 
@@ -1878,7 +1877,7 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
 [[https://github.com/Malabarba/aggressive-indent-mode][aggressive-indent-mode]] - keep your code nicely aligned while you type.
 
 #+begin_src emacs-lisp :name aggressive-indent-mode
-  (use-package aggressive-indent-mode
+  (use-package aggressive-indent
     :defer t)
 #+end_src
 
@@ -1936,6 +1935,8 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
 
 ** Software Development
 *** Clojure
+
+[[https://clojure.org/][Clojure]] is a JVM based Lisp.
 
 **** clojure-mode
 
@@ -2379,134 +2380,131 @@ YAML mode
 We get bind-keys for "free" with the install of use-package.
 
 #+begin_src emacs-lisp :name keybindings
-  ;; a
-  (global-set-key (kbd "C-a") 'crux-move-beginning-of-line)
+    ;; a
+    (global-set-key (kbd "C-a") 'crux-move-beginning-of-line)
 
   (global-unset-key (kbd "s-a"))
-  (bind-keys :map global-map
-             :prefix "s-a"
-             :prefix-map super-a-map
-             ("a" . mark-whole-buffer)
-             ("f" . mark-defun)
-             ("p" . mark-paragraph)
-             ("s-a" . mark-whole-buffer)
-             ("s-f" . mark-defun)
-             ("s-p" . mark-paragraph)
-  )
+  (bind-keys* :prefix-map super-a-map
+              :prefix "s-a"
+              ("a" . mark-whole-buffer)
+              ("f" . mark-defun)
+              ("p" . mark-paragraph)
+              ("s-a" . mark-whole-buffer)
+              ("s-f" . mark-defun)
+              ("s-p" . mark-paragraph)
+    )
 
-  ;; b
+    ;; ;; b
 
 
-  ;; d
+    ;; ;; d
   (defun deftpunk/kill-current-buffer ()
-    (interactive)
-    (kill-buffer (current-buffer)))
+      (interactive)
+      (kill-buffer (current-buffer)))
 
-  (global-unset-key (kbd "s-d"))
-  (bind-keys :map global-map
-             :prefix "s-d"
-             :prefix-map super-d-map
-             ("d" . crux-kill-whole-line)
-             ("k" . deftpunk/kill-current-buffer)
-             ("l" . deftmacs/copy-current-line-or-region)
-             ("s-d" . crux-kill-whole-line)
-             ("s-k" . deftpunk/kill-current-buffer)
-             ("s-l" . deftmacs/copy-current-line-or-region)
-  )
+    (global-unset-key (kbd "s-d"))
+    (bind-keys :prefix "s-d"
+               :prefix-map super-d-map
+               ("d" . crux-kill-whole-line)
+               ("k" . deftpunk/kill-current-buffer)
+               ("l" . deftmacs/copy-current-line-or-region)
+               ("s-d" . crux-kill-whole-line)
+               ("s-k" . deftpunk/kill-current-buffer)
+               ("s-l" . deftmacs/copy-current-line-or-region)
+    )
 
-  ;; e
-
-
-  ;; f
-  (global-unset-key (kbd "s-f"))
-  (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
-
-  ;; g
-  (global-unset-key (kbd "s-g"))
-  (bind-keys :map global-map
-             :prefix "s-g"
-             :prefix-map super-g-map
-             ("c" . goto-char)
-             ("g" . goto-line)
-             ("," . goto-last-change-reverse)
-             ("." . goto-last-change)
-             ("s-c" . goto-char)
-             ("s-g" . goto-line)
-  )
-
-  ;; h
-  (global-unset-key (kbd "s-h"))
-  (global-set-key (kbd "s-h") 'windmove-left)
-
-  ;;i
-  (global-set-key (kbd "s-i") 'helm-mini)
-
-  ;; j
-  (global-unset-key (kbd "s-j"))
-  (global-set-key (kbd "s-j") 'windmove-down)
-
-  ;; k
-  (global-unset-key (kbd "s-k"))
-  (global-set-key (kbd "s-k") 'windmove-up)
-
-  ;; l
-  (global-unset-key (kbd "s-l"))
-  (global-set-key (kbd "s-l") 'windmove-right)
-
-  ;; n
-  (global-unset-key (kbd "s-n"))
-  (global-set-key (kbd "s-n") 'next-error)
-
-  ;; o
-  (global-unset-key (kbd "C-o"))
-  (global-set-key (kbd "C-o") 'crux-smart-open-line)
-  (global-set-key (kbd "C-S-o") 'crux-smart-open-line-above)
-
-  ;; p
-  (global-unset-key (kbd "s-p"))
-  (global-set-key (kbd "s-p") 'previous-error)
-
-  ;; r
-  (global-set-key (kbd "s-r") 'recenter-positions)
+    ;; e
 
 
-  ;; t
-  (global-unset-key (kbd "s-S-t"))
-  (global-unset-key (kbd "s-t"))
-  (global-set-key (kbd "s-S-t") 'helm-mt)
+    ;; f
+    (global-unset-key (kbd "s-f"))
+    (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
 
-  ;; w
-  (global-unset-key (kbd "C-w"))
-  (global-set-key (kbd "C-w") 'backward-kill-word)
+    ;; g
+    (global-unset-key (kbd "s-g"))
+  (bind-keys :prefix "s-g"
+               :prefix-map super-g-map
+               ("c" . goto-char)
+               ("g" . goto-line)
+               ("," . goto-last-change-reverse)
+               ("." . goto-last-change)
+               ("s-c" . goto-char)
+               ("s-g" . goto-line)
+    )
 
-  ;; z
-  (global-unset-key (kbd "s-z"))
-  (global-set-key (kbd "s-z") 'zzz-up-to-char)
+    ;; ;; h
+   (global-unset-key (kbd "s-h"))
+    (global-set-key (kbd "s-h") 'windmove-left)
 
-  ;; -
-  (global-unset-key (kbd "s--"))
-  (global-set-key (kbd "s--") 'ace-window)
+    ;;i
+    (global-set-key (kbd "s-i") 'helm-mini)
 
-  ;; ;
-  (global-set-key (kbd "s-;") (crux-with-region-or-line comment-or-uncomment-region))
+    ;; j
+    (global-unset-key (kbd "s-j"))
+    (global-set-key (kbd "s-j") 'windmove-down)
 
-  (global-set-key (kbd "C-.") 'goto-last-change)
-  (global-set-key (kbd "C-,") 'goto-last-change-reverse)
+    ;; k
+    (global-unset-key (kbd "s-k"))
+    (global-set-key (kbd "s-k") 'windmove-up)
 
-  ;; > & <
-  (global-set-key (kbd "s-<") 'beginning-of-buffer)
-  (global-set-key (kbd "s->") 'end-of-buffer)
+    ;; l
+    (global-unset-key (kbd "s-l"))
+    (global-set-key (kbd "s-l") 'windmove-right)
 
-  (global-set-key (kbd "s-}") 'forward-paragraph)
-  (global-set-key (kbd "s-{") 'backward-paragraph)
+    ;; n
+    (global-unset-key (kbd "s-n"))
+    (global-set-key (kbd "s-n") 'next-error)
 
-  ;; arrows
-  (global-set-key (kbd "M-<left>") 'backward-word)
-  (global-set-key (kbd "M-<right>") 'forward-word)
-  (global-set-key (kbd "s-<up>") 'windmove-up)
-  (global-set-key (kbd "s-<down>") 'windmove-down)
-  (global-set-key (kbd "s-<left>") 'windmove-left)
-  (global-set-key (kbd "s-<right>") 'windmove-right)
+    ;; o
+    (global-unset-key (kbd "C-o"))
+    (global-set-key (kbd "C-o") 'crux-smart-open-line)
+    (global-set-key (kbd "C-S-o") 'crux-smart-open-line-above)
+
+    ;; p
+    (global-unset-key (kbd "s-p"))
+    (global-set-key (kbd "s-p") 'previous-error)
+
+    ;; r
+    (global-set-key (kbd "s-r") 'recenter-positions)
+
+
+    ;; t
+    (global-unset-key (kbd "s-S-t"))
+    (global-unset-key (kbd "s-t"))
+    (global-set-key (kbd "s-S-t") 'helm-mt)
+
+    ;; w
+    (global-unset-key (kbd "C-w"))
+    (global-set-key (kbd "C-w") 'backward-kill-word)
+
+    ;; z
+    (global-unset-key (kbd "s-z"))
+    (global-set-key (kbd "s-z") 'zzz-up-to-char)
+
+    ;; -
+    (global-unset-key (kbd "s--"))
+    (global-set-key (kbd "s--") 'ace-window)
+
+    ;; ;
+    (global-set-key (kbd "s-;") (crux-with-region-or-line comment-or-uncomment-region))
+
+    (global-set-key (kbd "C-.") 'goto-last-change)
+    (global-set-key (kbd "C-,") 'goto-last-change-reverse)
+
+    ;; > & <
+    (global-set-key (kbd "s-<") 'beginning-of-buffer)
+    (global-set-key (kbd "s->") 'end-of-buffer)
+
+    (global-set-key (kbd "s-}") 'forward-paragraph)
+    (global-set-key (kbd "s-{") 'backward-paragraph)
+
+    ;; arrows
+    (global-set-key (kbd "M-<left>") 'backward-word)
+    (global-set-key (kbd "M-<right>") 'forward-word)
+    (global-set-key (kbd "s-<up>") 'windmove-up)
+    (global-set-key (kbd "s-<down>") 'windmove-down)
+    (global-set-key (kbd "s-<left>") 'windmove-left)
+    (global-set-key (kbd "s-<right>") 'windmove-right)
 #+end_src
 
 *** Escape
