@@ -1,9 +1,30 @@
+#+TITLE: Deftmacs - Deftpunk's Emacs Configuration
+#+AUTHOR: Deftpunk
 #+STARTUP: content
 #+OPTIONS: toc:4 :num:nil ^:nil
-#+AUTHOR: Deftpunk
-#+TITLE: Deftmacs
-
 * Introduction
+** About Emacs
+
+The big, beautiful, thermonuclear editor.
+
+#+begin_quote
+“Emacs outshines all other editing software in approximately the same
+way that the noonday sun does the stars. It is not just bigger and
+brighter; it simply makes everything else vanish.”
+
+--Neal Stephenson,“In the Beginning was the Command Line”
+#+end_quote
+
+#+begin_quote
+“Emacs is written in Lisp, which is the only computer language that is
+beautiful.”
+
+--Neal Stephenson
+#+end_quote
+
+** Literate Programming
+
+Blocks of code alternating with explanatory text.
 
 ** Versions of Emacs for Mac
 
