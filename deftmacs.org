@@ -68,6 +68,8 @@ I tried out [[https://github.com/tarsius/no-littering][no-littering]] but found 
 
 ** Packaging
 
+I use [[https://github.com/jwiegley/use-package][use-package]] to handle package management.
+
 *** Initial Plumbing
 
 Initialize the package plumbing -> so that we can use-package.
@@ -85,6 +87,10 @@ Initialize the package plumbing -> so that we can use-package.
 *** use-package
 
 [[https://github.com/jwiegley/use-package][use-package]] - the best way to isolate package configuration in Emacs.
+
+[[https://emacs.stackexchange.com/questions/26810/why-doesnt-use-package-dired-work-for-me/26830#26830][use-package with ensure]] - Since I have set =use-package-always-ensure=
+I need to add =:ensure nil= to configure any non-=package.el= packages
+with use-package.
 
 #+begin_src emacs-lisp :name use-package
 (unless (package-installed-p 'use-package)
@@ -708,25 +714,24 @@ Turn this on so that we can delete regions using the *Delete* key
 Directory listing in Emacs.
 
 #+begin_src emacs-lisp :name Dired
-  ;;   (use-package dired
-  ;;     :init
-  ;;     ;; Omit the . and .. files.
-  ;;     (setq-default dired-omit-mode t)
-  ;;     (setq-default dired-omit-verbose nil)
-  ;;     (setq-default dired-omit-files "^\\.$\\|^\\.\\.$")
+  (use-package dired
+    :ensure nil
+      :init
+      ;; Omit the . and .. files.
+      (setq-default dired-omit-mode t)
+      (setq-default dired-omit-verbose nil)
+      (setq-default dired-omit-files "^\\.$\\|^\\.\\.$")
 
-  ;;     ;; Use gls on a Mac
-  ;;     (when *is-a-mac*
-  ;;       (if (executable-find "gls")
-  ;;           (progn
-  ;;             (setq insert-directory-program "gls")
-  ;;             (setq dired-listing-switches "-lFaGh1v --group-directories-first"))
-  ;;         (setq dired-listing-switches "-ahlF")))
-
-  ;; )
+      ;; Use gls on a Mac
+      (when *is-a-mac*
+        (if (executable-find "gls")
+            (progn
+              (setq insert-directory-program "gls")
+              (setq dired-listing-switches "-lFaGh1v --group-directories-first"))
+          (setq dired-listing-switches "-ahlF"))))
 #+end_src
 
-**** CANCELED dired-subtree
+**** dired-subtree
 
 [[https://github.com/Fuco1/dired-hacks#dired-subtree][dired-subtree]] - Show subtree under directory in dired
 
