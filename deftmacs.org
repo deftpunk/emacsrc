@@ -1580,12 +1580,11 @@ https://magit.vc/
 
 [[https://github.com/sigma/magit-gh-pulls][magit-gh-pulls]] - Magit extension for dealing with GitHub pull requests.
 
-#+begin_src emacs-lisp :name dired-subtree
-(use-package dired-subtree
-  :config
-  (bind-keys :map dired-mode-map
-             ("i" . dired-subtree-insert)
-             (";" . dired-subtree-remove)))
+#+begin_src emacs-lisp :name magit-gh-pulls
+  (use-package magit-gh-pulls
+    :defer t
+    :config
+    (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls))
 #+end_src
 
 ** Editing with Ginzu knives
