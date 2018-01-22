@@ -1417,7 +1417,6 @@ python files are opened.
 #+end_src
 
 ** Version Control
-
 *** Settings
 
 Follow symlinks
@@ -1577,8 +1576,21 @@ https://magit.vc/
           magit-revert-buffers 'silent))
 #+end_src
 
-** Editing with Ginzu knives
+**** magit-gh-pulls
 
+[[dired-subtree
+
+[[https://github.com/Fuco1/dired-hacks#dired-subtree][dired-subtree]] - Show subtree under directory in dired
+
+#+begin_src emacs-lisp :name dired-subtree
+(use-package dired-subtree
+  :config
+  (bind-keys :map dired-mode-map
+             ("i" . dired-subtree-insert)
+             (";" . dired-subtree-remove)))
+#+end_src
+
+** Editing with Ginzu knives
 *** easy-kill
 
 [[https://github.com/leoliu/easy-kill][easy-kill]] kill or mark things easily
