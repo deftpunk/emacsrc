@@ -227,6 +227,7 @@
     ("mde" "mode" nil 1)
     ("mdoe" "mode" nil 1)
     ("miliseconds" "milliseconds" nil 2)
+    ("mofing" "moving" nil 1)
     ("movign" "moving" nil 1)
     ("mroe" "more" nil 1)
     ("mssing" "missing" nil 1)
