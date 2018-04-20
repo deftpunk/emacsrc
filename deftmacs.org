@@ -633,78 +633,6 @@ Automatically reload a file if its changed outside of Emacs.
           bookmark-save-flag 1))
 #+end_src
 
-*** CANCELED debugger
-
-#+begin_src emacs-lisp :name debugger
-  ;; Hurray!  The debugger displays line numbers!!  Thank you
-  ;; https://github.com/wasamasa/dotemacs/blob/master/init.org
-  (with-eval-after-load 'debug
-    (defun debugger-setup-buffer (debugger-args)
-      "Initialize the `*Backtrace*' buffer for entry to the debugger.
-                            That buffer should be current already."
-      (setq buffer-read-only nil)
-      (erase-buffer)
-      (set-buffer-multibyte t)        ;Why was it nil ?  -stef
-      (setq buffer-undo-list t)
-      (let ((standard-output (current-buffer))
-            (print-escape-newlines t)
-            (print-level 8)
-            (print-length 50))
-        (backtrace))
-      (goto-char (point-min))
-      (delete-region (point)
-                     (progn
-                       (search-forward "\n  debug(")
-                       (forward-line (if (eq (car debugger-args) 'debug)
-                                         2    ; Remove implement-debug-on-entry frame.
-                                       1))
-                       (point)))
-      (insert "Debugger entered")
-      ;; lambda is for debug-on-call when a function call is next.
-      ;; debug is for debug-on-entry function called.
-      (pcase (car debugger-args)
-        ((or `lambda `debug)
-         (insert "--entering a function:\n"))
-        ;; Exiting a function.
-        (`exit
-         (insert "--returning value: ")
-         (setq debugger-value (nth 1 debugger-args))
-         (prin1 debugger-value (current-buffer))
-         (insert ?\n)
-         (delete-char 1)
-         (insert ? )
-         (beginning-of-line))
-        ;; Debugger entered for an error.
-        (`error
-         (insert "--Lisp error: ")
-         (prin1 (nth 1 debugger-args) (current-buffer))
-         (insert ?\n))
-        ;; debug-on-call, when the next thing is an eval.
-        (`t
-         (insert "--beginning evaluation of function call form:\n"))
-        ;; User calls debug directly.
-        (_
-         (insert ": ")
-         (prin1 (if (eq (car debugger-args) 'nil)
-                    (cdr debugger-args) debugger-args)
-                (current-buffer))
-         (insert ?\n)))
-      ;; After any frame that uses eval-buffer,
-      ;; insert a line that states the buffer position it's reading at.
-      (save-excursion
-        (let ((tem eval-buffer-list))
-          (while (and tem
-                      (re-search-forward "^  eval-\\(buffer\\|region\\)(" nil t))
-            (beginning-of-line)
-            (insert (format "Error at line %d in %s: "
-                            (with-current-buffer (car tem)
-                              (line-number-at-pos (point)))
-                            (with-current-buffer (car tem)
-                              (buffer-name))))
-            (pop tem))))
-      (debugger-make-xrefs)))
-#+end_src
-
 *** delete-selection-mode
 
 Turn this on so that we can delete regions using the *Delete* key
@@ -1232,8 +1160,11 @@ Display TAGS from column 72
 - Counsel, a collection of Ivy-enhanced versions of common Emacs commands.
 - Swiper, an Ivy-enhanced alternative to isearch.
 
+Turning on counsel-mode to see remaps of Emacs commands - https://github.com/abo-abo/swiper#user-content-counsel
+
 #+begin_src emacs-lisp :name counsel
-(use-package counsel
+  (use-package counsel
+    :config (counsel-mode 1)
     :bind (("C-h f" . counsel-describe-function)
            ("C-h v" . counsel-describe-variable)
            ("C-h i" . counsel-info-lookup-symbol)))
@@ -1582,7 +1513,23 @@ https://magit.vc/
           magit-revert-buffers 'silent))
 #+end_src
 
-**** magit-gh-pulls
+**** CANCELED Magithub
+
+[[https://github.com/vermiculus/magithub][Magithub]] - A collection of interfaces to get Github integrated into
+Magit workflows.
+
+Trying this out instead of magit-gh-pulls
+
+#+BEGIN_SRC emacs-lisp :name magithub
+  (use-package magithub
+    :after magit
+    :config
+    (magithub-feature-autoinject t)
+    (setq magithub-clone-default-directory "~/github"))
+#+END_SRC
+
+
+**** CANCELED magit-gh-pulls
 
 [[https://github.com/sigma/magit-gh-pulls][magit-gh-pulls]] - Magit extension for dealing with GitHub pull
 requests.
@@ -1959,12 +1906,6 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
 
     (push '("^\\*Flycheck.+\\*$" :regexp t :dedicated t :position bottom :stick t :noselect t) popwin:special-display-config))
 
-  ;; flycheck for clojure
-  (use-package flycheck-clojure
-    :defer t
-    :config
-    (flycheck-clojure-setup))
-
   ;; so that linting and type errors don't mess with eldoc
   (use-package flycheck-pos-tip
     :defer t
@@ -1991,9 +1932,13 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
 
 #+begin_src emacs-lisp :name common-lisp
   (use-package slime
-    :init
-    (setq inferior-lisp-program "/usr/local/bin/sbcl"
-          slime-contribs '(slime-fancy)))
+    :commands slime-setup
+    :init (setq inferior-lisp-program "/usr/local/bin/sbcl")
+    :config
+    (use-package slime-company
+      :ensure slime
+      :config
+      (slime-setup '(slime-fancy slime-company))))
 #+end_src
 
 *** Emacs Lisp
@@ -2475,7 +2420,7 @@ keys will be highlighted with the appropriate color.
 (use-package hydra)
 #+end_src
 
-*** Hydra mapse
+*** Hydra maps
 **** hydra-cee
 
 Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
@@ -2506,20 +2451,6 @@ Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
     ("<ESC>" nil "Quit" :exit t)
     )
 #+end_src
-
-**** hydra-dee
-
-#+begin_src emacs-lisp :name hydra-dee
-  (defhydra hydra-dee (:color blue :hint nil)
-  "
-
-  [_d_] Kill line
-  "
-  ("d" crux-kill-whole-line)
-  )
-
-#+end_src
-
 
 **** hydra-files-projectile
 
@@ -2866,7 +2797,6 @@ A Hydra for the jk keychord - see Keychord below for more information.
     ("a" avy-goto-char-timer)
     ;; ("b" )
     ("c" hydra-cee/body)
-    ("d" hydra-dee/body)
     ("e" deftpunk/hydra-major-mode-hack)
     ("f" hydra-files-projectile/body)
     ("g" hydra-gee/body)
