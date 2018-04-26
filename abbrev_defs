@@ -284,6 +284,7 @@
     ("weill" "will" nil 1)
     ("whilre" "while" nil 1)
     ("workign" "working" nil 1)
+    ("wyh" "why" nil 1)
    ))
 
 (define-abbrev-table 'gnus-article-edit-mode-abbrev-table '())
@@ -453,9 +454,7 @@
     ("sysx" "import sys; sys.exit(-1)" nil 1)
    ))
 
-(define-abbrev-table 'python-mode-skeleton-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'python-mode-skeleton-abbrev-table '())
 
 (define-abbrev-table 'rst-mode-abbrev-table
   '(
@@ -522,6 +521,8 @@
 (define-abbrev-table 'text-mode-abbrev-table '())
 
 (define-abbrev-table 'url-cookie-mode-abbrev-table '())
+
+(define-abbrev-table 'use-package-statistics-mode-abbrev-table '())
 
 (define-abbrev-table 'vc-annotate-mode-abbrev-table '())
 

@@ -1518,7 +1518,8 @@ https://magit.vc/
 [[https://github.com/vermiculus/magithub][Magithub]] - A collection of interfaces to get Github integrated into
 Magit workflows.
 
-Trying this out instead of magit-gh-pulls
+Wed Apr 25 14:40:52 2018 - CANCELED because it was having issues
+finding ~/.authinfo  Not sure why.
 
 #+BEGIN_SRC emacs-lisp :name magithub
   (use-package magithub

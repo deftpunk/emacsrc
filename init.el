@@ -42,7 +42,6 @@
    - have a source-code of =emacs-lisp=
    - don't have the todo-marker CANCELED"
      (let* ((body-list ())
-            (gc-cons-threshold most-positive-fixnum)
             (org-babel-src-block-regexp   (concat
                                             ;; (1) indentation                (2) lang
                                             ; "^\\([ \t]*\\)#\\+begin_src [ \t]+\\([^ \f\t\n\r\v]+\\)[ \t]*] "
@@ -94,6 +93,11 @@
   (when (or (not (file-exists-p elfile))
 	    (file-newer-than-file-p orgfile elfile))
     (my-tangle-config-org orgfile elfile))
+
+  ;; Make gc pauses faster by decreasing the threshold.
+  (setq gc-cons-threshold (* 2 1000 1000))
+
+  ;; Load the our init file created from the Org file.
   (load-file elfile))
 
 ;; Start the server
