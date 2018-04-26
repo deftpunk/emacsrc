@@ -21,6 +21,10 @@
 ;; Don't truncate the *Messages* buffer.
 (setq message-log-max t)
 
+;; Make startup faster by reducing the frequency of garbage
+;; collection.  The default is 800 kilobytes.  Measured in bytes.
+(setq gc-cons-threshold (* 50 1000 1000))
+
 ;; The following functions for tangling/untangling Org files and ignoring CANCELED sections within the
 ;; Org files comes from http://www.holgerschurig.de/en/emacs-efficiently-untangling-elisp/
 ;; They are GPLv2, you can find license details here:
@@ -84,8 +88,7 @@
 ;; Change the gc-cons-threshold & file-name-handler-alist to optimize the startup of Emacs.  Then load
 ;; the generated elisp configuration file.
 ;; https://www.reddit.com/r/emacs/comments/3kqt6e/2_easy_little_known_steps_to_speed_up_emacs_start/
-(let ((gc-cons-threshold most-positive-fixnum)
-      (file-name-handler-alist nil)
+(let ((file-name-handler-alist nil)
       (orgfile org-configuation-file)
       (elfile elisp-configuration-file))
   (message "Deftmacs Org mode configuration file: %s" orgfile)
@@ -94,11 +97,11 @@
 	    (file-newer-than-file-p orgfile elfile))
     (my-tangle-config-org orgfile elfile))
 
-  ;; Make gc pauses faster by decreasing the threshold.
-  (setq gc-cons-threshold (* 2 1000 1000))
-
   ;; Load the our init file created from the Org file.
   (load-file elfile))
+
+  ;; Make gc pauses faster by decreasing the threshold.
+  (setq gc-cons-threshold (* 2 1000 1000))
 
 ;; Start the server
 (require 'server)

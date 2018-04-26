@@ -137,21 +137,6 @@ Set up the custom file early so that custom stuff doesn't get written to this fi
 (load custom-file 'noerror)
 #+end_src
 
-** gc-cons-threshold optimization
-
-Optimize the gc-cons-threshold once configuration is complete.  See the init.el file for source of these
-optimizations.
-
-#+begin_src emacs-lisp :name gc-cons-threshold
-(add-hook 'minibuffer-setup-hook
-	  (lambda ()
-	    (setq gc-cons-threshold most-positive-fixnum)))
-(dolist (hook '(after-init-hook minibuffer-exit-hook))
-  (add-hook hook
-	    (lambda ()
-	      (setq gc-cons-threshold (* 1000 1000 10)))))
-#+end_src
-
 ** Display
 
 All of the goofy stuff related to making Emacs pretty ... in my eyes.
