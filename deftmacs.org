@@ -148,8 +148,6 @@ leaving it enabled.
 
 #+begin_src emacs-lisp :name gui-elements
 (menu-bar-mode 1)
-(tool-bar-mode 0)
-(scroll-bar-mode 0)
 (setq ring-bell-function 'ignore
       inhibit-splash-screen t
       inhibit-startup-screen t
@@ -218,7 +216,9 @@ Gruvbox, challenger-deep, etc.
 
 #+begin_src emacs-lisp :name gruvbox
 ;; (use-package gruvbox-theme)
-(use-package challenger-deep-theme)
+;; (use-package challenger-deep-theme)
+(use-package tao-theme)
+(load-theme 'tao-yang t)
   ;; (use-package monokai-emacs)
   ;; (load-theme 'monokai t)
 #+end_src
@@ -1023,9 +1023,9 @@ http://thewanderingcoder.com/2015/03/emacs-org-mode-styling-non-smart-quotes-zer
 
 Markup:
 
-http://ergoemacs.org/emacs/emacs_org_markup.html
+http://ergoemacs.org/emacs/emacs_org_markup.
 
-*** library of functions for Org mode
+** *** library of functions for Org mode
 
 TODO: Change the size or the screenshot before pasting it in.
 
@@ -2229,7 +2229,6 @@ We get bind-keys for "free" with the install of use-package.
 
     ;; ;; b
 
-
     ;; ;; d
   (defun deftpunk/kill-current-buffer ()
       (interactive)
@@ -2246,6 +2245,9 @@ We get bind-keys for "free" with the install of use-package.
                ("s-l" . deftmacs/copy-current-line-or-region)
     )
 
+
+    (global-unset-key (kbd "C-s-d"))
+    (global-set-key (kbd "C-s-d") 'crux-insert-date)
     ;; e
 
 
@@ -2441,11 +2443,12 @@ Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
              (helm-do-ag)
            (helm-projectile-ag))))
   ("c" projectile-invalidate-cache)
-  ("f" (lambda ()
-         (interactive)
-         (if (no-projectile-project-p)
-             (helm-find-files-1 default-directory)
-           (helm-projectile-find-file))))
+  ("f" counsel-find-files)
+  ; ("f" (lambda ()
+  ;        (interactive)
+  ;        (if (no-projectile-project-p)
+  ;            (helm-find-files-1 default-directory)
+  ;          (helm-projectile-find-file))))
   ("k" (kill-buffer (current-buffer)))
   ("m" (lambda ()
          (interactive)

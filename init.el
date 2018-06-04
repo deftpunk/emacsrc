@@ -18,12 +18,25 @@
 	  (expand-file-name "config.el" user-emacs-directory)
 	  "The generated elisp configuration file.")
 
+;; Use a hook so the message doesn't get clobbered by other messages.
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (message "Emacs ready in %s with %d garbage collections."
+                     (format "%.2f seconds"
+                             (float-time
+                              (time-subtract after-init-time before-init-time)))
+                     gcs-done)))
+
 ;; Don't truncate the *Messages* buffer.
 (setq message-log-max t)
 
 ;; Make startup faster by reducing the frequency of garbage
 ;; collection.  The default is 800 kilobytes.  Measured in bytes.
 (setq gc-cons-threshold (* 50 1000 1000))
+
+;; I want these elements out of the way right at the first.
+(tool-bar-mode 0)
+(scroll-bar-mode 0)
 
 ;; The following functions for tangling/untangling Org files and ignoring CANCELED sections within the
 ;; Org files comes from http://www.holgerschurig.de/en/emacs-efficiently-untangling-elisp/
