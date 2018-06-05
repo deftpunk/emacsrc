@@ -1057,31 +1057,37 @@ TODO: Change the size or the screenshot before pasting it in.
 *** Initial configuration
 
 #+begin_src emacs-lisp :name Org mode
-  (use-package org-plus-contrib
-    :defer t
-    :mode (("\\.org$" . org-mode))
-    :init
-    (setq org-startup-indented t
-          org-startup-folded "showall"
-          org-ellipsis "⤵"              ;; Make the outline fold more compact.
-          )
+    (use-package org-plus-contrib
+      :defer t
+      :mode (("\\.org$" . org-mode))
+      :init
+      (setq org-startup-indented t
+            org-startup-folded "showall"
+            org-ellipsis "⤵"              ;; Make the outline fold more compact.
+            )
 
-    ;; Modifications to Org mode Speed Keys - from Sacha Chau
-    ;; To list all of the Speed Keys, go to the begining of a header and press ?
-    (defun my/org-use-speed-commands-for-headings-and-lists ()
-      "Activate speed commands on list items too."
-      (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
-          (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
-    (setq org-use-speed-commands 'my/org-use-speed-commands-for-headings-and-lists)
+      ;; Modifications to Org mode Speed Keys - from Sacha Chau
+      ;; To list all of the Speed Keys, go to the begining of a header and press ?
+      (defun my/org-use-speed-commands-for-headings-and-lists ()
+        "Activate speed commands on list items too."
+        (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
+            (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
+      (setq org-use-speed-commands 'my/org-use-speed-commands-for-headings-and-lists)
 
-    :config
+      :config
 
-    ;; Some general configuration.
-    (add-hook 'org-mode-hook (lambda ()
-                                (visual-line-mode 1)  ;; soft wrap
-                                (setq fill-column 120))))
-  (eval-after-load 'org-mode
-    (diminish 'org-indent-mode))
+      ;; Some general configuration.
+      (add-hook 'org-mode-hook (lambda ()
+                                  (visual-line-mode 1)  ;; soft wrap
+                                  (setq fill-column 120))))
+    (eval-after-load 'org-mode
+      (diminish 'org-indent-mode))
+
+  ;; Tracking TODO state changes
+  ;; The ! exclamation will add a timestamp
+  ;; The @ ampersand will ask for a note with time-stamp
+  (setq org-todo-keywords
+        '((sequence "TODO(t!)" "WORKING(w!)" "DONE(d!)" "CANCELLED(c@!)" )))
 #+end_src
 
 *** Tags
