@@ -216,9 +216,9 @@ Gruvbox, challenger-deep, etc.
 
 #+begin_src emacs-lisp :name gruvbox
 ;; (use-package gruvbox-theme)
-;; (use-package challenger-deep-theme)
-(use-package tao-theme)
-(load-theme 'tao-yang t)
+(use-package challenger-deep-theme)
+;; (use-package tao-theme)
+;; (load-theme 'tao-yang t)
   ;; (use-package monokai-emacs)
   ;; (load-theme 'monokai t)
 #+end_src
@@ -387,7 +387,25 @@ What Operating System are we on?
 #+end_src
 
 *** Autosave
+#+BEGIN_SRC emacs-lisp :name autosave
 
+ ;; from prelude/modules/prelude-editor.el
++;; automatically save buffers associated with files on buffer switch
++;; and on windows switch
++(defadvice switch-to-buffer (before save-buffer-now activate)
++  (when buffer-file-name (save-buffer)))
++(defadvice other-window (before other-window-now activate)
++  (when buffer-file-name (save-buffer)))
++(defadvice windmove-up (before other-window-now activate)
++  (when buffer-file-name (save-buffer)))
++(defadvice windmove-down (before other-window-now activate)
++  (when buffer-file-name (save-buffer)))
++(defadvice windmove-left (before other-window-now activate)
++  (when buffer-file-name (save-buffer)))
++(defadvice windmove-right (before other-window-now activate)
++  (when buffer-file-name (save-buffer)))
+
+#+END_SRC
 *** Backups
 
 Change where all of the backup files go.  Usually Emacs dumps them in the current directory with a ~
