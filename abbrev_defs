@@ -281,6 +281,7 @@
     ("ture" "True" nil 1)
     ("tweakign" "tweaking" nil 1)
     ("upate" "update" nil 1)
+    ("vinding" "binding" nil 1)
     ("wehn" "when" nil 1)
     ("weill" "will" nil 1)
     ("whilre" "while" nil 1)
