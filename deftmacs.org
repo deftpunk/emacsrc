@@ -216,9 +216,9 @@ Gruvbox, challenger-deep, etc.
 
 #+begin_src emacs-lisp :name gruvbox
 ;; (use-package gruvbox-theme)
-(use-package challenger-deep-theme)
-;; (use-package tao-theme)
-;; (load-theme 'tao-yang t)
+;; (use-package challenger-deep-theme)
+ (use-package tao-theme)
+ (load-theme 'tao-yang t)
   ;; (use-package monokai-emacs)
   ;; (load-theme 'monokai t)
 #+end_src
@@ -293,6 +293,8 @@ Icon Fonts and propertize them within Emacs.
 (spaceline-toggle-projectile-root-on)
 
 (spaceline-toggle-process-off)
+
+  (setq-default spaceline-highlight-face-func 'spaceline-highlight-face-modified)
 
 (spaceline-compile)
 #+end_src
@@ -1102,7 +1104,7 @@ TODO: Change the size or the screenshot before pasting it in.
       (setq org-use-speed-commands 'my/org-use-speed-commands-for-headings-and-lists)
 
       :config
-
+      (org-load-modules-maybe t)
       ;; Some general configuration.
       (add-hook 'org-mode-hook (lambda ()
                                   (visual-line-mode 1)  ;; soft wrap
@@ -1110,7 +1112,7 @@ TODO: Change the size or the screenshot before pasting it in.
     (eval-after-load 'org-mode
       (diminish 'org-indent-mode))
 
-  (org-load-modules-maybe t)
+
 
   ;; Tracking TODO state changes
   ;; The ! exclamation will add a timestamp
@@ -1857,6 +1859,17 @@ walk through the changes that you have made.
     (advice-add 'undo-tree-visualizer-mouse-set :after #'undo-tree-visualizer-update-linum)
     (advice-add 'undo-tree-visualizer-set :after #'undo-tree-visualizer-update-linum))
 #+end_src
+
+*** whole-line-or-region
+
+[[https://github.com/purcell/whole-line-or-region][whole-line-or-region]] - what it says.  This abstracts "i just want to
+copy a whole line" without worrying about a bunch of nonsense.
+
+#+BEGIN_SRC emacs-lisp :name whole-line-or-region
+  (use-package whole-line-or-region
+    :config
+    (whole-line-or-region-global-mode 1))
+#+END_SRC
 
 *** wrap-region
 
