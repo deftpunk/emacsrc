@@ -181,6 +181,7 @@
     ("chaning" "changing" nil 1)
     ("chekign" "checking" nil 1)
     ("colleciton" "collection" nil 1)
+    ("commetn" "comment" nil 1)
     ("contianer" "container" nil 4)
     ("contianing" "containing" nil 1)
     ("contorl" "control" nil 1)
