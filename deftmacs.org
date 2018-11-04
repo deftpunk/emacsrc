@@ -215,12 +215,28 @@ http://bzg.fr/emacs-hide-mode-line.html
 Gruvbox, challenger-deep, etc.
 
 #+begin_src emacs-lisp :name gruvbox
-;; (use-package gruvbox-theme)
-;; (use-package challenger-deep-theme)
- (use-package tao-theme)
- (load-theme 'tao-yang t)
-  ;; (use-package monokai-emacs)
-  ;; (load-theme 'monokai t)
+  ;; (use-package gruvbox-theme)
+  ;; (use-package challenger-deep-theme)
+;;   (use-package tao-theme)
+;;   (load-theme 'tao-yang t)
+   (use-package doom-themes
+     :ensure t
+     :init
+     (setq doom-themes-enable-bold t
+           doom-themes-enable-italic t)
+     :config
+     ;; Enable flashing mode-line on errors
+     (doom-themes-visual-bell-config)
+
+     ;; or for treemacs users
+     (doom-themes-treemacs-config)
+
+     ;; Corrects (and improves) org-mode's native fontification.
+     (doom-themes-org-config))
+  (load-theme 'doom-molokai t)
+
+    ;; (use-package monokai-emacs)
+    ;; (load-theme 'monokai t)
 #+end_src
 
 *** Fonts
@@ -235,7 +251,7 @@ http://www.fontspace.com/unicode-fonts-for-ancient-scripts/symbola
 	      (set-fontset-font t 'unicode "Symbola" nil 'prepend))
 #+end_src
 
-*** Spaceline dependencies
+*** Modeline dependencies
 
 Some things that Spaceline and Spaceline-all-the-icons need before initializing.
 
@@ -255,13 +271,16 @@ Icon Fonts and propertize them within Emacs.
   (global-anzu-mode +1))
 #+end_src
 
-[[https://www.emacswiki.org/emacs/info+.el][info+]] - Extensions to info.el by Drew Adams.
+*** doom modeline
 
-#+begin_src emacs-lisp :name info+
-(use-package info+)
+#+begin_src emacs-lisp :name doom-modeline
+(use-package doom-modeline
+      :ensure t
+      :defer t
+      :hook (after-init . doom-modeline-init))
 #+end_src
 
-*** Spaceline
+*** CANCELED Spaceline
 
 [[https://github.com/TheBB/spaceline][Spaceline]] - The Powerline theme from Spacemacs
 
@@ -299,7 +318,7 @@ Icon Fonts and propertize them within Emacs.
 (spaceline-compile)
 #+end_src
 
-*** spaceline-all-the-icons
+*** CANCELED spaceline-all-the-icons
 
 [[https://github.com/domtronn/spaceline-all-the-icons.el][spaceline-all-the-icons]] - A Spaceline mode line theme using All The Icons for Emacs.
 
@@ -615,10 +634,11 @@ Configuration for Emacs minor modes that come with Emacs.
 *** abbreviations
 
 #+begin_src emacs-lisp :name abbreviations
+  (use-package diminish)
   (setq abbrev-file-name (expand-file-name "abbrev_defs" user-emacs-directory)
         default-abbrev-mode t
         save-abbrevs 'silently)
-  (diminish 'abbrev-mode)
+  ;;(diminish 'abbrev-mode)
 #+end_src
 
 *** auto-fill
@@ -642,6 +662,7 @@ Automatically reload a file if its changed outside of Emacs.
 #+begin_src emacs-lisp :name bookmarks
   (setq bookmark-default-file (expand-file-name "bookmarks" user-emacs-directory))
   (use-package bookmark+
+    :load-path "emacswikilibs/bookmark-plus/"
     :config
     (setq bookmark-version-control t
           bookmark-save-flag 1))
@@ -809,7 +830,8 @@ The following bindings are made here:
    [mouse-1]    `mouse-help-on-mode-line-click' (mode-line)
 
 #+begin_src emacs-lisp :name help-plus
-  (use-package help+)
+  (use-package help+
+    :load-path "emacswikilibs/help-plus/")
 #+end_src
 
 **** help-fns
@@ -829,8 +851,10 @@ Keys bound here:
    `C-h M-l'    `find-function-on-key'
 
    #+begin_src emacs-lisp :name help-fns
-     (use-package help-fns+)
+  (use-package help-fns+
+    :load-path "emacswikilibs/help-fns-plus/")
    #+end_src
+
 *** info
 
 Do some fancy things with Info docs.  The "o" character in the Info mode map
@@ -2158,6 +2182,7 @@ Comma (or other delimiter) separated files.
 
 #+begin_src emacs-lisp :name csv
 (use-package csv-nav
+  :load-path "emacswikilibs/csv-nav/"
   :defer t
   :mode ("\\.[Cc][Ss][Vv]\\'" . csv-mode)
   :init
@@ -2514,7 +2539,7 @@ Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
              (helm-do-ag)
            (helm-projectile-ag))))
   ("c" projectile-invalidate-cache)
-  ("f" counsel-find-files)
+  ("f" counsel-find-file)
   ; ("f" (lambda ()
   ;        (interactive)
   ;        (if (no-projectile-project-p)
