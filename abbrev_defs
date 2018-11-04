@@ -153,6 +153,8 @@
 
 (define-abbrev-table 'gfm-mode-abbrev-table '())
 
+(define-abbrev-table 'git-commit-elisp-text-mode-abbrev-table '())
+
 (define-abbrev-table 'git-commit-mode-abbrev-table '())
 
 (define-abbrev-table 'git-rebase-mode-abbrev-table '())
@@ -213,6 +215,7 @@
     ("highlihgt" "Highlight" nil 1)
     ("hte" "the" nil 2)
     ("ifnd" "find" nil 1)
+    ("ignorign" "ignoring" nil 1)
     ("imoprt" "import" nil 1)
     ("improt" "import" nil 1)
     ("improvements" "improvements" nil 2)
