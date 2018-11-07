@@ -280,64 +280,6 @@ Icon Fonts and propertize them within Emacs.
       :hook (after-init . doom-modeline-init))
 #+end_src
 
-*** CANCELED Spaceline
-
-[[https://github.com/TheBB/spaceline][Spaceline]] - The Powerline theme from Spacemacs
-
-#+begin_src emacs-lisp :name Spaceline
-(use-package spaceline)
-(require 'spaceline-config)
-(spaceline-emacs-theme)
-(spaceline-helm-mode)
-(spaceline-info-mode)  ; depends on info+
-
-(spaceline-toggle-anzu-on)
-(spaceline-toggle-auto-compile-on)
-(spaceline-toggle-buffer-modified-on)
-(spaceline-toggle-buffer-size-on)
-(spaceline-toggle-buffer-id-on)
-(spaceline-toggle-remote-host-on)
-(spaceline-toggle-major-mode-on)
-(spaceline-toggle-flycheck-error-on)
-(spaceline-toggle-flycheck-warning-on)
-(spaceline-toggle-flycheck-info-on)
-(spaceline-toggle-minor-modes-on)
-(spaceline-toggle-version-control-on)
-(spaceline-toggle-which-function-on)
-(spaceline-toggle-python-pyvenv-on)
-(spaceline-toggle-selection-info-on)
-(spaceline-toggle-buffer-encoding-abbrev-on)
-(spaceline-toggle-line-column-on)
-(spaceline-toggle-buffer-position-on)
-(spaceline-toggle-projectile-root-on)
-
-(spaceline-toggle-process-off)
-
-  (setq-default spaceline-highlight-face-func 'spaceline-highlight-face-modified)
-
-(spaceline-compile)
-#+end_src
-
-*** CANCELED spaceline-all-the-icons
-
-[[https://github.com/domtronn/spaceline-all-the-icons.el][spaceline-all-the-icons]] - A Spaceline mode line theme using All The Icons for Emacs.
-
-NOTE: The combination of Spaceline and spaceline-all-the-icons adds a significant amount of time to the
-startup of Emacs.
-
-#+begin_src emacs-lisp :name spaceline-all-the-icons
-(use-package spaceline-all-the-icons
-  :after spaceline
-  :config
-  (spaceline-all-the-icons--setup-package-updates)
-  (spaceline-all-the-icons--setup-git-ahead)
-
-  ;; enable some segments
-  (spaceline-toggle-all-the-icons-bookmark-on)
-
-  (spaceline-all-the-icons-theme))
-#+end_src
-
 ** Libraries and general dependencies
 
 *** Exec Path
@@ -1420,6 +1362,9 @@ Follow symlinks
 #+begin_src emacs-lisp :name follow symlinks
   (setq vc-follow-symlinks t)
 #+end_src
+
+**** TODO: Look into git-link - https://github.com/sshaw/git-link
+It is used primarily in conjunction with git-timemachine
 
 *** git-gutter
 
