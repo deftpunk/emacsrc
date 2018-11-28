@@ -5,17 +5,13 @@
 * Introduction
 ** About Emacs
 
-The big, beautiful, thermonuclear editor.
+The big, beautiful, thermonuclear editor
 
 #+begin_quote
 “Emacs outshines all other editing software in approximately the same
 way that the noonday sun does the stars. It is not just bigger and
 brighter; it simply makes everything else vanish.”
 
---Neal Stephenson,“In the Beginning was the Command Line”
-#+end_quote
-
-#+begin_quote
 “Emacs is written in Lisp, which is the only computer language that is
 beautiful.”
 
@@ -29,13 +25,11 @@ Blocks of code alternating with explanatory text.
 ** Versions of Emacs for Mac
 
 I do most of my work on MacOSX these days and have tried several different builds
-of Emacs on Mac.
+of Emacs on that Operating System.  I am currently using the one on Homebrew
 
-*** The GNU versions, homebrew or build from scratch
+*** Install via homebrew
 
-=brew install emacs --with-cocoa --with-modules --with-gnutls --with-librsvg --with-imagemagick=
-
-=brew cask install emacs=
+=brew install emacs --with-cocoa --with-modules --with-gnutls --with-imagemagick@6=
 
 *** The railwaycat version
 
@@ -49,9 +43,25 @@ not to use it.
 
 *** The emacs-plus version
 
-[[https://github.com/d12frosted/homebrew-emacs-plus][Emacs Plus]]
+Tried [[https://github.com/d12frosted/homebrew-emacs-plus][Emacs Plus]] as well, had similar problems as the railwaycat port - Emacs 25
 
 ** External Dependencies
+
+I rely on a few external programs to work with my Emacs installation.
+
+   1. Install xcode
+   2. Install the following packages via =brew=
+      a. gls
+      b. coreutils
+      c. cask
+      d. ripgrep
+
+** Investigations
+   
+These are things/packages etc. that I may or may not want to use in the future.
+
+*** helpful
+https://github.com/Wilfred/helpful
 
 * Initialization
 ** Crumbs
@@ -469,12 +479,15 @@ Cursors should *NEVER* blink.
 Set all the things to utf-8
 
 #+begin_src emacs-lisp :name Encoding
+(when (fboundp 'set-charset-priority)
+  (set-charset-priority 'unicode))
 (setq locale-coding-system 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
 (set-language-environment "UTF-8")
+(setq-default buffer-file-coding-system 'utf-8)
 #+end_src
 
 *** Files and buffers

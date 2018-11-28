@@ -1,14 +1,7 @@
-                 ;;;;                                                          ;;;;
-                ;;;;                                                            ;;;;
-               ;;;;                                                              ;;;;
-              ;;;;;         deftmacs --- Deftmacs Initialization file.           ;;;;;
-             ;;;;;;                                                              ;;;;;;
-             ;;;;;; Without this comment emacs25 adds (package-initialize) here. ;;;;;;
-              ;;;;; (package-initialize)                                         ;;;;;
-               ;;;;                                                              ;;;;
-                ;;;;                                                            ;;;;
-                 ;;;;                                                          ;;;;
+;;;; init.el -*- lexical-binding: t; -*-
 
+;;; Without this comment Emacs adds (package-initialize) here...annoying.
+;;; (package-initialize)
 
 (defconst org-configuation-file
 	  (expand-file-name "deftmacs.org" user-emacs-directory)
