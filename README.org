@@ -1,4 +1,3 @@
-#+TITLE: Deftpunk's Emacs Configuration
 #+AUTHOR: Deftpunk
 #+STARTUP: content
 #+OPTIONS: toc:4 :num:nil ^:nil
@@ -16,6 +15,11 @@ beautiful.”
 
 --Neal Stephenson
 #+end_quote
+
+* Configuration
+
+My configuration is based on [[https://orgmode.org/][Orgmode]] and optimization/perfomance lessons gleaned from
+reviewing [[https://github.com/hlissner/doom-emacs][doom-emacs]] and other configuration's source. - see Credits section.
 
 * Versions of Emacs for MacOSX
 
