@@ -1,0 +1,74 @@
+#+TITLE: Deftpunk's Emacs Configuration
+#+AUTHOR: Deftpunk
+#+STARTUP: content
+#+OPTIONS: toc:4 :num:nil ^:nil
+* About Emacs
+
+The big, beautiful, thermonuclear editing reactor.
+
+#+begin_quote
+“Emacs outshines all other editing software in approximately the same
+way that the noonday sun does the stars. It is not just bigger and
+brighter; it simply makes everything else vanish.”
+
+“Emacs is written in Lisp, which is the only computer language that is
+beautiful.”
+
+--Neal Stephenson
+#+end_quote
+
+* Versions of Emacs for MacOSX
+
+I do most of my work on MacOSX these days and have tried several different builds
+of Emacs on that Operating System.
+
+** Install via homebrew
+
+I am currently using the Emacs you install via Homebrew with several extensions.
+See the External Dependencies below before installing/using.
+
+=brew install emacs --with-cocoa --with-modules --with-gnutls --with-imagemagick@6=
+
+** The railwaycat version
+
+Wed Aug 23 11:54:20 2017 - Tried the [[https://github.com/railwaycat/homebrew-emacsmacport][railwaycat emacsmacport]] port.  Ultimately decided
+not to use it.
+
+- didn't solve my ansi-term/zsh problem with full configuration
+- the Command key is now Alt; I liked having Alt & Super keys
+- looks really, really nice
+- the devicons package did not work out of the box, nor did the flycheck, etc. images
+
+** The emacs-plus version
+
+Tried [[https://github.com/d12frosted/homebrew-emacs-plus][Emacs Plus]] as well, had similar problems as the railwaycat port - Emacs 25
+
+* External Dependencies
+
+I rely on a few external programs to work with my Emacs installation.  Install
+these first before installing/running Emacs.
+
+   1. Install xcode
+   2. Install the following packages via =brew install=
+      - gls
+      - coreutils
+      - cask
+      - ripgrep
+      - ispell
+   3. Install Node.js & the vmd module - =npm install -g vmd=
+
+* Credits
+
+Most of the basic settings and initial configuration are done in the
+=core/core*.el= files that are a heavy copy of [[https://github.com/hlissner/doom-emacs][doom-emacs]] and how it configures
+Emacs.  The result is a pretty fast initial startup given the amount of stuff.
+I also copy some ideas and code from [[http://spacemacs.org/][spacemacs]], [[https://seagle0128.github.io/.emacs.d/][centaur emacs]] and others - full
+props and credit to the authors of those fantastic configurations.
+
+I don't make use of custom, I prefer to be explicit about the things that I am changing.
+
+All of the extraneous Emacs files/dirs are kept under =.local/= & =.emacs.d/etc/=
+I tried out [[https://github.com/tarsius/no-littering][no-littering]] but found that it didn't work quite as I would have liked.
+
+Package management is handled by [[https://github.com/jwiegley/use-package][use-package]] and [[https://github.com/Malabarba/paradox/][Paradox]]
+

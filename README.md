@@ -1,2 +1,0 @@
-# emacsrc
-My Emacs Configuration
