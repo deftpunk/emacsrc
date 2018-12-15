@@ -21,6 +21,17 @@ beautiful.”
 My configuration is based on [[https://orgmode.org/][Orgmode]] and optimization/perfomance lessons gleaned from
 reviewing [[https://github.com/hlissner/doom-emacs][doom-emacs]] and other configuration's source. - see Credits section.
 
+Some brief highlights:
+
+- lots & lots of [[https://github.com/emacs-evil/evil][Evil]]; it keeps my hands pain-free.
+
+- I don't make use of custom.el, I prefer to be explicit about the things that I am changing.
+
+- All of the extraneous Emacs files/dirs are kept under =.local/= & =.emacs.d/etc/=
+  I tried out [[https://github.com/tarsius/no-littering][no-littering]] but found that it didn't work quite as I would have liked.
+
+- Package management is handled by [[https://github.com/jwiegley/use-package][use-package]] and [[https://github.com/Malabarba/paradox/][Paradox]]
+
 * Versions of Emacs for MacOSX
 
 I do most of my work on MacOSX these days and have tried several different builds
@@ -68,11 +79,4 @@ Most of the basic settings and initial configuration are done in the
 Emacs.  The result is a pretty fast initial startup given the amount of stuff.
 I also copy some ideas and code from [[http://spacemacs.org/][spacemacs]], [[https://seagle0128.github.io/.emacs.d/][centaur emacs]] and others - full
 props and credit to the authors of those fantastic configurations.
-
-I don't make use of custom, I prefer to be explicit about the things that I am changing.
-
-All of the extraneous Emacs files/dirs are kept under =.local/= & =.emacs.d/etc/=
-I tried out [[https://github.com/tarsius/no-littering][no-littering]] but found that it didn't work quite as I would have liked.
-
-Package management is handled by [[https://github.com/jwiegley/use-package][use-package]] and [[https://github.com/Malabarba/paradox/][Paradox]]
 
