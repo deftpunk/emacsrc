@@ -1,656 +1,234 @@
-#+TITLE: Deftmacs - Deftpunk's Emacs Configuration
+#+TITLE: config.org
 #+AUTHOR: Deftpunk
 #+STARTUP: content
 #+OPTIONS: toc:4 :num:nil ^:nil
-* Introduction
-** About Emacs
+* UI
 
-The big, beautiful, thermonuclear editor
+Most of the UI configuration takes place in =core/core-ui.el=, this includes setting up the
+modeline, fonts and themes.  This section is for extraneous highlighting and fancy display
+like that.
 
-#+begin_quote
-“Emacs outshines all other editing software in approximately the same
-way that the noonday sun does the stars. It is not just bigger and
-brighter; it simply makes everything else vanish.”
+** beacon
 
-“Emacs is written in Lisp, which is the only computer language that is
-beautiful.”
+[[https://github.com/Malabarba/beacon][Never lose your cursor again]] - Whenever the window scrolls a light will shine
+on top of your cursor so you know where it is.
 
---Neal Stephenson
-#+end_quote
-
-** Literate Programming
-
-Blocks of code alternating with explanatory text.
-
-** Versions of Emacs for Mac
-
-I do most of my work on MacOSX these days and have tried several different builds
-of Emacs on that Operating System.  I am currently using the one on Homebrew
-
-*** Install via homebrew
-
-=brew install emacs --with-cocoa --with-modules --with-gnutls --with-imagemagick@6=
-
-*** The railwaycat version
-
-Wed Aug 23 11:54:20 2017 - Tried the [[https://github.com/railwaycat/homebrew-emacsmacport][railwaycat emacsmacport]] port.  Ultimately decided
-not to use it.
-
-- didn't solve my ansi-term problem with full configuration
-- the Command key is now Alt; I liked having Alt & Super keys
-- looks really, really nice
-- the devicons package did not work out of the box, nor did the flycheck, etc. images
-
-*** The emacs-plus version
-
-Tried [[https://github.com/d12frosted/homebrew-emacs-plus][Emacs Plus]] as well, had similar problems as the railwaycat port - Emacs 25
-
-** External Dependencies
-
-I rely on a few external programs to work with my Emacs installation.
-
-   1. Install xcode
-   2. Install the following packages via =brew=
-      a. gls
-      b. coreutils
-      c. cask
-      d. ripgrep
-
-** Investigations
-   
-These are things/packages etc. that I may or may not want to use in the future.
-
-*** helpful
-https://github.com/Wilfred/helpful
-
-* Initialization
-** Crumbs
-
-Keep all of the extraneous Emacs files/dirs in a single location.
-
-I tried out [[https://github.com/tarsius/no-littering][no-littering]] but found that it didn't work as well as I expected.
-
-#+begin_src emacs-lisp :name crumbs
-(defconst deftmacs-crumbs-directory
-  (expand-file-name (concat user-emacs-directory "crumbs/"))
-  "Deftmacs crumbs directory.")
-(unless (file-exists-p deftmacs-crumbs-directory)
-  (make-directory deftmacs-crumbs-directory))
-#+end_src
-
-** Packaging
-
-I use [[https://github.com/jwiegley/use-package][use-package]] to handle package management.
-
-*** Initial Plumbing
-
-Initialize the package plumbing -> so that we can use-package.
-
-#+begin_src emacs-lisp :name package-plumbing
-(require 'package)
-(setq package-enable-at-startup nil
-      package--init-file-ensured t)
-(unless (assoc-default "melpa" package-archives)
-  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t))
-(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
-(add-to-list 'package-archives
-             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-(package-initialize nil)
-#+end_src
-
-*** use-package
-
-[[https://github.com/jwiegley/use-package][use-package]] - the best way to isolate package configuration in Emacs.
-
-[[https://emacs.stackexchange.com/questions/26810/why-doesnt-use-package-dired-work-for-me/26830#26830][use-package with ensure]] - Since I have set =use-package-always-ensure=
-I need to add =:ensure nil= to configure any non-=package.el= packages
-with use-package.
-
-#+begin_src emacs-lisp :name use-package
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-(eval-when-compile
-  (require 'use-package))
-
-(setq use-package-verbose t
-      use-package-always-ensure t)
-#+end_src
-
-*** Paradox
-
-[[https://github.com/Malabarba/paradox/][Paradox]] - modernize the Emacs package menu
-
-Usage:
-=list-packages= or =paradox-list-packages=
-
-Some useful filters:
-=f u= Display only packages with upgrades
-=f k= Filter by keyword
-=f r= Filter by regexp
-
-#+begin_src emacs-lisp :name paradox
-  (use-package paradox
+#+begin_src emacs-lisp :name beacon
+  (use-package beacon
     :config
-    (paradox-enable))
+    (beacon-mode 1))
 #+end_src
 
-** Custom
+** Highlight cl-lib
 
-Set up the custom file early so that custom stuff doesn't get written to this file.
+[[https://github.com/skeeto/cl-lib-highlight][cli-lib-highlight]] - Syntax highlighting for cl-lib, so that =cl-loop=,
+=cl-defun=, =cl-defstruct= and the like get highlighted
 
-#+begin_src emacs-lisp :name custom
-(setq custom-file (expand-file-name "custom.el" deftmacs-crumbs-directory))
-(unless (file-exists-p custom-file)
-  (with-temp-buffer (write-file custom-file)))
-(load custom-file 'noerror)
-#+end_src
-
-** Display
-
-All of the goofy stuff related to making Emacs pretty ... in my eyes.
-
-*** GUI elements
-
-Get some annoying GUI elements out of the way.  The menu-bar mostly stays out of the way on Mac so I am
-leaving it enabled.
-
-#+begin_src emacs-lisp :name gui-elements
-(menu-bar-mode 1)
-(setq ring-bell-function 'ignore
-      inhibit-splash-screen t
-      inhibit-startup-screen t
-      inhibit-startup-echo-area-message ()
-      initial-scratch-message nil
-      use-dialog-box nil                        ; All questions in the minibuffer
-      display-time-default-load-average nil)
-(fset 'yes-or-no-p 'y-or-n-p)
-#+end_src
-
-*** Transparency
-
-frame transparency for Mac.
-
-#+begin_src emacs-lisp :name transparency
-(set-frame-parameter (selected-frame) 'alpha '(92 92))
-(add-to-list 'default-frame-alist '(alpha 92 92))
-#+end_src
-
-*** Frame title
-
-Set the frame title to the full path of the buffer we are working on.
-
-#+begin_src emacs-lisp :name frame-title
-(setq frame-title-format
-      '((:eval (if (buffer-file-name)
-                   (abbreviate-file-name (buffer-file-name))
-                 "%b"))))
-#+end_src
-
-*** Hide the modeline
-
-This makes the graphics less jerky at startup.  I got this from Spacemacs, which got it from
-http://bzg.fr/emacs-hide-mode-line.html
-
-#+begin_src emacs-lisp :name hide modeline
-(defvar-local hidden-mode-line-mode nil)
-(defvar-local hide-mode-line nil)
-(define-minor-mode hidden-mode-line-mode
-  "Minor mode to hide the mode-line in the current buffer."
-  :init-value nil
-  :global t
-  :variable hidden-mode-line-mode
-  :group 'editing-basics
-  (if hidden-mode-line-mode
-      (setq hide-mode-line mode-line-format
-            mode-line-format nil)
-    (setq mode-line-format hide-mode-line
-          hide-mode-line nil))
-  (force-mode-line-update)
-  ;; Apparently force-mode-line-update is not always enough to
-  ;; redisplay the mode-line
-  (redraw-display)
-  (when (and (called-interactively-p 'interactive)
-             hidden-mode-line-mode)
-    (run-with-idle-timer
-     0 nil 'message
-     (concat "Hidden Mode Line Mode enabled.  "
-             "Use M-x hidden-mode-line-mode to make the mode-line appear."))))
- (hidden-mode-line-mode)
-#+end_src
-
-*** Themes
-
-Gruvbox, challenger-deep, etc.
-
-#+begin_src emacs-lisp :name gruvbox
-  ;; (use-package gruvbox-theme)
-  ;; (use-package challenger-deep-theme)
-;;   (use-package tao-theme)
-;;   (load-theme 'tao-yang t)
-   (use-package doom-themes
-     :ensure t
-     :init
-     (setq doom-themes-enable-bold t
-           doom-themes-enable-italic t)
-     :config
-     ;; Enable flashing mode-line on errors
-     (doom-themes-visual-bell-config)
-
-     ;; or for treemacs users
-     (doom-themes-treemacs-config)
-
-     ;; Corrects (and improves) org-mode's native fontification.
-     (doom-themes-org-config))
-  (load-theme 'doom-molokai t)
-
-    ;; (use-package monokai-emacs)
-    ;; (load-theme 'monokai t)
-#+end_src
-
-*** Fonts
-
-I use Roboto Mono and also use Symbola as a fallback to display unicode characters.
-https://github.com/ryanoasis/nerd-fonts
-http://www.fontspace.com/unicode-fonts-for-ancient-scripts/symbola
-
-#+begin_src emacs-lisp :name fonts
-(set-frame-font "RobotoMono Nerd Font 12")
-(when (member "Symbola" (font-family-list))
-	      (set-fontset-font t 'unicode "Symbola" nil 'prepend))
-#+end_src
-
-*** Modeline dependencies
-
-Some things that Spaceline and Spaceline-all-the-icons need before initializing.
-
-[[https://github.com/domtronn/all-the-icons.el][all-the-icons]] - A utility package to collect various
-Icon Fonts and propertize them within Emacs.
-
-#+begin_src emacs-lisp :name all-the-icons.el
-(use-package all-the-icons)
-#+end_src
-
-[[https://github.com/syohex/emacs-anzu][Anzu]] - Show the total number of search hits and where you are in the modeline.
-
-#+begin_src emacs-lisp :name anzu
-(use-package anzu
-  :defer t
-  :config
-  (global-anzu-mode +1))
-#+end_src
-
-*** doom modeline
-
-#+begin_src emacs-lisp :name doom-modeline
-(use-package doom-modeline
-      :ensure t
-      :defer t
-      :hook (after-init . doom-modeline-init))
-#+end_src
-
-** Libraries and general dependencies
-
-*** Exec Path
-
-[[https://github.com/purcell/exec-path-from-shell][exec-path-from-shell]] - Make Emacs use the $PATH set up by the users shell.
-Load exec-path-from-shell early in case we need it.  Otherwise things like magit have a hard time
-finding git in MacOSX.
-
-#+begin_src emacs-lisp :name exec-path-from-shell
-(use-package exec-path-from-shell
-  :init
-  (setq exec-path-from-shell-check-startup-files nil)
-  ;; Set up correct PATH, etc. for Mac
-  (when (memq window-system '(mac ns))
-    (exec-path-from-shell-initialize)))
-#+end_src
-
-*** Crux
-
-[[https://github.com/bbatsov/crux][Crux]] - A collection of ridiculously useful extensions.
-
-#+begin_src emacs-lisp :name crux library
-(use-package crux
-  :config
-  (crux-reopen-as-root-mode))
-#+end_src
-
-*** popwin
-
-[[https://github.com/m2ym/popwin-el][popwin-el]] - A popup window manager for Emacs; helps with all of the windows that magically pop in and out.
-
-#+begin_src emacs-lisp :name popwin
-(use-package popwin
- :config
- (popwin-mode 1))
-#+end_src
-
-*** which-key
-
-[[https://github.com/justbur/emacs-which-key][emacs-which-key]] - Displays available keybindings in a popup.
-
-#+begin_src emacs-lisp :name which-key
-(use-package which-key
-    :defer t
-    :init
-    (setq which-key-idle-delay 0.5)
-    (which-key-mode))
-#+end_src
-
-*** Deftmacs Libraries
-
-Add my library of functions and miscellaneous.
-
-#+begin_src emacs-lisp :name deftlisp
-(defconst my-library (expand-file-name "lib" user-emacs-directory))
-(add-to-list 'load-path my-library)
-(require 'misc-functions)
-#+end_src
-
-** Defaults and Settings
-
-What Operating System are we on?
-
-#+begin_src emacs-lisp :name operating-systems
-(defconst *is-a-mac* (eq system-type 'darwin))
-(defconst *is-a-penguin* (eq system-type 'gnu/linux))
-(defconst *is-a-windoze* (eq system-type 'windwos-nt))
-#+end_src
-
-*** Autosave
-
-Save a copy of the file every know and then.
-
-backup-directory-alist is used as the location to save files in.
-
-#+BEGIN_SRC emacs-lisp :name autosave
-
-  ;; Save every 20 events/characters.
-  (setq auto-save-interval 20)
-
-   ;; from prelude/modules/prelude-editor.el
-  ;; automatically save buffers associated with files on buffer switch
-  ;; and on windows switch
-  (defadvice switch-to-buffer (before save-buffer-now activate)
-    (when buffer-file-name (save-buffer)))
-  (defadvice other-window (before other-window-now activate)
-    (when buffer-file-name (save-buffer)))
-  (defadvice windmove-up (before other-window-now activate)
-    (when buffer-file-name (save-buffer)))
-  (defadvice windmove-down (before other-window-now activate)
-    (when buffer-file-name (save-buffer)))
-  (defadvice windmove-left (before other-window-now activate)
-    (when buffer-file-name (save-buffer)))
-  (defadvice windmove-right (before other-window-now activate)
-    (when buffer-file-name (save-buffer)))
-
+#+BEGIN_SRC emacs-lisp :name cl-lib-highlight
+  (use-package cl-lib-highlight
+    :config
+    (cl-lib-highlight-initialize))
 #+END_SRC
 
-*** Backups
+** Highlight Escape sequences
 
-Change where all of the backup files go.  Usually Emacs dumps them in the current directory with a ~
-ending, cluttering up the file system.  The following dumps in a directory under our crumbs directory.
+[[https://github.com/dgutov/highlight-escape-sequences/blob/master/highlight-escape-sequences.el][highlight-escape-sequences]] - what the title says.
 
-#+begin_src emacs-lisp :name Backups
-  (defconst deftmacs-backups-dir (expand-file-name "backups/" deftmacs-crumbs-directory))
-  (make-directory deftmacs-backups-dir t)
-  (setq backup-directory-alist `(("." . ,deftmacs-backups-dir)))
-  (setq tramp-backup-directory-alist `(("." . ,deftmacs-backups-dir)))
-
-  (setq backup-by-copying   t                         ; don't clobber symlinks
-        delete-old-versions -1
-        kept-new-versions   6
-        kept-old-versions   2
-        version-control     t)
-#+end_src
-
-*** Bells
-
-Bells should never go off.
-
-#+begin_src emacs-lisp :name bells
-  (setq ring-bell-function 'ignore)
-  (setq visible-bell t)
-#+end_src
-
-*** Clipboard
-
-All of the mess that we have to do to make system clipboard access work.
-
-#+begin_src emacs-lisp :name clipboard
-  ;; Some functions from http://writequit.org/org/settings.html#sec-1
-  ;; for copy/paste on a Mac.
-  (setq x-select-enable-clipboard t
-        x-select-enable-primary t
-        x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING)
-        save-interprogram-paste-before-kill t
-        mouse-yank-at-point t)
-
-  (defun copy-from-osx ()
-    "Handle copy/paste intelligently on osx."
-    (let ((pbpaste (purecopy "/usr/bin/pbpaste")))
-      (if (and (eq system-type 'darwin)
-               (file-exists-p pbpaste))
-          (let ((tramp-mode nil)
-                (default-directory "~"))
-            (shell-command-to-string pbpaste)))))
-
-  (defun paste-to-osx (text &optional push)
-    (let ((process-connection-type nil))
-      (let ((proc (start-process "pbcopy" "*Messages*" "/usr/bin/pbcopy")))
-        (process-send-string proc text)
-        (process-send-eof proc))))
-
-  (setq interprogram-cut-function 'paste-to-osx
-        interprogram-paste-function 'copy-from-osx)
-#+end_src
-
-*** Comment column
-
-Column to indent right-margins to.
-
-#+begin_src emacs-lisp :name Emacs defaults
-  (setq-default comment-column 79)
-#+end_src
-
-*** Compilation
-
-#+begin_src emacs-lisp :name compilation
-  (setq compilation-context-lines 2
-        compilation-error-screen-columns nil
-        compilation-scroll-output t)
-#+end_src
-
-*** Cursors
-
-Cursors should *NEVER* blink.
-
-#+begin_src emacs-lisp :name cursors
-  (blink-cursor-mode 0)
-  (when (display-graphic-p)
-    (setq-default cursor-type 'box))
-  (setq x-stretch-cursor 1)          ; draw the block cursor as wide as the glyph under it.
-#+end_src
-
-*** Encoding
-
-Set all the things to utf-8
-
-#+begin_src emacs-lisp :name Encoding
-(when (fboundp 'set-charset-priority)
-  (set-charset-priority 'unicode))
-(setq locale-coding-system 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
-(set-language-environment "UTF-8")
-(setq-default buffer-file-coding-system 'utf-8)
-#+end_src
-
-*** Files and buffers
-
-#+begin_src emacs-lisp :name files and buffers
-  (setq kill-read-only-ok                  t            ; don't error when killing a read-only text
-        large-file-warning-threshold       100000000    ; warn when opening files bigger than 100MB
-        confirm-nonexistent-file-or-buffer nil          ; don't ask to create files/buffers
-        )
-
-  ;; don't ask to kill buffers
-  (setq kill-buffer-query-functions
-        (remq 'process-kill-buffer-query-function
-              kill-buffer-query-functions))
-#+end_src
-
-*** Fringe
-
-Set the left fringe width to something big enough for line numbers, flycheck and git-gutter
-
-#+begin_src emacs-lisp :name fringe-width
-  (setq-default left-fringe-width 15)
-#+end_src
-
-*** Miscellaneous settings
-
-#+begin_src emacs-lisp :name miscellaneous settings
-  ;; Enable disabled commands
-  ;; To protect new users from destructive commands, some commands are turned
-  ;; off by default, turn them back on.
-  (setq disabled-command-function nil)
-
-  ;; Some miscellaneous settings
-  (setq transient-mark-mode   t                     ; if you change focus disable the current mark
-        line-move-visual      t                     ; move around lines based on how they are displayed
-        random                t                     ; seed the random number generator
-        apropos-do-all        t                     ; search for everything.
-        fill-column           105
-        recenter-positions    '(top middle bottom)  ; make =C-l= start at the top instead of the middle.
-        )
-
-  (setq tab-always-indent 'complete
-        confirm-nonexistent-file-or-buffer nil   ; don't ask to create a buffer
-        vc-follow-symlinks t                     ; follow symlinks automatically
-        recentf-max-saved-items 5000             ; same up to 5000 recent files
-        eval-expression-print-length nil         ; do not truncate printed expressions
-        eval-expression-print-level nil          ; print nested expressions
-        kill-ring-max 5000                       ; truncate kill ring after 5000 entries
-        mark-ring-max 5000                       ; truncate mark ring after 5000 entries
-        load-prefer-newer t                      ; prefer newer .el instead of the .elc
-        switch-to-buffer-preserve-window-point t
-        )
-
-  ;; don't ask to kill buffers
-  (setq kill-buffer-query-functions
-        (remq 'process-kill-buffer-query-function
-              kill-buffer-query-functions))
-
-
-  ;;
-  (setq set-mark-command-repeat-pop 't)
-#+end_src
-
-*** Mouse
-
-#+begin_src emacs-lisp :name Emacs defaults
-  (setq mouse-yank-at-point nil                  ; yank at mouse click
-        confirm-nonexistent-file-or-buffer nil   ; don't ask to create files/buffers
-        make-pointer-invisible t                 ; hide the mouse while typing
-        )
-#+end_src
-
-*** Scrolling
-
-Smooth scrolling is another detail that is somehow a mess in Emacs.
-
-#+begin_src emacs-lisp :name scrolling
-  (setq scroll-margin                    0
-        scroll-conservatively            100000
-        scroll-preserve-screen-position  1
-        mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))) ;make mouse scrolling smooth
-        )
-#+end_src
-
-*** tabs vs spaces
-
-That other religious war - tabs and spaces - I am on team spaces.
-
-#+begin_src emacs-lisp :name spaces
-  (setq-default tab-width 4)
-  (setq-default indent-tabs-mode nil)
-  (setq c-basic-offset 4)
-#+end_src
-
-** Emacs minor modes
-
-Configuration for Emacs minor modes that come with Emacs.
-
-*** abbreviations
-
-#+begin_src emacs-lisp :name abbreviations
-  (use-package diminish)
-  (setq abbrev-file-name (expand-file-name "abbrev_defs" user-emacs-directory)
-        default-abbrev-mode t
-        save-abbrevs 'silently)
-  ;;(diminish 'abbrev-mode)
-#+end_src
-
-*** auto-fill
-
-#+begin_src emacs-lisp :name auto-fill
-  (diminish 'auto-fill-mode)
-  (diminish 'auto-fill-function)
-#+end_src
-
-*** auto-revert
-
-Automatically reload a file if its changed outside of Emacs.
-
-#+begin_src emacs-lisp :name auto-revert
-  (global-auto-revert-mode 1)
-  (diminish 'auto-revert-mode)
-#+end_src
-
-*** bookmarks
-
-#+begin_src emacs-lisp :name bookmarks
-  (setq bookmark-default-file (expand-file-name "bookmarks" user-emacs-directory))
-  (use-package bookmark+
-    :load-path "emacswikilibs/bookmark-plus/"
+#+begin_src emacs-lisp :name highlight-escape
+  (use-package highlight-escape-sequences
+    :defer t
+    :init
+    (add-hook 'prog-mode-hook #'hes-mode)
     :config
-    (setq bookmark-version-control t
-          bookmark-save-flag 1))
+    (put 'hes-escape-backslash-face 'face-alias 'font-lock-builtin-face)
+    (put 'hes-escape-sequence-face 'face-alias 'font-lock-builtin-face))
 #+end_src
 
-*** delete-selection-mode
+** Highlight Numbers
 
-Turn this on so that we can delete regions using the *Delete* key
+[[https://github.com/Fanael/highlight-numbers][highlight-numbers]] - Highlight numeric literals in source code.
 
-#+begin_src emacs-lisp :name delete-selection-mode
-  (delete-selection-mode 1)
+#+begin_src emacs-lisp :name highlight-numbers
+  (use-package highlight-numbers
+    :defer t
+    :init (add-hook 'prog-mode-hook #'highlight-numbers-mode))
 #+end_src
+
+** Highlight Quotes
+
+[[https://github.com/Fanael/highlight-quoted][highlight-quoted]] - Highlight Lisp quotes and quoted symbols
+
+#+begin_src emacs-lisp :name highlight-quoted
+  (use-package highlight-quoted
+    :defer t
+    :config
+    (add-hook 'emacs-lisp-mode-hook 'highlight-quoted-mode))
+#+end_src
+
+** Highlight Symbols
+
+[[https://github.com/gennad/auto-highlight-symbol][highlight-symbol]] - Highlight the symbol under point.
+
+#+begin_src emacs-lisp :name highlight-symbol
+    (use-package auto-highlight-symbol
+      :defer t
+      :init
+      (setq ahs-case-fold-search nil
+            ahs-default-range 'ahs-range-whole-buffer
+            ahs-idle-interval 0.25
+            ahs-inhibit-face-list nil)
+      ;; but a box around the face.
+      (custom-set-faces `(ahs-face ((t (:box t)))))
+      (custom-set-faces `(ahs-definition-face ((t (:box t)))))
+      (custom-set-faces `(ahs-plugin-whole-buffer-face ((t (:box t)))))
+      :config
+      (add-hook 'prog-mode-hook 'auto-highlight-symbol-mode))
+#+end_src
+
+** Volatile highlights
+
+[[https://www.emacswiki.org/emacs/VolatileHighlights][Volatile highlights]] - temporarily highlights changes to the buffer associated with certain commands that
+add blocks of text at once. An example is that if you paste (yank) a block of text, it will be
+highlighted until you press the next key.
+
+#+begin_src emacs-lisp :naame volatile-highlights
+  (use-package volatile-highlights
+    :config
+    (volatile-highlights-mode 1))
+
+  ;; Support evil-mode
+  (vhl/define-extension 'evil 'evil-paste-after 'evil-paste-before
+                        'evil-paste-pop 'evil-move)
+  (vhl/install-extension 'evil)
+
+  ;; Supporting undo-tree.
+  (vhl/define-extension 'undo-tree 'undo-tree-yank 'undo-tree-move)
+  (vhl/install-extension 'undo-tree)
+#+end_src
+
+* Editor
+** Editor Settings
+
+#+BEGIN_SRC emacs-lisp :name EditorSettings
+  (setq-default
+   ;; abbreviations
+   abbrev-file-name (expand-file-name "abbrev_defs" user-emacs-directory)
+   default-abbrev-mode t
+   save-abbrevs 'silently
+   ;; bookmarks
+   bookmark-default-file (concat flex-etc-dir "bookmarks")
+   bookmark-version-control t
+   bookmark-save-flag t
+   ;; Formatting
+   delete-trailing-lines nil
+   fill-column 105
+   sentence-end-double-space nil
+   word-wrap t
+   ;; Scrolling
+   hscroll-margin 1
+   hscroll-step 1
+   scroll-conservatively 1001
+   scroll-margin 0
+   scroll-preserve-screen-position t
+   mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))) ;make mouse scrolling smooth
+   ;; Whitespace - the other religous war.  use whitespace NOT tabs.
+   tab-width 4
+   indent-tabs-mode nil
+   c-basic-offset 4
+   require-final-newline t
+   tabify-regexp "^\t* [ \t]+" ; for :retab
+   ;; whitespace-mode
+   whitespace-line-column fill-column
+   whitespace-style '(face indentation tabs tab-mark spaces space-mark newline newline-mark
+                      trailing lines-tail)
+   whitespace-display-mappings '((tab-mark ?\t [?› ?\t])
+                                 (newline-mark ?\n [?¬ ?\n])
+                                 (space-mark ?\  [?·] [?.]))
+   ;; Wrapping
+   truncate-lines t
+   truncate-partial-width-windows 50
+   )
+
+   ;; column-number-mode
+   ;; Display the column number in the modeline
+   (column-number-mode 1)
+
+   ;; Delete regions using the *Delete* key.
+   (delete-selection-mode 1)
+
+   ;; ediff
+   ;; magit + ediff - Use the two together to resolve merge conflicts.
+   ;; https://coderwall.com/p/mcrwag/use-magit-ediff-to-resolve-merge-conflicts
+   (setq ediff-diff-options "-w"
+         ediff-use-long-help-message 1
+         ediff-split-window-function #'split-window-horizontally
+         ediff-window-setup-function #'ediff-setup-windows-plain)
+   ; Run winner undo afterwards in an attempt to get back to some "sane" window layout.
+   (add-hook 'ediff-after-quit-hook-internal #'winner-undo)
+
+   ;; recentf
+   ;; Keep track of recently opened files
+   (setq recentf-save-file (concat flex-cache-dir "recentf")
+         recentf-max-menu-items 0
+         recentf-max-saved-items 300
+         recentf-filename-handlers '(file-truename)
+         recentf-exclude
+         (list "^/tmp/" "^/ssh:" "\\.?ido\\.last$" "\\.revive$" "/TAGS$"
+                "^/var/folders/.+$"
+                ;; ignore private temp files (but not all of them)
+                (concat "^" (file-truename flex-local-dir))))
+    (add-hook! 'flex-init-hook #'recentf-mode)
+
+    ;; revert buffers for changed files
+   (global-auto-revert-mode 1)
+   (setq auto-revert-verbose nil)
+
+   ;; savehist / saveplace
+   (setq savehist-file (concat flex-cache-dir "savehist")
+         ; keep emacs from being slow to exit after enabling saveplace.
+         save-place-forget-unreadable-files nil
+         savehist-save-minibuffer-history t
+         savehist-autosave-interval nil ; save on kill only
+         savehist-additional-variables '(kill-ring search-ring regexp-search-ring)
+         save-place-file (concat flex-cache-dir "saveplace"))
+   (add-hook! 'flex-init-hook #'(savehist-mode save-place-mode))
+
+   ;; More dealing with whitespace.
+   (add-hook 'prog-mode-hook '(lambda ()
+                                (setq show-trailing-whitespace 1)))
+   ;; Delete trailing whitespace just before saving.
+   (add-hook 'before-save-hook 'delete-trailing-whitespace)
+
+   ;;;
+   ;;; Advising and hooking.
+   ;;;
+   ;;; Functions used are from core/autoload/
+
+   ;; Quit.
+   (advice-add #'quit-window :around #'flex*quit-window)
+
+   ;; We don't want to even bury the *scratch* buffer.
+   (add-hook 'kill-buffer-query-functions #'flex|dont-kill-scratch-buffer)
+
+#+END_SRC
 
 *** Dired
 
 Directory listing in Emacs.
 
 #+begin_src emacs-lisp :name Dired
-  (use-package dired
-    :ensure nil
-      :init
-      ;; Omit the . and .. files.
-      (setq-default dired-omit-mode t)
-      (setq-default dired-omit-verbose nil)
-      (setq-default dired-omit-files "^\\.$\\|^\\.\\.$")
+  ;; Omit the . and .. files cuz we can go up a directory other ways.
+  (setq-default dired-omit-mode t
+                dired-omit-verbose nil
+                dired-omit-files "^\\.$\\|^\\.\\.$")
 
-      ;; Use gls on a Mac
-      (when *is-a-mac*
-        (if (executable-find "gls")
-            (progn
-              (setq insert-directory-program "gls")
-              (setq dired-listing-switches "-lFaGh1v --group-directories-first"))
-          (setq dired-listing-switches "-ahlF"))))
+  ;; Use gls on a Mac
+  (when IS-MAC
+    (if (executable-find "gls")
+        (progn
+          (setq insert-directory-program "gls")
+          (setq dired-listing-switches "-lFaGh1v --group-directories-first"))
+      (setq dired-listing-switches "-ahlF")))
 #+end_src
 
 **** dired-subtree
@@ -697,888 +275,7 @@ Mastering Emacs has a good article on its configuration and usage - [[https://ma
           peep-dired-ignored-extensions '("mkv" "iso" "mp4" "pyc")))
 #+end_src
 
-*** ediff
-
-I really like ediff but I want the split to be vertical not horizontal -
-perversly, in Emacs, "horizontal" is vertical everywhere else.
-
-[[https://coderwall.com/p/mcrwag/use-magit-ediff-to-resolve-merge-conflicts][magit + ediff]] - Use the two together to resolve merge conflicts.
-
-#+begin_src emacs-lisp :name ediff
-  (use-package ediff
-    :defer t
-    :init
-    (setq ediff-split-window-function 'split-window-horizontally
-          ediff-use-long-help-message 1
-          ediff-diff-options "-w"
-
-          ;; This makes the control panel show up inside the original frame.
-          ediff-window-setup-function 'ediff-setup-windows-plain)
-    :config
-    (add-hook 'ediff-after-quit-hook-internal 'winner-undo))
-#+end_src
-
-*** eldoc
-
-minibuffer hints when working with emacs lisp.
-
-#+begin_src emacs-lisp :name eldoc
-  (use-package "eldoc"
-    :diminish eldoc-mode
-    :commands turn-on-eldoc-mode
-    :defer t
-    :init
-    (setq eldoc-idle-delay 0.1))
-#+end_src
-
-*** eww
-
-[[https://www.gnu.org/software/emacs/manual/html_node/eww/index.html#Top][Emacs Web Wowser]] - The Emacs web browser
-
-#+begin_src emacs-lisp :name eww
-  (use-package eww
-    :defer t
-    :config
-    (define-key eww-mode-map "o" 'eww)
-    (define-key eww-mode-map "O" 'eww-browse-with-external-browser)
-
-    ;; https://github.com/m00natic/eww-lnum
-    (use-package eww-lnum
-      :defer t
-      :init
-      (eval-after-load "eww"
-        '(progn
-           (define-key eww-mode-map "f" 'eww-lnum-follow)
-           (define-key eww-mode-map "F" 'eww-lnum-universal)))))
-#+end_src
-
-*** finder
-
-Adds a neat way to look at just the Commentary section - http://irreal.org/blog/?p=6248
-
-#+begin_src emacs-lisp :name finder
-  (use-package finder
-    :bind (
-           :map help-mode-map
-           ("C-c" . finder-commentary)
-           ("C-l" . find-library)))
-#+end_src
-
-*** Help Mode
-
-Some packages and utilities to help with Help Mode
-
-**** help+
-
-[[https://www.emacswiki.org/emacs/help+.el][help+]]
-
-The following bindings are made here:
-
-   `C-h u'      `manual-entry'
-   `C-h C-a'    `apropos'
-   `C-h C-l'    `locate-library'
-   `C-h RET'    `help-on-click/key'
-   `C-h M-a'    `apropos-documentation'
-   `C-h M-o'    `pop-to-help-toggle'
-   `C-h C-M-a'  `tags-apropos'
-   [mouse-1]    `mouse-help-on-click' (non-mode-line)
-   [mouse-1]    `mouse-help-on-mode-line-click' (mode-line)
-
-#+begin_src emacs-lisp :name help-plus
-  (use-package help+
-    :load-path "emacswikilibs/help-plus/")
-#+end_src
-
-**** help-fns
-
-[[https://www.emacswiki.org/emacs/help-fns+.el][help-fns]]
-
-Keys bound here:
-
-   `C-h B'      `describe-buffer'
-   `C-h c'      `describe-command'     (replaces `describe-key-briefly')
-   `C-h o'      `describe-option'
-   `C-h C-c'    `describe-key-briefly' (replaces `C-h c')
-   `C-h C-o'    `describe-option-of-type'
-   `C-h M-c'    `describe-copying'     (replaces `C-h C-c')
-   `C-h M-f'    `describe-file'
-   `C-h M-k'    `describe-keymap'
-   `C-h M-l'    `find-function-on-key'
-
-   #+begin_src emacs-lisp :name help-fns
-  (use-package help-fns+
-    :load-path "emacswikilibs/help-fns-plus/")
-   #+end_src
-
-*** info
-
-Do some fancy things with Info docs.  The "o" character in the Info mode map
-triggers ace-link.
-
-#+begin_src emacs-lisp :name Info
-  (use-package info
-    :bind (:map Info-mode-map
-                ("h" . backward-char)
-                ("l" . forward-char)
-                ("g" . beginning-of-buffer)
-                ("G" . end-of-buffer)
-                ("j" . next-line)
-                ("k" . previous-line)
-                ("a" . beginning-of-line)
-                ("e" . end-of-line)
-                ("]" . ora-para-down)
-                ("[" . ora-para-up)))
-#+end_src
-
-*** midnight
-
-Clean up obsolete buffers.
-
-#+begin_src emacs-lisp :name midnight
-  (use-package midnight)
-#+end_src
-
-*** saveplace
-
-Save our position between sessions
-
-#+begin_src emacs-lisp :name saveplace
-  (use-package saveplace
-    :init
-    ;; Keep Emacs from being slow to exit after enabling saveplace.
-    (setq save-place-forget-unreadable-files nil)
-    (setq save-place-file (expand-file-name "savedplaces" deftmacs-crumbs-directory))
-    :config
-    (save-place-mode 1))
-#+end_src
-
-*** size-inidication-mode
-
-Show the file size.
-
-#+begin_src emacs-lisp :name size-indication-mode
-  (size-indication-mode t)
-  (diminish 'size-indication-mode)
-#+end_src
-
-*** visual-line-mode
-
-"Soft" wrapping of lines
-
-#+begin_src emacs-lisp :name visual-line-mode
-;; Little arrows in the fringe.
-(setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
-#+end_src
-
-*** whitespace
-
-Manage and show whitespace.
-
-#+begin_src emacs-lisp :name whitespace
-  (use-package whitespace
-    :defer t
-    :diminish global-whitespace-mode
-    :init
-    (progn
-      (setq whitespace-style '(face tabs trailing lines tab-mark)
-            whitespace-line-column 105))
-    :config
-    (progn
-      (add-hook 'prog-mode-hook '(lambda ()
-                                   (setq show-trailing-whitespace 1)))))
-#+end_src
-
-Delete trailing whitespace just before saving.
-
-#+begin_src emacs-lisp :name trailing_whitespace
-  (add-hook 'before-save-hook 'delete-trailing-whitespace)
-#+end_src
-
-*** Winner mode
-
-THis is handy for when window splits go off the rails or you want to get the
-original split layout back.
-
-#+begin_src emacs-lisp :name winner mode
-  (winner-mode 1)
-#+end_src
-
-** Highlighting
-
-Non mode or file type specific highlighting, e.g. numbers, current
-line, etc.
-
-*** beacon
-
-[[https://github.com/Malabarba/beacon][Never lose your cursor again]] - Whenever the window scrolls a light will shine on top of your cursor so
-you know where it is.
-
-#+begin_src emacs-lisp :name beacon
-  (use-package beacon
-    :config
-    (beacon-mode 1))
-#+end_src
-
-*** Current line
-
-#+begin_src emacs-lisp :name highlight current line
-  (global-hl-line-mode 1)
-#+end_src
-
-*** Escape sequences
-
-[[https://github.com/dgutov/highlight-escape-sequences/blob/master/highlight-escape-sequences.el][highlight-escape-sequences]] - what the title says.
-
-#+begin_src emacs-lisp :name highlight-escape
-  (use-package highlight-escape-sequences
-    :defer t
-    :init
-    (add-hook 'prog-mode-hook 'hes-mode)
-    :config
-
-    (put 'hes-escape-backslash-face 'face-alias 'font-lock-builtin-face)
-    (put 'hes-escape-sequence-face 'face-alias 'font-lock-builtin-face)
-    )
-#+end_src
-
-*** Numbers
-
-[[https://github.com/Fanael/highlight-numbers][highlight-numbers]] - Highlight numeric literals in source code.
-
-#+begin_src emacs-lisp :name highlight-numbers
-  (use-package highlight-numbers
-    :defer t
-    :init (add-hook 'prog-mode-hook #'highlight-numbers-mode))
-#+end_src
-
-*** Parenthesis
-
-#+begin_src emacs-lisp :name highlight parenthesis
-  (setq show-paren-delay 0)
-  (show-paren-mode 1)
-#+end_src
-
-*** Quotes
-
-[[https://github.com/Fanael/highlight-quoted][highlight-quoted]] - Highlight Lisp quotes and quoted symbols
-
-#+begin_src emacs-lisp :name highlight-quoted
-  (use-package highlight-quoted
-    :config
-    (add-hook 'emacs-lisp-mode-hook 'highlight-quoted-mode))
-#+end_src
-
-*** Symbols
-
-[[https://github.com/gennad/auto-highlight-symbol][highlight-symbol]] - Highlight the symbol under point.
-
-#+begin_src emacs-lisp :name highlight-symbol
-  (use-package auto-highlight-symbol
-    :diminish auto-highlight-symbol-mode
-    :init
-    (setq ahs-case-fold-search nil
-          ahs-default-range 'ahs-range-whole-buffer
-          ahs-idle-interval 0.25
-          ahs-inhibit-face-list nil)
-    (add-hook 'prog-mode-hook 'auto-highlight-symbol-mode)
-    ;; but a box around the face.
-    (custom-set-faces `(ahs-face ((t (:box t)))))
-    (custom-set-faces `(ahs-definition-face ((t (:box t)))))
-    (custom-set-faces `(ahs-plugin-whole-buffer-face ((t (:box t)))))
-    )
-
-  (defun toggle-auto-highlight-symbol ()
-    "Toggle the auto-highlight-symbol-mode"
-    (interactive)
-    (if auto-highlight-symbol-mode
-        (auto-highlight-symbol-mode -1)
-      (auto-highlight-symbol-mode)))
-#+end_src
-
-*** Volatile highlights
-
-[[https://www.emacswiki.org/emacs/VolatileHighlights][Volatile highlights]] - temporarily highlights changes to the buffer associated with certain commands that
-add blocks of text at once. An example is that if you paste (yank) a block of text, it will be
-highlighted until you press the next key.
-
-#+begin_src emacs-lisp :naame volatile-highlights
-  (use-package volatile-highlights
-    :config
-    (volatile-highlights-mode 1))
-#+end_src
-*** Window changes
-
-Indicate buffer boundaries and scrolling.
-
-#+begin_src emacs-lisp :name window changes
-  (setq-default inidicate-buffer-boundaries 'right)
-#+end_src
-
-** Org mode
-
-The manual: [[http://orgmode.org/manual/index.html][Org Manual]]
-
-[[http://orgmode.org/manual/Easy-templates.html#Easy-templates][Easy templates:]]
-
-<s <TAB> expands/completes the 'src' block
-<e <TAB> -> example block
-<q <TAB> -> quote
-<v <TAB> -> verse; renders block quotes and newline breaks
-
-Possibilities for adding unicode characters:
-http://heikkil.github.io/blog/2015/03/22/hydra-for-unicode-input-in-emacs/
-http://thewanderingcoder.com/2015/03/emacs-org-mode-styling-non-smart-quotes-zero-width-space-and-tex-input-method/
-
-Markup:
-
-http://ergoemacs.org/emacs/emacs_org_markup.
-
-*** library of functions for Org mode
-
-TODO: Change the size or the screenshot before pasting it in.
-
-#+begin_src emacs-lisp :name deftmacs-org-functions
-  ;; Modified from -> http://stackoverflow.com/a/31868530
-  (defun defmacs::org-paste-screenshot ()
-    "Paste the screenshot previously taken by the OS."
-    (interactive)
-    (org-display-inline-images)
-    (setq filename
-          (concat
-           (make-temp-name
-            (concat (file-name-nondirectory (buffer-file-name))
-                    "_imgs/"
-                    (format-time-string "%Y%m%d_%H%M%S_")) ) ".png"))
-    (unless (file-exists-p (file-name-directory filename))
-      (make-directory (file-name-directory filename)))
-                                          ; take screenshot
-    (if (eq system-type 'darwin)
-        (call-process "pngpaste" nil nil nil filename))
-                                          ;(call-process "screencapture" nil nil nil "-i" filename))
-    (if (eq system-type 'gnu/linux)
-        (call-process "import" nil nil nil filename))
-                                          ; insert into file if correctly taken
-    (if (file-exists-p filename)
-        (insert (concat "[[file:" filename "]]"))))
-#+end_src
-
-*** Initial configuration
-
-#+begin_src emacs-lisp :name Org mode
-    (use-package org-plus-contrib
-      :defer t
-      :mode (("\\.org$" . org-mode))
-      :init
-      (setq org-startup-indented t
-            org-startup-folded "showall"
-            org-ellipsis "⤵"              ;; Make the outline fold more compact.
-            )
-
-      ;; Modifications to Org mode Speed Keys - from Sacha Chau
-      ;; To list all of the Speed Keys, go to the begining of a header and press ?
-      (defun my/org-use-speed-commands-for-headings-and-lists ()
-        "Activate speed commands on list items too."
-        (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
-            (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
-      (setq org-use-speed-commands 'my/org-use-speed-commands-for-headings-and-lists)
-
-      :config
-      (org-load-modules-maybe t)
-      ;; Some general configuration.
-      (add-hook 'org-mode-hook (lambda ()
-                                  (visual-line-mode 1)  ;; soft wrap
-                                  (setq fill-column 120))))
-    (eval-after-load 'org-mode
-      (diminish 'org-indent-mode))
-
-
-
-  ;; Tracking TODO state changes
-  ;; The ! exclamation will add a timestamp
-  ;; The @ ampersand will ask for a note with time-stamp
-  (setq org-todo-keywords
-        '((sequence "TODO(t!)" "WORKING(w!)" "DONE(d!)" "CANCELLED(c@!)" )))
-#+end_src
-
-*** Tags
-
-Display TAGS from column 72
-
-#+begin_src emacs-lisp :name org-tags
-  (setq org-tags-column -72)
-#+end_src
-
-*** org-bullets
-
-[[https://github.com/sabof/org-bullets][org-bullets]] - UTF-8 bullets for org-mode bullets
-
-#+begin_src emacs-lisp :name org-bullets
-(use-package org-bullets
-  :defer t
-  :init
-  (add-hook 'org-mode-hook (lambda ()
-                             (org-bullets-mode 1))))
-#+end_src
-
-*** org-capture & org-protocol
-
-[[http://christiantietze.de/posts/2018/05/emacs-org-mode-global-capture-macos/][global-capture-macos]]
-
-#+BEGIN_SRC emacs-lisp :name org-capture
-
-(setq org-modules (quote (org-protocol)))
-
-  (setq org-capture-templates
-          (quote (("t" "todo" entry (file "~/tmp/Notes/general.org")
-                   "* TODO %?\n%a\n"))))
-#+END_SRC
-
-*** org-download
-
-[[https://github.com/abo-abo/org-download][org-download]] - Drag/drop/download images into Org
-
-#+begin_src emacs-lisp :name org-download
-  (use-package org-download)
-#+end_src
-
-** Navigation
-
-*** ace-link
-
-[[https://github.com/abo-abo/ace-link][ace-link]] - Select a link to jump to in Info, help, woman, org or eww modes
-
-#+begin_src emacs-lisp :name ace-link
-  (use-package ace-link
-    :commands ace-link-setup-default
-    :init (ace-link-setup-default))
-#+end_src
-
-*** ace-window
-
-[[https://github.com/abo-abo/ace-window][ace-window]] - Selecting a window to switch to
-
-#+begin_src emacs-lisp :name ace-window
-(use-package ace-window
-  :defer t
-  :config
-  (setq aw-keys '(?a ?s ?d ?f ?j ?k ?l)
-	aw-leading-char-style 'path)
-  (set-face-attribute 'aw-leading-char-face nil :height 3.0))
-#+end_src
-
-*** counsel/ivy/avy/swiper
-
-[[https://github.com/abo-abo/swiper][avy, ivy, counsel and swiper]] - avy, ivy, counsel and swiper from the great abo-abowho also came up with hydra.
-
-- Ivy, a generic completion mechanism for Emacs.
-- Counsel, a collection of Ivy-enhanced versions of common Emacs commands.
-- Swiper, an Ivy-enhanced alternative to isearch.
-
-Turning on counsel-mode to see remaps of Emacs commands - https://github.com/abo-abo/swiper#user-content-counsel
-
-#+begin_src emacs-lisp :name counsel
-  (use-package counsel
-    :config (counsel-mode 1)
-    :bind (("C-h f" . counsel-describe-function)
-           ("C-h v" . counsel-describe-variable)
-           ("C-h i" . counsel-info-lookup-symbol)))
-#+end_src
-
-#+begin_src emacs-lisp :name swiper
-(use-package swiper
-    :bind (:map ivy-minibuffer-map
-                ("C-w" . ivy-yank-word)
-                ([escape] . minibuffer-keyboard-quit))
-    :config
-    (ivy-mode 1))
-#+end_src
-
-#+begin_src emacs-lisp :name avy
-(use-package avy
-    :config
-    (setq avy-background t
-          avy-all-windows nil))
-#+end_src
-
-*** Helm
-
-[[https://github.com/emacs-helm-helm][Helm]]
-
-#+begin_src emacs-lisp :name Helm
-  (use-package helm
-    :init
-  ;  (use-package helm-config)
-   ; (use-package helm-man)
-   ; (use-package helm-org)
-   ; (use-package helm-mt)
-   ; (use-package helm-ring)
-    (use-package helm-ag
-      :init
-      (setq helm-ag-fuzzy-match t
-            helm-ag-use-agignore t
-            helm-ag-command-option "--ignore-dir elpa"))
-
-    ;; options
-    (setq helm-idle-delay                        0.0    ; Update fast sources immediately (doesn't).
-          helm-move-to-line-cycle-in source
-          helm-input-idle-delay                  0.01   ; This actually updates things reeeelatively quickly.
-          helm-quick-update                      t
-          helm-M-x-requires-pattern              nil
-          helm-candidate-number-limit            99     ; Setting this above 100 will slow down fuzzy matching
-          helm-autoresize-max-height             45     ; Set the max window height to 45% of current frame.
-          helm-mode-fuzzy-match                  t      ; Turn on fuzzy matching for buffers, semantic, recentf
-          helm-completion-in-region-fuzzy-match  t      ; Completion, imenu, apropos, M-x
-          helm-buffer-skip-remote-checking       t      ; Ignore checking if file exists on remote files, ie. Tramp
-          helm-tramp-verbose                     6      ; See Tramp messages in helm
-          helm-ff-skip-boring-files              t)
-
-    (helm-autoresize-mode t)
-
-    ;; helm-ag and find-grep in find-files or helm-mini
-    (when (executable-find "ag")
-      (setq helm-grep-default-command "ag "))
-
-    ;; Save the current position to mark ring when jumping around.
-    (add-hook 'helm-goto-line-before-hook 'helm-save-current-pos-to-mark-ring)
-
-    (helm-mode))
-#+end_src
-
-*** Projectile
-
-[[https://github.com/bbatsov/projectile][Projectile]] for sane project management.
-
-#+begin_src emacs-lisp :name Projectile
-  (use-package projectile
-    :defer t
-    :commands (projectile-project-root)
-    :init (add-hook 'after-init-hook 'projectile-global-mode)
-    :config
-    (setq projectile-globally-ignored-file-suffixes '("*.pyc"  "*.class"))
-    (setq projectile-completion-system 'ivy
-          projectile-enable-caching t
-          projectile-use-git-grep t
-          ;; projectile-indexing-method 'native
-          projectile-remember-window-configs t
-          projectile-switch-project-action 'projectile-find-file)
-    (add-to-list 'projectile-globally-ignored-files ".DS_Store")
-    (add-to-list 'projectile-globally-ignored-files "*.i")
-    (setq projectile-globally-ignored-directories
-          (append projectile-globally-ignored-directories '(".git"
-                                                            ".hg"
-                                                            ".cache"
-                                                            "__pycache__"
-                                                            ".mypy_cache"
-                                                            "elpa")))
-    )
-#+end_src
-
-***** helm-projectile
-
-[[http://tuhdo.github.io/helm-projectile.html][helm-projectile]] use helm to
-find files & buffers in projectile with a good explanation [[http://tuhdo.github.io/helm-projectile.html][Exploring large projects]]
-
-#+begin_src emacs-lisp :name helm-projectile
-  (use-package helm-projectile
-    :defer t
-    :config
-    (setq helm-projectile-sources-list
-          '(helm-source-projectile-projects
-            helm-source-projectile-recentf-list
-            helm-source-projectile-buffers-list
-            helm-source-projectile-files-list))
-    (helm-projectile-on))
-
-  (setq projectile-indexing-method 'native)
-#+end_src
-
-** Completion
-
-*** Company
-
-[[http://company-mode.github.io/][Company Completion]] - text completion framework.
-
-#+begin_src emacs-lisp :name company
-    (use-package company
-      :defer t
-      :diminish company-mode
-      :bind (:map company-active-map
-                 ("M-n" . nil)
-                 ("M-p" . nil)
-                 ([tab] . company-complete)
-                 ("C-n" . company-select-next)
-                 ("C-p" . company-select-previous)
-                 ("C-;" . helm-company))
-      :init
-      (setq company-idle-delay 0.1
-            company-tooltip-limit 99
-            company-minimum-prefix-length 2
-            company-echo-delay 0                ; Remove annoying blinking
-            company-selection-wrap-around t
-            company-show-numbers t
-            ;; change the navigation direction if the popup is near the bottom of
-            ;; of the window
-            company-tooltip-flip-when-above t
-            company-dabbrev-downcase nil
-            company-dabbrev-code-everywhere t
-            company-backends '((company-capf
-                                company-dabbrev
-                                company-dabbrev-code)))
-
-  ;; The current candidate isn't displayed inline except when there's only one
-  ;; left. You can rectify this by switching out
-  ;; company-preview-if-just-one-frontend for company-preview-frontend:
-  ;; (setq company-frontends
-  ;;       '(company-pseudo-tooltip-unless-just-one-frontend
-  ;;         company-preview-frontend
-  ;;         company-echo-metadata-frontend))
-
-  ;; (setq company-auto-complete nil)
-
-      :config
-      (use-package helm-company
-        :bind (:map company-mode-map
-                 ("C-;" . helm-company)))
-
-      (global-company-mode))
-#+end_src
-
-**** company-jedi
-
-[[https://github.com/syohex/emacs-company-jedi][company-jedi]] - a company mode completion backend for Python Jedi.
-
-Use a python-mode-hook to add company-jedi backend as a local variable when
-python files are opened.
-
-#+begin_src emacs-lisp :name company-jedi
-    (use-package company-jedi
-      :defer t)
-#+end_src
-
-**** company-quickhelp
-
-[[https://github.com/expez/company-quickhelp][company-quickhelp]] - Documentation popup for company mode.
-
-#+begin_src emacs-lisp :name company-quickhelp
-  (use-package company-quickhelp
-    :init
-    (setq company-quickhelp-delay 1.0
-          company-quickhelp-max-lines 30)
-    :config (company-quickhelp-mode 1))
-#+end_src
-
-** Version Control
-*** Settings
-
-Follow symlinks
-
-#+begin_src emacs-lisp :name follow symlinks
-  (setq vc-follow-symlinks t)
-#+end_src
-
-**** TODO: Look into git-link - https://github.com/sshaw/git-link
-It is used primarily in conjunction with git-timemachine
-
-*** git-gutter
-
-[[https://github.com/syohex/emacs-git-gutter][git-gutter]] - highlight uncomitted changes to the buffer - works with Hg & Git.
-
-#+begin_src emacs-lisp :name git-gutter
-  (use-package git-gutter
-    :commands global-git-gutter-mode
-    :diminish git-gutter-mode
-    :init
-    (setq git-gutter:update-interval 0.1
-          git-gutter:ask-p nil
-          git-gutter:verbosity 0
-          git-gutter:handled-backends '(git))
-
-    (add-hook 'git-gutter:update-hooks 'magit-after-revert-hook)
-    (add-hook 'git-gutter:update-hooks 'magit-not-reverted-hook)
-    (add-hook 'git-gutter:update-hooks 'vc-checkin-hook)
-    (add-hook 'git-gutter:update-hooks 'focus-in-hook)
-    (add-hook 'git-gutter:update-hooks 'auto-revert-mode-hook)
-    (add-hook 'git-gutter:update-hooks 'after-revert-hook)
-    (global-git-gutter-mode 1))
-
-  (use-package fringe-helper
-    :load-path "~/tmp/fringe-helper.el")
-
-  (use-package git-gutter-fringe)
-  (require 'git-gutter-fringe)
-
-  ;; Update git-gutter on focus (in case I was using git externally) - from hlissner's emacs config.
-  (add-hook 'focus-in-hook #'git-gutter:update-all-windows)
-
-  (set-face-foreground 'git-gutter-fr:modified "blue3")
-  (set-face-foreground 'git-gutter:modified "blue3")
-#+end_src
-
-**** git-gutter hunks and ivy mode
-
-[[http://blog.binchen.org/posts/enhance-emacs-git-gutter-with-ivy-mode.html][git-gutter and ivy mode]] - traverse git-gutter hunks using ivy mode.
-
-#+begin_src emacs-lisp :name git-gutter and ivy
-  (require 'ivy)
-  (require 'git-gutter)
-
-  (defun my-reshape-git-gutter (gutter)
-    "Re-shape gutter for `ivy-read'."
-    (let* ((linenum-start (aref gutter 3))
-           (linenum-end (aref gutter 4))
-           (target-line "")
-           (target-linenum 1)
-           (tmp-line "")
-           (max-line-length 0))
-      (save-excursion
-        ;; find out the longest stripped line in the gutter
-        (while (<= linenum-start linenum-end)
-          (goto-line linenum-start)
-          (setq tmp-line (replace-regexp-in-string "^[ \t]*" ""
-                                                   (buffer-substring (line-beginning-position)
-                                                                     (line-end-position))))
-          (when (> (length tmp-line) max-line-length)
-            (setq target-linenum linenum-start)
-            (setq target-line tmp-line)
-            (setq max-line-length (length tmp-line)))
-
-          (setq linenum-start (1+ linenum-start))))
-      ;; build (key . linenum-start)
-      (cons (format "%s %d: %s"
-                    (if (eq 'deleted (aref gutter 1)) "-" "+")
-                    target-linenum target-line)
-            target-linenum)))
-
-  (defun my-goto-git-gutter ()
-    (interactive)
-    (if git-gutter:diffinfos
-        (let* ((collection (mapcar 'my-reshape-git-gutter
-                                   git-gutter:diffinfos)))
-          (ivy-read "git-gutters:"
-                    collection
-                    :action (lambda (linenum)
-                              (goto-line linenum))))
-      (message "NO git-gutters!")))
-#+end_src
-
-*** git-messenger
-
-[[https://github.com/syohex/emacs-git-messenger][git-messenger]] provides a function that pops up the commit message of the current
-line.  Useful for quickly seeing why a line has changed.
-
-#+begin_src emacs-lisp :name git-messenger
-(use-package git-messenger
-  :defer t
-  :init
-  (progn
-    (setq git-messenger:show-detail t
-          git-messenger:handled-backends '(git)))
-  :config (define-key git-messenger-map (kbd "m") 'git-messenger:copy-message))
-#+end_src
-
-*** git-timemachine
-
-[[https://github.com/pidu/git-timemachine][git-timemachine]] - allows you to go back and forth to the revisions of a file.
-
-#+begin_src emacs-lisp :name git-timemachine
-(use-package git-timemachine
-  :defer t
-  :bind ("C-c t" . git-timemachine))
-
-;; From redguardtoo - http://blog.binchen.org/posts/new-git-timemachine-ui-based-on-ivy-mode.html
-(defun my-git-timemachine-show-selected-revision ()
-  "Show last (current) revision of file."
-  (interactive)
-  (let (collection)
-    (setq collection
-          (mapcar (lambda (rev)
-                    ;; re-shape list for the ivy-read
-                    (cons (concat (substring (nth 0 rev) 0 7) "|" (nth 5 rev) "|" (nth 6 rev)) rev))
-                  (git-timemachine--revisions)))
-    (ivy-read "commits:"
-              collection
-              :action (lambda (rev)
-                        (git-timemachine-show-revision rev)))))
-
-(defun my-git-timemachine ()
-  "Open git snapshot with the selected version.  Based on ivy-mode."
-  (interactive)
-  (unless (featurep 'git-timemachine)
-    (require 'git-timemachine))
-  (git-timemachine--start #'my-git-timemachine-show-selected-revision))
-#+end_src
-
-*** gitignore-mode
-
-[[https://github.com/magit/git-modes][git-modes]] - pull in the mode for editing .gitignore files.
-
-#+begin_src emacs-lisp :name gitignore-mode
-(use-package gitignore-mode
-  :defer t)
-#+end_src
-*** Magit
-
-[[https://github.com/magit/magit][Magit]] - The best git porcelain in the world!
-https://magit.vc/
-
-#+begin_src emacs-lisp :name magit
-(use-package magit
-  :defer t
-  :config
-  (setq  magit-log-arguments '("--graph" "--decorate" "--color")
-          magit-save-repository-buffers 'dontask
-          magit-revert-buffers 'silent))
-#+end_src
-
-**** CANCELED Magithub
-
-[[https://github.com/vermiculus/magithub][Magithub]] - A collection of interfaces to get Github integrated into
-Magit workflows.
-
-Wed Apr 25 14:40:52 2018 - CANCELED because it was having issues
-finding ~/.authinfo  Not sure why.
-
-#+BEGIN_SRC emacs-lisp :name magithub
-  (use-package magithub
-    :after magit
-    :config
-    (magithub-feature-autoinject t)
-    (setq magithub-clone-default-directory "~/github"))
-#+END_SRC
-
-** Editing with Ginzu knives
-*** easy-kill
-
-[[https://github.com/leoliu/easy-kill][easy-kill]] kill or mark things easily
-
-#+BEGIN_SRC emacs-lisp :name easy-kill
-(use-package easy-kill
-  :defer t)
-#+END_SRC
-
-*** move-text
-
-[[https://github.com/emacsfodder/move-text][move-text]] - Move region or current line up or down.
-
-#+BEGIN_SRC emacs-lisp :name move-text
-(use-package move-text
-   :defer t
-   :config (move-text-default-bindings))
-#+END_SRC
-
-*** zzz-to-char
-
-[[https://github.com/mrkkrp/zzz-to-char][zzz-to-char]] - Fancy replacement for zap-to-char in Emacs.  Allows you to
-quickly select the exact char you want to zap to.
-
-#+begin_src emacs-lisp :name zzz-to-char
-(use-package zzz-to-char
-  :init (setq zzz-to-char-reach 120))
-#+end_src
-
-** General Utilities
-
-*** Shells and Terminals inside of Emacs
+*** Shells & Terminals
 
     Another possible fix for term/zsh problems if they occur - https://stackoverflow.com/questions/8918910/weird-character-zsh-in-emacs-terminal
     Found a fix for the term+zsh problem - https://www.reddit.com/r/emacs/comments/5p3njk/help_terminal_zsh_control_characters_in_prompt/
@@ -1653,26 +350,187 @@ quickly select the exact char you want to zap to.
                       ("M-." . comint-dynamic-complete)))))))
 #+END_SRC
 
-*** evil-nerd-commenter
+** Editor Modes
 
-[[https://github.com/redguardtoo/evil-nerd-commenter][evil-nerd-commenter]] Even though I don't use Evil, this works outside of evil and is a
-better comment/uncomment.
+Things from the intertubes that improve upon Emacs the editor, e.g. completion, navigation, etc.
 
-#+BEGIN_SRC emacs-lisp :name evil-nerd-commenter
-  (use-package evil-nerd-commenter
-    :bind ("s-;" . evilnc-comment-or-uncomment-lines))
+*** ace-link
+
+[[https://github.com/abo-abo/ace-link][ace-link]] - Select a link to jump to in Info, help, woman, org or eww modes
+
+#+begin_src emacs-lisp :name ace-link
+  (use-package ace-link
+    :commands (ace-link-help ace-link-org ace-link-setup-default)
+    :init (ace-link-setup-default))
+#+end_src
+
+*** ace-window
+
+[[https://github.com/abo-abo/ace-window][ace-window]] - Selecting a window to switch to
+
+#+begin_src emacs-lisp :name ace-window
+(use-package ace-window
+  :config
+  (setq aw-keys '(?a ?s ?d ?f ?j ?k ?l)
+	aw-leading-char-style 'path)
+  (set-face-attribute 'aw-leading-char-face nil :height 3.0))
+#+end_src
+
+*** aggressive-indent-mode
+
+[[https://github.com/Malabarba/aggressive-indent-mode][aggressive-indent-mode]] - keep your code nicely aligned while you type.
+
+#+begin_src emacs-lisp :name aggressive-indent-mode
+    (use-package aggressive-indent
+      :commands (aggressive-indent-mode)
+      :config
+      (add-hook! 'prog-mode-hook #'aggressive-indent-mode))
+#+end_src
+
+*** bookmarks+
+
+#+begin_src emacs-lisp :name bookmarks
+  (use-package bookmark+
+    :defer t
+    :load-path "emacswikilibs/bookmark-plus/")
+#+end_src
+
+*** CANCELLED Company
+
+[[http://company-mode.github.io/][Company Completion]] - text completion framework.
+
+#+begin_src emacs-lisp :name company
+    (use-package company
+      :defer t
+      :diminish company-mode
+      :bind (:map company-active-map
+                 ("M-n" . nil)
+                 ("M-p" . nil)
+                 ([tab] . company-complete)
+                 ("C-j" . company-select-next)
+                 ("C-k" . company-select-previous)
+                 ("C-;" . helm-company))
+      :init
+      (setq company-idle-delay 0.1
+            company-tooltip-limit 99
+            company-minimum-prefix-length 2
+            company-echo-delay 0                ; Remove annoying blinking
+            company-selection-wrap-around t
+            company-show-numbers t
+            ;; change the navigation direction if the popup is near the bottom of
+            ;; of the window
+            company-tooltip-flip-when-above t
+            company-dabbrev-downcase nil
+            company-dabbrev-code-everywhere t
+            company-backends '((company-capf
+                                company-dabbrev
+                                company-dabbrev-code)))
+
+  ;; The current candidate isn't displayed inline except when there's only one
+  ;; left. You can rectify this by switching out
+  ;; company-preview-if-just-one-frontend for company-preview-frontend:
+  ;; (setq company-frontends
+  ;;       '(company-pseudo-tooltip-unless-just-one-frontend
+  ;;         company-preview-frontend
+  ;;         company-echo-metadata-frontend))
+
+  ;; (setq company-auto-complete nil)
+
+      :config
+      (use-package helm-company
+        :bind (:map company-mode-map
+                 ("C-;" . helm-company)))
+
+      (global-company-mode))
+#+end_src
+
+**** company-jedi
+
+[[https://github.com/syohex/emacs-company-jedi][company-jedi]] - a company mode completion backend for Python Jedi.
+
+Use a python-mode-hook to add company-jedi backend as a local variable when
+python files are opened.
+
+#+begin_src emacs-lisp :name company-jedi
+    (use-package company-jedi
+      :defer t)
+#+end_src
+
+**** company-quickhelp
+
+[[https://github.com/expez/company-quickhelp][company-quickhelp]] - Documentation popup for company mode.
+
+#+begin_src emacs-lisp :name company-quickhelp
+  (use-package company-quickhelp
+    :init
+    (setq company-quickhelp-delay 1.0
+          company-quickhelp-max-lines 30)
+    :config (company-quickhelp-mode 1))
+#+end_src
+
+*** Counsel, Avy, Ivy, Swiper
+
+[[https://github.com/abo-abo/swiper][avy, ivy, counsel and swiper]] - avy, ivy, counsel and swiper from the great abo-abo,
+who also came up with hydra.
+
+- Ivy, a generic completion mechanism for Emacs.
+- Counsel, a collection of Ivy-enhanced versions of common Emacs commands.
+- Swiper, an Ivy-enhanced alternative to isearch.
+
+Turning on counsel-mode to see remaps of Emacs commands - https://github.com/abo-abo/swiper#user-content-counsel
+
+#+BEGIN_SRC emacs-lisp :name counsel-swiper
+(use-package avy
+  :commands (avy-goto-char-2 avy-goto-line)
+  :config
+  (setq avy-all-windows nil
+        avy-background t))
+
+(use-package counsel
+  :commands counsel-mode
+  :bind (:map ivy-minibuffer-map
+              ([escape] . minibuffer-keyboard-quit))
+  :init
+  (setq counsel-rg-base-command
+        "rg -i -M 120 --no-heading --line-number --color never %s .")
+  :config
+  (counsel-mode 1)
+)
+
+(use-package swiper
+  :commands (swiper)
+  :bind (:map ivy-minibuffer-map
+              ("C-w" . ivy-backward-kill-word)
+              ("C-y" . ivy-yank-word)
+              ([escape] . minibuffer-keyboard-quit))
+  :init
+  (setq ivy-wrap t     ; make ivy-next-line & ivy-previous-line cycle around.
+        ivy-height 25  ; make the minibuffer just a little taller.
+        ivy-use-virtual-buffers t
+        ivy-count-format "%d/%d"
+        )
+  :config
+  (ivy-mode 1))
+
+  (load "counsel-autoloads" nil nil) ; we really want everything available.
 #+END_SRC
 
-*** Expand region
+*** easy-kill
 
-Gradually expand the region.
+[[https://github.com/leoliu/easy-kill][easy-kill]] kill or mark things easily
+
+#+BEGIN_SRC emacs-lisp :name easy-kill
+(use-package easy-kill
+  :defer t)
+#+END_SRC
+
+*** expand-region
 
 #+BEGIN_SRC emacs-lisp :name expand-region
-  (use-package expand-region
-:commands (er/mark-word er/mark-symbol er/mark-symbol-with-prefix er/mark-next-accessor er/mark-method-call er/mark-inside-quotes er/mark-outside-quotes er/mark-inside-pairs er/mark-outside-pairs er/mark-comment er/mark-url er/mark-email er/mark-defun er/mark-html-attribute er/mark-inner-tag er/mark-outer-tag)
-    :defer t
-    :bind ("C-=" . er/expand-region))
+(use-package expand-region
+  :commands (er/expand-region er/contract-region er/mark-symbol er/mark-word))
 #+END_SRC
+
 *** goto-chg
 
 [[https://github.com/emacs-evil/goto-chg][goto-chg]] - Go to the last change in the buffer.
@@ -1680,6 +538,97 @@ Gradually expand the region.
 #+begin_src emacs-lisp :name goto-chg
 (use-package goto-chg)
 #+end_src
+
+*** Helm
+
+#+BEGIN_SRC emacs-lisp :name Helm
+(use-package helm
+  :commands (helm-mini helm-M-x)
+    :bind (:map helm-map
+              ([escape] . helm-keyboard-quit))
+  :init
+  (setq helm-idle-delay                        1.0    ; Update fast sources immediately (doesn't).
+        helm-input-idle-delay                  0.01   ; This actually updates things reeeelatively quickly.
+        helm-quick-update                      t
+        helm-M-x-requires-pattern              nil
+        helm-candidate-number-limit            99     ; Setting this above 100 will slow down fuzzy matching
+        helm-autoresize-max-height             45     ; Set the max window height to 45% of current frame.
+        helm-mode-fuzzy-match                  t      ; Turn on fuzzy matching for buffers, semantic, recentf
+        helm-completion-in-region-fuzzy-match  t      ; Completion, imenu, apropos, M-x
+        helm-buffer-skip-remote-checking       t      ; Ignore checking if file exists on remote files, ie. Tramp
+        helm-tramp-verbose                     6      ; See Tramp messages in helm
+        helm-ff-skip-boring-files              t)
+  :config
+  (load "helm-autoloads" nil t)
+  (add-hook 'flex-init-hook #'helm-mode)
+
+  ;; helm is too heavy for find-file-at-point
+  (after! helm-mode
+    (add-to-list 'helm-completing-read-handlers-alist '(find-file-at-point . nil)))
+  )
+
+
+#+END_SRC
+
+*** Help Mode Helpers
+
+Some packages and utilities to help with Help Mode
+
+# TODO: fix the keybindings in this section.
+
+**** finder
+
+Adds a neat way to look at just the Commentary section - http://irreal.org/blog/?p=6248
+
+#+begin_src emacs-lisp :name finder
+  (use-package finder
+    :bind (
+           :map help-mode-map
+           ("C-c" . finder-commentary)
+           ("C-l" . find-library)))
+#+end_src
+
+**** help+
+
+[[https://www.emacswiki.org/emacs/help+.el][help+]]
+
+The following bindings are made here:
+
+   `C-h u'      `manual-entry'
+   `C-h C-a'    `apropos'
+   `C-h C-l'    `locate-library'
+   `C-h RET'    `help-on-click/key'
+   `C-h M-a'    `apropos-documentation'
+   `C-h M-o'    `pop-to-help-toggle'
+   `C-h C-M-a'  `tags-apropos'
+   [mouse-1]    `mouse-help-on-click' (non-mode-line)
+   [mouse-1]    `mouse-help-on-mode-line-click' (mode-line)
+
+#+begin_src emacs-lisp :name help-plus
+  (use-package help+
+    :load-path "emacswikilibs/help-plus/")
+#+end_src
+
+**** help-fns
+
+[[https://www.emacswiki.org/emacs/help-fns+.el][help-fns]]
+
+Keys bound here:
+
+   `C-h B'      `describe-buffer'
+   `C-h c'      `describe-command'     (replaces `describe-key-briefly')
+   `C-h o'      `describe-option'
+   `C-h C-c'    `describe-key-briefly' (replaces `C-h c')
+   `C-h C-o'    `describe-option-of-type'
+   `C-h M-c'    `describe-copying'     (replaces `C-h C-c')
+   `C-h M-f'    `describe-file'
+   `C-h M-k'    `describe-keymap'
+   `C-h M-l'    `find-function-on-key'
+
+   #+begin_src emacs-lisp :name help-fns
+  (use-package help-fns+
+    :load-path "emacswikilibs/help-fns-plus/")
+   #+end_src
 
 *** list-environment
 
@@ -1691,67 +640,76 @@ modify them in the *Process Environment* buffer.  =M-x list-environment=
     :defer t)
 #+end_src
 
-*** lorem-ipsum
+*** move-text
 
-[[https://github.com/jschaf/emacs-lorem-ipsum][Lorem Ipsum]] add filler text to whatever you are working on.  The following
-commands are available:
-=lorem-ipsum-insert-sentences=
-=lorem-ipsum-insert-paragraphs=
-=lorem-ipsum-insert-list=
+[[https://github.com/emacsfodder/move-text][move-text]] - Move region or current line up or down.
 
-#+begin_src emacs-lisp :name lorem ipsum
-  (use-package lorem-ipsum
-    :defer t)
-#+end_src
+#+BEGIN_SRC emacs-lisp :name move-text
+(use-package move-text
+  :commands (move-text-up move-text-down))
+#+END_SRC
 
-*** Paradox
-
-Use Paradox to make package management nicer.
-TODO: How do I make better use of this?  Should rebind some keys as well.
-See spacemacs/layers/+distribution/spacemacs/package.el for usage.
-
-#+begin_src emacs-lisp :name Paradox
-(use-package paradox
-  :commands paradox-list-packages
-  :init
-  (progn
-    ;; Shamelessly cribed from Spacemacs - this makes all of the
-    ;; security token be handled gracefully.
-    (defun spacemacs/paradox-list-packages ()
-      "Load depdendencies for auth and open the package list."
-      (interactive)
-      (require 'epa-file)
-      (require 'auth-source)
-      (when (and (not (boundp 'paradox-github-token))
-                 (file-exists-p "~/.authinfo.gpg"))
-        (let ((authinfo-result (car (auth-source-search
-                                     :max 1
-                                     :host "github.com"
-                                     :port "paradox"
-                                     :user "paradox"
-                                     :require '(:secret)))))
-          (let ((paradox-token (plist-get authinfo-result :secret)))
-            (setq paradox-github-token (if (functionp paradox-token)
-                                           (funcall paradox-token)
-                                         paradox-token)))))
-      (paradox-list-packages nil))))
-#+end_src
 *** Persistent Scratch
 [[https://github.com/Fanael/persistent-scratch][
 persistent-scratch]] is an Emacs package that preserves the state of scratch buffers across
 Emacs sessions by saving the state to and restoring it from a file.
 
 #+begin_src emacs-lisp :name persistent-scratch
-  (use-package persistent-scratch
-    :init
-    (setq persistent-scratch-save-file (expand-file-name "persistent-scratch" deftmacs-crumbs-directory))
-    :config
-    (persistent-scratch-setup-default))
+(use-package persistent-scratch
+  :commands (persistent-scratch-setup-default)
+  :init
+  ;;(setq initial-major-mode 'emacs-lisp-mode)
+  (setq persistent-scratch-save-file (expand-file-name "persistent-scratch" flex-etc-dir))
+  :config
+  (persistent-scratch-setup-default))
+#+end_src
 
-  ;; *scratch* is immortal - dont kill it accidentally
-  (add-hook 'kill-buffer-query-functions
-            (lambda ()
-              (not (member (buffer-name) '("*scratch*" "scratch.el")))))
+*** Projectile
+
+[[https://github.com/bbatsov/projectile][Projectile]] for sane project management.
+
+#+begin_src emacs-lisp :name Projectile
+  (use-package projectile
+    :defer t
+    :commands (projectile-global-mode projectile-project-root)
+    :init (add-hook 'after-init-hook 'projectile-global-mode)
+    :config
+    (setq projectile-globally-ignored-file-suffixes '("*.pyc"  "*.class"))
+    (setq projectile-completion-system 'ivy
+          projectile-enable-caching t
+          projectile-use-git-grep t
+          ;; projectile-indexing-method 'native
+          projectile-remember-window-configs t
+          projectile-switch-project-action 'projectile-find-file)
+    (add-to-list 'projectile-globally-ignored-files ".DS_Store")
+    (add-to-list 'projectile-globally-ignored-files "*.i")
+    (setq projectile-globally-ignored-directories
+          (append projectile-globally-ignored-directories '(".git"
+                                                            ".hg"
+                                                            ".cache"
+                                                            "__pycache__"
+                                                            ".mypy_cache"
+                                                            "elpa")))
+    )
+#+end_src
+
+***** helm-projectile
+
+[[http://tuhdo.github.io/helm-projectile.html][helm-projectile]] use helm to
+find files & buffers in projectile with a good explanation [[http://tuhdo.github.io/helm-projectile.html][Exploring large projects]]
+
+#+begin_src emacs-lisp :name helm-projectile
+  (use-package helm-projectile
+    :defer t
+    :config
+    (setq helm-projectile-sources-list
+          '(helm-source-projectile-projects
+            helm-source-projectile-recentf-list
+            helm-source-projectile-buffers-list
+            helm-source-projectile-files-list))
+    (helm-projectile-on))
+
+  (setq projectile-indexing-method 'native)
 #+end_src
 
 *** Quickrun
@@ -1768,6 +726,16 @@ Emacs sessions by saving the state to and restoring it from a file.
                quickrun-replace-region))
 #+end_src
 
+*** Rainbow Delimiters
+
+[[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]] - rainbow parenthesis
+
+#+begin_src emacs-lisp :name rainbow-delimiters
+  (use-package rainbow-delimiters
+    :config
+    (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+#+end_src
+
 *** Rainbow mode
 
 [[https://julien.danjou.info/projects/emacs-packages][rainbow-mode]] - Show hex codes as their actual color.
@@ -1782,39 +750,48 @@ Emacs sessions by saving the state to and restoring it from a file.
     (setq rainbow-x-colors nil))
 #+end_src
 
-*** smartparens
+*** Smartparens
 
 [[https://github.com/Fuco1/smartparens][smartparens]] - deals with parens pairs and tries to be smart about it.
 
 A [[https://ebzzry.github.io/emacs-pairs.html][great article]] showing how to use it effectively, extensive documentation
 in the [[https://github.com/Fuco1/smartparens/wiki][wiki]] and a [[https://www.reddit.com/r/emacs/comments/38k1j5/paredit_smartparens_autopair/][reddit article]] with comparisons to autopair, paredit & lispy.
 
-#+begin_src emacs-lisp :name smartparens
-  (use-package smartparens
-    :ensure t
-    :diminish smartparens-mode
-    :config
-    ;; Handle single quotes and apostrophes correctly in lisp like languages.
-    ;; From https://github.com/Fuco1/smartparens/issues/286
-    (sp-with-modes sp-lisp-modes
-      ;; disable ', it's the quote character!
-      (sp-local-pair "'" nil :actions nil)
-      ;; also only use the pseudo-quote inside strings where it serve as
-      ;; hyperlink.
-      (sp-local-pair "`" "'" :when '(sp-in-string-p sp-in-comment-p))
-      (sp-local-pair "`" nil
-                     :skip-match (lambda (ms mb me)
-                                   (cond
-                                    ((equal ms "'")
-                                     (or (sp--org-skip-markup ms mb me)
-                                         (not (sp-point-in-string-or-comment))))
-                                    (t (not (sp-point-in-string-or-comment)))))))
+#+BEGIN_SRC emacs-lisp :name smartparens
+(use-package smartparens
+  :hook (flex-init . smartparens-global-mode)
+  :config
+  (require 'smartparens-config)
 
-    (show-smartparens-global-mode t))
+  (setq sp-autowrap-region nil ; let evil-surround handle this
+        sp-highlight-pair-overlay nil
+        sp-cancel-autoskip-on-backward-movement nil
+        sp-show-pair-delay 0
+        sp-max-pair-length 3)
 
-  (add-hook 'prog-mode-hook 'turn-on-smartparens-strict-mode)
-  (add-hook 'markdown-mode-hook 'turn-on-smartparens-strict-mode)
-#+end_src
+  ;; disable smartparens in evil-mode's replace state (they conflict)
+  (add-hook 'evil-replace-state-entry-hook #'turn-off-smartparens-mode)
+  (add-hook 'evil-replace-state-exit-hook  #'turn-on-smartparens-mode)
+
+  (sp-local-pair '(xml-mode nxml-mode php-mode) "<!--" "-->"
+                 :post-handlers '(("| " "SPC"))))
+#+END_SRC
+
+*** Super Save
+
+[[https://github.com/bbatsov/super-save][super-save]] - An auto-saving library.
+https://emacsredux.com/blog/2018/09/29/super-save-0-dot-3/
+
+#+BEGIN_SRC emacs-lisp :name super-save
+(use-package super-save
+  :commands (super-save-mode super-save-triggers super-save-hook-triggers)
+  :init
+  (setq super-save-remote-files nil)
+  :config
+  (add-to-list 'super-save-triggers 'ace-window)
+  (add-to-list 'super-save-hook-triggers 'find-file-hook)
+  (super-save-mode +1))
+#+END_SRC
 
 *** Undo Tree
 
@@ -1822,82 +799,483 @@ in the [[https://github.com/Fuco1/smartparens/wiki][wiki]] and a [[https://www.r
 editors.  There is also =undo-tree-visualize= that allows you to visually
 walk through the changes that you have made.
 
+There are a couple of bugs because of changes(?) in Emacs 26.x :
+https://old.reddit.com/r/emacs/comments/85t95p/undo_tree_unrecognized_entry_in_undo_list/
+https://www.reddit.com/r/emacs/comments/9zxnvm/undotreevisualize_super_slow/
+
 #+begin_src emacs-lisp :name undo-tree
-  (use-package undo-tree
-    :defer t
-    :diminish undo-tree-mode
-    :init
-    (setq undo-tree-visualizer-timestamps t)
-    (setq undo-tree-visualizer-diff t)
-    (global-undo-tree-mode)
-    :config
-    ;; Get rid of linum glitches with undo-tree
-    (defun undo-tree-visualizer-update-linum (&rest args)
-      (linum-update undo-tree-visualizer-parent-buffer))
-    (advice-add 'undo-tree-visualize-undo :after #'undo-tree-visualizer-update-linum)
-    (advice-add 'undo-tree-visualize-redo :after #'undo-tree-visualizer-update-linum)
-    (advice-add 'undo-tree-visualize-undo-to-x :after #'undo-tree-visualizer-update-linum)
-    (advice-add 'undo-tree-visualize-redo-to-x :after #'undo-tree-visualizer-update-linum)
-    (advice-add 'undo-tree-visualizer-mouse-set :after #'undo-tree-visualizer-update-linum)
-    (advice-add 'undo-tree-visualizer-set :after #'undo-tree-visualizer-update-linum))
+(use-package undo-tree
+  :commands (undo-tree-redo)
+  :init
+  (setq undo-tree-enable-undo-in-region nil)
+  :config
+  (add-hook 'flex-init-hook #'global-undo-tree-mode)
+  ;; persistent undo history is known to cause undo history corruption, which
+  ;; can be very destructive! So disable it!
+  (setq undo-tree-auto-save-history nil
+	    undo-tree-visualizer-timestamps t
+	    undo-tree-visualizer-diff t
+        undo-tree-history-directory-alist
+        (list (cons "." (concat flex-cache-dir "undo-tree-hist/")))))
 #+end_src
 
-*** whole-line-or-region
+*** wgrep
 
-[[https://github.com/purcell/whole-line-or-region][whole-line-or-region]] - what it says.  This abstracts "i just want to
-copy a whole line" without worrying about a bunch of nonsense.
+[[https://github.com/mhayashi1120/Emacs-wgrep][wgrep]] - Allows you to edit a grep buffer and apply those changes to the file buffer.
 
-#+BEGIN_SRC emacs-lisp :name whole-line-or-region
-  (use-package whole-line-or-region
-    :config
-    (whole-line-or-region-global-mode 1))
+# TODO: Is this handled properly by =evil-collections?=
+
+Usage:
+You can edit the text in the *grep* buffer after typing `C-c C-p`.
+After that the changed text is highlighted.
+The following keybindings are defined:
+
+- `C-c C-e`: Apply the changes to file buffers.
+- `C-c C-u`: All changes are unmarked and ignored.
+- `C-c C-d`: Mark as delete to current line (including newline).
+- `C-c C-r`: Remove the changes in the region (these changes are not applied to the files. Of course, the remaining changes can still be applied to the files.)
+- `C-c C-p`: Toggle read-only area.
+- `C-c C-k`: Discard all changes and exit.
+- `C-x C-q`: Exit wgrep mode.
+
+To save all buffers that wgrep has changed, run
+
+    M-x wgrep-save-all-buffers
+
+To save buffer automatically when `wgrep-finish-edit'.
+
+    (setq wgrep-auto-save-buffer t)
+
+You can change the default key binding to switch to wgrep.
+
+    (setq wgrep-enable-key "r")
+
+To apply all changes wheather or not buffer is read-only.
+
+    (setq wgrep-change-readonly-file t)
+
+#+BEGIN_SRC emacs-lisp :name wgrep
+(use-package wgrep
+  :commands (wgrep-setup wgrep-change-to-wgrep-mode)
+  :config (setq wgrep-auto-save-buffer t))
 #+END_SRC
 
-*** wrap-region
+*** zzz-to-char
 
-[[https://github.com/rejeep/wrap-region.el][wrap-region]] - Wrap a region with punctuation or tags
+[[https://github.com/mrkkrp/zzz-to-char][zzz-to-char]] - Fancy replacement for zap-to-char in Emacs.  Allows you to
+quickly select the exact char you want to zap to.
 
-#+begin_src emacs-lisp :name wrap-region
-  (use-package wrap-region
-    :diminish wrap-region-mode
+#+begin_src emacs-lisp :name zzz-to-char
+(use-package zzz-to-char
+  :init (setq zzz-to-char-reach 120))
+#+end_src
+
+* Evil
+
+There are a couple of in spacemacs & doom-emacs
+
+** Evil Mode settings
+
+Basic settings and configuration for evil-mode.  Keybindings and mappings are
+done in the =Keybindings= section at the end of this file.
+
+#+BEGIN_SRC emacs-lisp :name evil-mode
+(use-package evil
+  :commands evil-mode
+  :init
+  (setq evil-default-state      'normal
+        evil-want-C-u-scroll    t
+        evil-want-C-w-delete    t
+        evil-esc-delay          0
+        evil-want-Y-yank-to-eol t
+        evil-shift-width        4
+        evil-want-integration   t
+        evil-want-keybinding    nil  ; this is for evil-collection
+        evil-want-C-i-jump      t)
+  (setq-default evil-symbol-word-search 1)
+
+  (evil-mode 1)
+  :config
+
+  ;; https://emacs.stackexchange.com/questions/14940/emacs-doesnt-paste-in-evils-visual-mode-with-every-os-clipboard/15054#15054
+  ;; Imagine the following scenario.  One wants to paste some previously copied
+  ;; (from application other than Emacs) text to the system's clipboard in place
+  ;; of some contiguous block of text in a buffer.  Hence, one switches to
+  ;; `evil-visual-state' and selects the corresponding block of text to be
+  ;; replaced.  However, one either pastes some (previously killed) text from
+  ;; `kill-ring' or (if `kill-ring' is empty) receives the error: "Kill ring is
+  ;; empty"; see `evil-visual-paste' and `current-kill' respectively.  The
+  ;; reason why `current-kill' does not return the desired text from the
+  ;; system's clipboard is because `evil-visual-update-x-selection' is being run
+  ;; by `evil-visual-pre-command' before `evil-visual-paste'.  That is
+  ;; `x-select-text' is being run (by `evil-visual-update-x-selection') before
+  ;; `evil-visual-paste'.  As a result, `x-select-text' copies the selected
+  ;; block of text to the system's clipboard as long as
+  ;; `x-select-enable-clipboard' is non-nil (and in this scenario we assume that
+  ;; it is).  According to the documentation of `interprogram-paste-function',
+  ;; it should not return the text from the system's clipboard if it was last
+  ;; provided by Emacs (e.g. with `x-select-text').  Thus, one ends up with the
+  ;; problem described above.  To solve it, simply make
+  ;; `evil-visual-update-x-selection' do nothing:
+  (fset 'evil-visual-update-x-selection 'ignore)
+
+  ;; More Esc quits
+  (define-key evil-normal-state-map [escape] 'keyboard-quit)
+  (define-key evil-visual-state-map [escape] 'keyboard-quit)
+  (define-key evil-insert-state-map [escape] 'evil-normal-state)
+  (global-set-key [escape] 'evil-exit-emacs-state)
+  )
+#+END_SRC
+
+** Evil Collection
+
+[[https://github.com/emacs-evil/evil-collection][evil-collection]] - A community derived collection of evil-mode bindings for modes/parts of
+Emacs that evil does not cover by default.
+
+#+BEGIN_SRC emacs-lisp :name evil-collection
+(use-package evil-collection
+  :after evil
+  :init
+  (setq evil-collection-company-use-tng nil)
+  :config
+  (evil-collection-init))
+#+END_SRC
+
+** Evil Commentary
+
+[[https://github.com/linktohack/evil-commentary][evil-commentary]] - A port of [[https://github.com/tpope/vim-commentary][vim-commentary]] by tpope
+
+- =gcc= comments out a line (takes a count)
+- =gc= comments out the target of a motion,
+  e.g. =gcap= to comment out a paragraph (normal state)
+  and =gc= to comment out the selection (visual state).
+
+#+BEGIN_SRC emacs-lisp :name evil-commentary
+  (use-package evil-commentary
+    :commands evil-commentary-mode
     :config
-    (wrap-region-add-wrappers
-     '(("*" "*" nil (org-mode))
-       ("~" "~" nil (org-mode))
-       ("/" "/" nil (org-mode))
-       ("=" "=" "+" (org-mode))
-       ("_" "_" nil (org-mode))
-       ("$" "$" nil (org-mode latex-mode))))
-    (add-hook 'org-mode-hook 'wrap-region-mode))
+    (evil-commentary-mode))
+#+END_SRC
+
+** Evil Magit
+
+[[https://github.com/redguardtoo/evil-nerd-commenter][evil-magit]] - Help Evil & Magit play well together
+
+#+BEGIN_SRC emacs-lisp :name evil-magit
+(use-package evil-magit)
+#+END_SRC
+
+* Org mode
+
+The manual: [[http://orgmode.org/manual/index.html][Org Manual]]
+
+[[http://orgmode.org/manual/Easy-templates.html#Easy-templates][Easy templates:]]
+
+<s <TAB> expands/completes the 'src' block
+<e <TAB> -> example block
+<q <TAB> -> quote
+<v <TAB> -> verse; renders block quotes and newline breaks
+
+Possibilities for adding unicode characters:
+http://heikkil.github.io/blog/2015/03/22/hydra-for-unicode-input-in-emacs/
+http://thewanderingcoder.com/2015/03/emacs-org-mode-styling-non-smart-quotes-zero-width-space-and-tex-input-method/
+
+Markup:
+
+http://ergoemacs.org/emacs/emacs_org_markup.
+
+** library of functions for Org mode
+
+ODO: Change the size or the screenshot before pasting it in.
+
++begin_src emacs-lisp :name deftmacs-org-functions
+ ;; Modified from -> http://stackoverflow.com/a/31868530
+ (defun defmacs::org-paste-screenshot ()
+   "Paste the screenshot previously taken by the OS."
+   (interactive)
+   (org-display-inline-images)
+   (setq filename
+         (concat
+          (make-temp-name
+           (concat (file-name-nondirectory (buffer-file-name))
+                   "_imgs/"
+                   (format-time-string "%Y%m%d_%H%M%S_")) ) ".png"))
+   (unless (file-exists-p (file-name-directory filename))
+     (make-directory (file-name-directory filename)))
+                                         ; take screenshot
+   (if (eq system-type 'darwin)
+       (call-process "pngpaste" nil nil nil filename))
+                                         ;(call-process "screencapture" nil nil nil "-i" filename))
+   (if (eq system-type 'gnu/linux)
+       (call-process "import" nil nil nil filename))
+                                         ; insert into file if correctly taken
+   (if (file-exists-p filename)
+       (insert (concat "[[file:" filename "]]"))))
++end_src
+
+** Initial configuration
+
++begin_src emacs-lisp :name Org mode
+   (use-package org-plus-contrib
+     :defer t
+     :mode (("\\.org$" . org-mode))
+     :init
+     (setq org-startup-indented t
+           org-startup-folded "showall"
+           org-ellipsis "⤵"              ;; Make the outline fold more compact.
+           )
+
+     ;; Modifications to Org mode Speed Keys - from Sacha Chau
+     ;; To list all of the Speed Keys, go to the begining of a header and press ?
+     (defun my/org-use-speed-commands-for-headings-and-lists ()
+       "Activate speed commands on list items too."
+       (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
+           (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
+     (setq org-use-speed-commands 'my/org-use-speed-commands-for-headings-and-lists)
+
+     :config
+     (org-load-modules-maybe t)
+     ;; Some general configuration.
+     (add-hook 'org-mode-hook (lambda ()
+                                 (visual-line-mode 1)  ;; soft wrap
+                                 (setq fill-column 120))))
+   (eval-after-load 'org-mode
+     (diminish 'org-indent-mode))
+
+
+
+ ;; Tracking TODO state changes
+ ;; The ! exclamation will add a timestamp
+ ;; The @ ampersand will ask for a note with time-stamp
+ (setq org-todo-keywords
+       '((sequence "TODO(t!)" "WORKING(w!)" "DONE(d!)" "CANCELLED(c@!)" )))
++end_src
+
+** Tags
+
+isplay TAGS from column 72
+
++begin_src emacs-lisp :name org-tags
+ (setq org-tags-column -72)
++end_src
+
+** org-bullets
+
+[https://github.com/sabof/org-bullets][org-bullets]] - UTF-8 bullets for org-mode bullets
+
++begin_src emacs-lisp :name org-bullets
+use-package org-bullets
+ :defer t
+ :init
+ (add-hook 'org-mode-hook (lambda ()
+                            (org-bullets-mode 1))))
++end_src
+
+** org-capture & org-protocol
+
+[http://christiantietze.de/posts/2018/05/emacs-org-mode-global-capture-macos/][global-capture-macos]]
+
++BEGIN_SRC emacs-lisp :name org-capture
+
+setq org-modules (quote (org-protocol)))
+
+ (setq org-capture-templates
+         (quote (("t" "todo" entry (file "~/tmp/Notes/general.org")
+                  "* TODO %?\n%a\n"))))
++END_SRC
+
+** org-download
+
+[[https://github.com/abo-abo/org-download][org-download]] - Drag/drop/download images into Org
+
+#+begin_src emacs-lisp :name org-download
+  (use-package org-download)
 #+end_src
 
-*** yasnippet
+* Version Control
 
-I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snippet needs - the [[http://joaotavora.github.io/yasnippet/][manual]].
+** Magit
 
-#+begin_src emacs-lisp :name yasnippet
-  (use-package yasnippet
-    :defer t
-    :diminish yas-minor-mode
-    :mode ("/\\.emacs\\.d/snippets/" . snippet-mode)
-    :init
-    (setq yas-snippet-dirs '("~/.emacs.d/snippets"
-                             "~/.emacs.d/default-snippets")
-          yas-verbosity 3)
-    (yas-global-mode 1)
-    (use-package helm-c-yasnippet))
-#+end_src
+[[https://magit.vc/][Magit]] - The best git porcelain around.
 
+#+BEGIN_SRC emacs-lisp :name magit
+(setq vc-follow-symlinks t) ; follow symlinks
+
+(use-package magit
+  :commands (magit-status magit-blame)
+  :config
+  (setq  magit-log-arguments '("--graph" "--decorate" "--color")
+         magit-save-repository-buffers 'dontask
+         magit-revert-buffers 'silent)
+  (set! :evil-state 'magit-status-mode 'emacs)
+  (after! evil
+    ;; Switch to emacs state only while in `magit-blame-mode', then back when
+    ;; its done (since it's a minor-mode).
+    (add-hook! 'magit-blame-mode-hook
+      (evil-local-mode (if magit-blame-mode -1 +1)))))
+#+END_SRC
+
+** git-gutter & git-gutter-fringe
+
+[[https://github.com/syohex/emacs-git-gutter][git-gutter]] - Highlighting uncommited changes in the buffer.
+
+#+BEGIN_SRC emacs-lisp :name git-gutter
+(use-package git-gutter
+  :commands global-git-gutter-mode
+  :init
+  (setq git-gutter:update-interval 0.1
+        git-gutter:ask-p nil
+        git-gutter:verbosity 0
+        git-gutter:handled-backends '(git))
+
+  (add-hook 'git-gutter:update-hooks 'magit-after-revert-hook)
+  (add-hook 'git-gutter:update-hooks 'magit-not-reverted-hook)
+  (add-hook 'git-gutter:update-hooks 'vc-checkin-hook)
+  (add-hook 'git-gutter:update-hooks 'focus-in-hook)
+  (add-hook 'git-gutter:update-hooks 'auto-revert-mode-hook)
+  (add-hook 'git-gutter:update-hooks 'after-revert-hook)
+  (global-git-gutter-mode 1))
+
+(use-package git-gutter-fringe)
+(require 'git-gutter-fringe)
+
+;; Update git-gutter on focus (in case I was using git externally) - from hlissner's emacs config.
+(add-hook 'focus-in-hook #'git-gutter:update-all-windows)
+
+(set-face-foreground 'git-gutter-fr:modified "blue3")
+(set-face-foreground 'git-gutter:modified "blue3")
+
+;; Traverse git-gutter hunks using ivy mode.
+;; http://blog.binchen.org/posts/enhance-emacs-git-gutter-with-ivy-mode.html
+(require 'ivy)
+(require 'git-gutter)
+
+(defun my-reshape-git-gutter (gutter)
+  "Re-shape gutter for `ivy-read'."
+  (let* ((linenum-start (aref gutter 3))
+         (linenum-end (aref gutter 4))
+         (target-line "")
+         (target-linenum 1)
+         (tmp-line "")
+         (max-line-length 0))
+    (save-excursion
+      ;; find out the longest stripped line in the gutter
+      (while (<= linenum-start linenum-end)
+        (goto-line linenum-start)
+        (setq tmp-line (replace-regexp-in-string "^[ \t]*" ""
+                                                 (buffer-substring (line-beginning-position)
+                                                                   (line-end-position))))
+        (when (> (length tmp-line) max-line-length)
+          (setq target-linenum linenum-start)
+          (setq target-line tmp-line)
+          (setq max-line-length (length tmp-line)))
+
+        (setq linenum-start (1+ linenum-start))))
+    ;; build (key . linenum-start)
+    (cons (format "%s %d: %s"
+                  (if (eq 'deleted (aref gutter 1)) "-" "+")
+                  target-linenum target-line)
+          target-linenum)))
+
+(defun my-goto-git-gutter ()
+  (interactive)
+  (if git-gutter:diffinfos
+      (let* ((collection (mapcar 'my-reshape-git-gutter
+                                 git-gutter:diffinfos)))
+        (ivy-read "git-gutters:"
+                  collection
+                  :action (lambda (linenum)
+                            (goto-line linenum))))
+    (message "NO git-gutters!")))
+#+END_SRC
+
+** git-messenger
+
+[[https://github.com/syohex/emacs-git-messenger][git-messenger]] - Provides a function that pops up the commit message of the current line.
+
+#+BEGIN_SRC emacs-lisp :name git-messenger
+(use-package git-messenger
+  :init
+  (setq git-messenger:show-detail t
+         git-messenger:handled-backends '(git))
+  :config
+  (define-key git-messenger-map (kbd "m") 'git-messenger:copy-message))
+#+END_SRC
+
+** git-timemachine
+
+[[https://github.com/pidu/git-timemachine][git-timemachine]] - Allows you to go back and forth to the revisions of a file.
+
+#+BEGIN_SRC emacs-lisp :name git-timemachine
+(use-package git-timemachine
+  :commands (git-timemachine git-timemachine-toggle)
+  :config
+  (require 'magit-blame)
+  ;; Sometimes I forget `git-timemachine' is enabled in a buffer, so instead of
+  ;; showing revision details in the minibuffer, show them in
+  ;; `header-line-format', which has better visibility.
+  (setq git-timemachine-show-minibuffer-details nil)
+  (add-hook 'git-timemachine-mode-hook #'+vcs|init-header-line)
+  (advice-add #'git-timemachine-show-revision :after #'+vcs*update-header-line)
+
+  ;; Force evil to rehash keybindings for the current state
+  (add-hook 'git-timemachine-mode-hook #'evil-force-normal-state))
+
+;; From redguardtoo - http://blog.binchen.org/posts/new-git-timemachine-ui-based-on-ivy-mode.html
+(defun my-git-timemachine-show-selected-revision ()
+  "Show last (current) revision of file."
+  (interactive)
+  (let (collection)
+    (setq collection
+          (mapcar (lambda (rev)
+                    ;; re-shape list for the ivy-read
+                    (cons (concat (substring (nth 0 rev) 0 7) "|" (nth 5 rev) "|" (nth 6 rev)) rev))
+                  (git-timemachine--revisions)))
+    (ivy-read "commits:"
+              collection
+              :action (lambda (rev)
+                        (git-timemachine-show-revision rev)))))
+
+(defun my-git-timemachine ()
+  "Open git snapshot with the selected version.  Based on ivy-mode."
+  (interactive)
+  (unless (featurep 'git-timemachine)
+    (require 'git-timemachine))
+  (git-timemachine--start #'my-git-timemachine-show-selected-revision))
+#+END_SRC
+
+** gitignore-mode
+
+[[https://github.com/magit/git-modes][gitignore-mode]] - Pull in the mode for editing .gitignore files.
+
+#+BEGIN_SRC emacs-lisp :name gitignore-mode
+(use-package gitignore-mode
+  :defer t)
+#+END_SRC
+
+** git-link
+
+[[https://github.com/sshaw/git-link][git-link]] - Create URLs for files and commits in GitHub/Bitbucket/GitLab/... repositories.
+
+#+BEGIN_SRC emacs-lisp :name git-link
+(use-package git-link
+  :commands (git-link git-link-commit git-link-homepage))
+#+END_SRC
+
+* Software Development
 ** Software Development Utilities
+*** dumb-jump
 
-*** aggressive-indent-mode
+[[https://github.com/jacktasia/dumb-jump][dumb-jump]] - A "jump to definition" package for Emacs.  Works without index files, TAGS, etc.
 
-[[https://github.com/Malabarba/aggressive-indent-mode][aggressive-indent-mode]] - keep your code nicely aligned while you type.
-
-#+begin_src emacs-lisp :name aggressive-indent-mode
-  (use-package aggressive-indent
-    :defer t)
-#+end_src
+#+BEGIN_SRC emacs-lisp :name dumb-jump
+    (use-package dumb-jump
+      :init
+      (setq dumb-jump-force-searcher 'rg
+            dumb-jump-selector 'ivy)
+      :config
+      (setq dumb-jump-aggressive nil))
+#+END_SRC
 
 *** flycheck
 
@@ -1905,8 +1283,8 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
 
 #+begin_src emacs-lisp :name flycheck
   (use-package flycheck
+    :commands global-flycheck-mode
     :defer t
-    :diminish flycheck-mode
     :init
     (setq flycheck-standard-error-navigation      nil
           flycheck-idle-change-delay              15
@@ -1922,7 +1300,8 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
     (add-hook 'after-init-hook #'global-flycheck-mode)
     :config
 
-    (push '("^\\*Flycheck.+\\*$" :regexp t :dedicated t :position bottom :stick t :noselect t) popwin:special-display-config))
+    ;; (push '("^\\*Flycheck.+\\*$" :regexp t :dedicated t :position bottom :stick t :noselect t) popwin:special-display-config)
+    )
 
   ;; so that linting and type errors don't mess with eldoc
   (use-package flycheck-pos-tip
@@ -1934,18 +1313,64 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
     :defer t)
 #+end_src
 
-*** Rainbow Delimiters
+*** yasnippet
 
-[[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]] - rainbow parenthesis
+I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snippet needs - the [[http://joaotavora.github.io/yasnippet/][manual]].
 
-#+begin_src emacs-lisp :name rainbow-delimiters
-  (use-package rainbow-delimiters
-    :defer t
-    :config
-    (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+#+begin_src emacs-lisp :name yasnippet
+  (use-package yasnippet-snippets)
+
+  (use-package yasnippet
+    :commands yas-global-mode
+    :mode ("/\\.emacs\\.d/snippets/" . snippet-mode)
+    :init
+    (setq yas-snippet-dirs '("~/.emacs.d/snippets")
+          yas-verbosity 3)
+    (yas-global-mode 1)
+    (use-package helm-c-yasnippet))
 #+end_src
 
-** Software Development
+**** auto-yasnippet
+
+[[https://github.com/abo-abo/auto-yasnippet][auto-yasnippet]] - quickly create disposable snippets.
+
+A basic example:
+Suppose we want to write:
+
+```js
+count_of_red = get_total("red");
+count_of_blue = get_total("blue");
+count_of_green = get_total("green");
+```
+
+We write a template, using ~ to represent variables that we want to
+replace:
+
+```
+count_of_~red = get_total("~red");
+```
+
+Call `aya-create` with point on this line, and the template is
+converted to a value we want:
+
+```
+count_of_red = get_total("red");
+```
+
+Then call `aya-expand` and you can 'paste' additional instances of
+the template. Yasnippet is active, so you can tab between
+placeholders as usual.
+
+```
+count_of_red = get_total("red");
+count_of_ = get_total("");
+```
+#+BEGIN_SRC emacs-lisp :name auto-yasnippet
+  (use-package auto-yasnippet
+    :commands (aya-create aya-expand aya-open-line))
+#+END_SRC
+
+** Programming Languages
 *** Common Lisp
 
 #+begin_src emacs-lisp :name common-lisp
@@ -1954,7 +1379,8 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
     :init (setq inferior-lisp-program "/usr/local/bin/sbcl")
     :config
     (use-package slime-company
-      :ensure slime
+      :after slime
+      :ensure slime-company
       :config
       (slime-setup '(slime-fancy slime-company))))
 #+end_src
@@ -2060,6 +1486,90 @@ REPL for elisp
 #+end_src
 
 *** Golang
+
+Support for golang.
+
+Be sure to install the tools support for Go first:
+
+go get -u github.com/nsf/gocode
+go get -u github.com/rogpeppe/godef
+go get -u golang.org/x/tools/cmd/goimports
+go get -u github.com/jstemmer/gotags
+go get github.com/matryer/moq
+
+#+BEGIN_SRC emacs-lisp :name go-mode
+(use-package go-mode
+  :config
+  (add-hook 'before-save-hook #'gofmt-before-save)
+  (add-hook 'go-mode-hook 'flycheck-mode)
+  (add-hook 'go-mode-hook 'dumb-jump-mode)
+  (setq go-packages-function 'go-packages-go-list))
+#+END_SRC
+
+**** Enable =company-go=
+#+BEGIN_SRC emacs-lisp
+  (use-package company-go
+    :config
+    (add-hook 'go-mode-hook 'company-mode)
+    (add-to-list 'company-backends 'company-go))
+#+END_SRC
+
+**** Enable =go-stackstracer=
+#+BEGIN_SRC emacs-lisp
+  (use-package go-stacktracer)
+#+END_SRC
+
+**** Enable =go-add-tags=
+#+BEGIN_SRC emacs-lisp
+  (use-package go-add-tags)
+#+END_SRC
+
+**** Enable =go-eldoc=
+#+BEGIN_SRC emacs-lisp
+  (use-package go-eldoc
+    :diminish eldoc-mode
+    :config (add-hook 'go-mode-hook 'go-eldoc-setup))
+#+END_SRC
+
+**** Enable =go-gopath=
+#+BEGIN_SRC emacs-lisp
+  (use-package go-gopath)
+#+END_SRC
+
+**** Enable =go-direx=
+#+BEGIN_SRC emacs-lisp
+  (use-package go-direx)
+#+END_SRC
+
+**** Enable =gotest=
+#+BEGIN_SRC emacs-lisp
+  (use-package gotest)
+#+END_SRC
+
+**** Integrate =moq=
+Quick custom function to integrate with the moq tool to generate quick mocks
+#+BEGIN_SRC emacs-lisp
+  (defun moq ()
+    (interactive)
+    (let ((interface (word-at-point))
+          (test-file (concat (downcase (word-at-point)) "_test.go")))
+      (shell-command
+       (concat "moq -out " test-file " . " interface))
+      (find-file test-file)))
+#+END_SRC
+
+**** See test coverage faster
+
+Simple function to see the test coverage of the current open buffer
+
+#+BEGIN_SRC emacs-lisp
+    (defun go-coverage-here ()
+      (interactive)
+      (shell-command "go test . -coverprofile=cover.out")
+      (go-coverage "cover.out")
+      (rotate:even-horizontal))
+#+END_SRC
+
 *** Javascript
 
 Because work.
@@ -2133,7 +1643,7 @@ Using [[https://github.com/jorgenschaefer/pyvenv][pyvenv]] to manage conda envir
   (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 #+end_src
 
-** Various file types
+* Miscellaneous file type support
 *** csv
 
 Comma (or other delimiter) separated files.
@@ -2168,7 +1678,69 @@ Comma (or other delimiter) separated files.
     :ensure t)
 #+end_src
 
-*** Mardown mode
+*** Salt mode
+
+[[https://github.com/glynnforrest/salt-mode][salt-mode]] - Mode for editing Salt states
+
+#+begin_src emacs-lisp :name salt-mode
+  (use-package salt-mode)
+#+end_src
+
+*** SQL Mode
+
+The interactive SQL mode is based on ComintMode. The following interpreters are supported:
+
+    psql by PostgreSQL
+    mysql by MySQL
+    sqlite or sqlite3 for SQLite
+
+    #+begin_src emacs-lisp :name sql-mode
+      (add-to-list 'same-window-buffer-names "*SQL*")
+
+      (add-hook 'sql-interactive-mode-hook
+                (lambda ()
+                  (toggle-truncate-lines t)))
+    #+end_src
+
+*** Yaml & Json
+
+Json mode
+
+#+begin_src emacs-lisp :name json-mode
+  (use-package json-mode
+    :defer t
+    :diminish json-mode)
+#+end_src
+
+YAML mode
+
+#+begin_src emacs-lisp :name yaml-mode
+  (use-package yaml-mode
+    :mode ("\\.yml$" "\\.sls$")
+    :diminish yaml-mode
+    :config
+    (with-eval-after-load 'yaml-mode
+      '(define-key yaml-mode-map (kbd "C-j""") nil))
+    (add-hook 'yaml-mode-hook
+              (lambda ()
+                (setq-local eclectric-indent-mode nil))))
+#+end_src
+
+* Prose
+*** lorem-ipsum
+
+[[https://github.com/jschaf/emacs-lorem-ipsum][Lorem Ipsum]] add filler text to whatever you are working on.  The following
+commands are available:
+=lorem-ipsum-insert-sentences=
+=lorem-ipsum-insert-paragraphs=
+=lorem-ipsum-insert-list=
+
+#+begin_src emacs-lisp :name lorem ipsum
+  (use-package lorem-ipsum
+    :defer t)
+#+end_src
+
+*** Markdown mode
 
 [[http://jblevins.org/projects/markdown-mode/][Markdown Mode]] - Major mode for editing [[http://daringfireball.net/projects/markdown/][Markdown]] formatted text.
 
@@ -2205,30 +1777,6 @@ Dependencies: Node.js & vmd
   (use-package vmd-mode)
 #+end_src
 
-*** Salt mode
-
-[[https://github.com/glynnforrest/salt-mode][salt-mode]] - Mode for editing Salt states
-
-#+begin_src emacs-lisp :name salt-mode
-  (use-package salt-mode)
-#+end_src
-
-*** SQL Mode
-
-The interactive SQL mode is based on ComintMode. The following interpreters are supported:
-
-    psql by PostgreSQL
-    mysql by MySQL
-    sqlite or sqlite3 for SQLite
-
-    #+begin_src emacs-lisp :name sql-mode
-      (add-to-list 'same-window-buffer-names "*SQL*")
-
-      (add-hook 'sql-interactive-mode-hook
-                (lambda ()
-                  (toggle-truncate-lines t)))
-    #+end_src
-
 *** Text mode
 
 #+begin_src emacs-lisp :name text mode
@@ -2237,188 +1785,30 @@ The interactive SQL mode is based on ComintMode. The following interpreters are 
                                (setq word-wrap 1)))
 #+end_src
 
-*** Yaml & Json
 
-Json mode
+* Keybindings
+** Configuration & Settings
+*** General
 
-#+begin_src emacs-lisp :name json-mode
-  (use-package json-mode
-    :defer t
-    :diminish json-mode)
-#+end_src
+[[https://github.com/noctuid/general.el][general.el]] - Use general.el to setup evil-mode, leader and other keybindings.
 
-YAML mode
+Set the 'general-override-states' and enable the 'general-override-mode' so
+that evil-collection and others don't override bindings that I want.
 
-#+begin_src emacs-lisp :name yaml-mode
-  (use-package yaml-mode
-    :mode ("\\.yml$" "\\.sls$")
-    :diminish yaml-mode
-    :config
-    (with-eval-after-load 'yaml-mode
-      '(define-key yaml-mode-map (kbd "C-j""") nil))
-    (add-hook 'yaml-mode-hook
-              (lambda ()
-                (setq-local eclectric-indent-mode nil))))
-#+end_src
-
-** Keybindings
-*** Ctrl/Alt/Super
-
-We get bind-keys for "free" with the install of use-package.
-
-#+begin_src emacs-lisp :name keybindings
-    ;; a
-    (global-set-key (kbd "C-a") 'crux-move-beginning-of-line)
-
-  (global-unset-key (kbd "s-a"))
-  (bind-keys* :prefix-map super-a-map
-              :prefix "s-a"
-              ("a" . mark-whole-buffer)
-              ("f" . mark-defun)
-              ("p" . mark-paragraph)
-              ("s-a" . mark-whole-buffer)
-              ("s-f" . mark-defun)
-              ("s-p" . mark-paragraph)
-    )
-
-    ;; ;; b
-
-    ;; ;; d
-  (defun deftpunk/kill-current-buffer ()
-      (interactive)
-      (kill-buffer (current-buffer)))
-
-    (global-unset-key (kbd "s-d"))
-    (bind-keys :prefix "s-d"
-               :prefix-map super-d-map
-               ("d" . crux-kill-whole-line)
-               ("k" . deftpunk/kill-current-buffer)
-               ("l" . deftmacs/copy-current-line-or-region)
-               ("s-d" . crux-kill-whole-line)
-               ("s-k" . deftpunk/kill-current-buffer)
-               ("s-l" . deftmacs/copy-current-line-or-region)
-    )
-
-
-    (global-unset-key (kbd "C-s-d"))
-    (global-set-key (kbd "s-C-d") 'crux-insert-date)
-    ;; e
-
-
-    ;; f
-    (global-unset-key (kbd "s-f"))
-    (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
-
-    ;; g
-    (global-unset-key (kbd "s-g"))
-  (bind-keys :prefix "s-g"
-               :prefix-map super-g-map
-               ("c" . goto-char)
-               ("g" . goto-line)
-               ("," . goto-last-change-reverse)
-               ("." . goto-last-change)
-               ("s-c" . goto-char)
-               ("s-g" . goto-line)
-    )
-
-    ;; ;; h
-   (global-unset-key (kbd "s-h"))
-    (global-set-key (kbd "s-h") 'windmove-left)
-
-    ;;i
-    (global-set-key (kbd "s-i") 'helm-mini)
-
-    ;; j
-    (global-unset-key (kbd "s-j"))
-    (global-set-key (kbd "s-j") 'windmove-down)
-
-    ;; k
-    (global-unset-key (kbd "s-k"))
-    (global-set-key (kbd "s-k") 'windmove-up)
-
-    ;; l
-    (global-unset-key (kbd "s-l"))
-    (global-set-key (kbd "s-l") 'windmove-right)
-
-    ;; n
-    (global-unset-key (kbd "s-n"))
-    (global-set-key (kbd "s-n") 'next-error)
-
-    ;; o
-    (global-unset-key (kbd "C-o"))
-    (global-set-key (kbd "C-o") 'crux-smart-open-line)
-    (global-set-key (kbd "C-S-o") 'crux-smart-open-line-above)
-
-    ;; p
-    (global-unset-key (kbd "s-p"))
-    (global-set-key (kbd "s-p") 'previous-error)
-
-    ;; r
-    (global-set-key (kbd "s-r") 'recenter-positions)
-
-
-    ;; t
-    (global-unset-key (kbd "s-S-t"))
-    (global-unset-key (kbd "s-t"))
-    (global-set-key (kbd "s-S-t") 'helm-mt)
-
-    ;; w
-    (global-unset-key (kbd "C-w"))
-    (global-set-key (kbd "C-w") 'backward-kill-word)
-
-    ;; z
-    (global-unset-key (kbd "s-z"))
-    (global-set-key (kbd "s-z") 'zzz-up-to-char)
-
-    ;; -
-    (global-unset-key (kbd "s--"))
-    (global-set-key (kbd "s--") 'ace-window)
-
-    ;; ;
-;;    (global-set-key (kbd "s-;") (crux-with-region-or-line comment-or-uncomment-region))
-
-    (global-set-key (kbd "C-.") 'goto-last-change)
-    (global-set-key (kbd "C-,") 'goto-last-change-reverse)
-
-    ;; > & <
-    (global-set-key (kbd "s-<") 'beginning-of-buffer)
-    (global-set-key (kbd "s->") 'end-of-buffer)
-
-    (global-set-key (kbd "s-}") 'forward-paragraph)
-    (global-set-key (kbd "s-{") 'backward-paragraph)
-
-    ;; arrows
-    (global-set-key (kbd "M-<left>") 'backward-word)
-    (global-set-key (kbd "M-<right>") 'forward-word)
-    (global-set-key (kbd "s-<up>") 'windmove-up)
-    (global-set-key (kbd "s-<down>") 'windmove-down)
-    (global-set-key (kbd "s-<left>") 'windmove-left)
-    (global-set-key (kbd "s-<right>") 'windmove-right)
-#+end_src
-
-*** Escape
-
-Some code to use =Escape= to quit more things.  The minibuffer-keyboard-quit
-function lives in deft-functions.el
-
-#+begin_src emacs-lisp :name Escape keys
-  (define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
-  (define-key minibuffer-local-ns-map [escape] 'minibuffer-keyboard-quit)
-  (define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
-  (define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
-  (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
-
-  (defun my-helm-init ()
-    (interactive)
-    (define-key helm-map (kbd "ESC") 'helm-keyboard-quit))
-  (add-hook 'after-init-hook 'my-helm-init)
-
-  ;; Map Escape to cancel like C-g
-  (define-key isearch-mode-map [escape] 'isearch-abort)   ;; isearch
-  (define-key isearch-mode-map "\e" 'isearch-abort)       ;; \e seems to work better for terminals
-  ;; TODO Thu Jun 30 16:41:14 2016 - This causes splits to close for some reason???
-  ;;  (global-set-key [escape] 'keyboard-escape-quit)         ;; everywhere else
-#+end_src
+#+BEGIN_SRC emacs-lisp :name general.el
+(use-package general
+  :commands (general-create-definer general-define-key general-override-mode)
+  :config
+  (setq general-override-states '(insert
+                                  emacs
+                                  hybrid
+                                  normal
+                                  visual
+                                  motion
+                                  operator
+                                  replace))
+  (general-override-mode))
+#+END_SRC
 
 *** Hydra
 
@@ -2441,411 +1831,6 @@ keys will be highlighted with the appropriate color.
 (use-package hydra)
 #+end_src
 
-*** Hydra maps
-**** hydra-cee
-
-Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
-
-#+begin_src emacs-lisp :name hydra-cee
-  (defhydra hydra-cee (:color blue :hint nil)
-    "
-                                                                                    ,--------------------.
-                                                                                    | Ctrl-c or the like |
-      ,-----------------------------------------------------------------------------'--------------------'
-
-                                     [_i_] Semantic or Imenu                          [_v_] Pyvenv Environment
-                                     [_j_] Join line
-                                     [_k_] Show kill ring
-                                     [_l_] Flycheck            [_s_] Helm Snippets    [_y_] New Snippet
-                                     [_m_] Multiterm           [_t_] Todo/Note/Bug
-
-  "
-    ("i" helm-semantic-or-imenu)
-    ("j" crux-top-join-line)
-    ("k" helm-show-kill-ring)
-    ("l" hydra-flycheck/body :exit t)
-    ("m" helm-mt)
-    ("s" helm-yas-complete)
-    ("t" deftpunk/hltodo-swiper)
-    ("v" pyvenv-workon)
-    ("y" yas-new-snippet)
-    ("<ESC>" nil "Quit" :exit t)
-    )
-#+end_src
-
-**** hydra-files-projectile
-
-#+begin_src emacs-lisp :name hydra-files-projectile
-  (defhydra hydra-files-projectile (:color blue
-                                    :hint nil)
-  "
-  CURRENT PROJECT: %(no-projectile-project-p)
-
-
-  _a_ Ag                                             _m_ Go to *Messages*     _s_ Go to *scratch*
-
-  _c_ Clear Projectile Cache
-                                                     _p_ Switch Projects
-                                _k_ Kill Buffer
-  _f_ Find Files
-
-  "
-  ("<tab>" hydra-jk/body "back")
-  ("a" (lambda ()
-         (interactive)
-         (if (no-projectile-projectp)
-             (helm-do-ag)
-           (helm-projectile-ag))))
-  ("c" projectile-invalidate-cache)
-  ("f" counsel-find-file)
-  ; ("f" (lambda ()
-  ;        (interactive)
-  ;        (if (no-projectile-project-p)
-  ;            (helm-find-files-1 default-directory)
-  ;          (helm-projectile-find-file))))
-  ("k" (kill-buffer (current-buffer)))
-  ("m" (lambda ()
-         (interactive)
-         (let ((messages-buffer (get-buffer-create "*Messages*")))
-           (switch-to-buffer messages-buffer))))
-  ("p" projectile-switch-project)
-  ("s" eme-goto-scratch)
-
-  ("<ESC" nil "Quit" :exit t))
-#+end_src
-
-**** hydra-flycheck
-
-A hydra to open up flycheck errors and navigation through them - [[https://github.com/abo-abo/hydra/wiki/Flycheck][Source]]
-
-Made the following changes:
-- Added the change to disable flycheck-pos-tip-mode and renable it; it slowed
-  down the movement between errors.
-- Added the option t to quit-windows-on; this closes the created window.
-
-#+begin_src emacs-lisp :name hydra-flycheck
-  (defhydra hydra-flycheck
-    (:pre (progn (setq hydra-lv t) (flycheck-list-errors) (flycheck-pos-tip-mode -1))
-          flycheck-previous-error          :post (progn (setq hydra-lv nil) (quit-windows-on "*Flycheck errors*" t) (flycheck-pos-tip-mode 1))
-          :hint nil)
-    "
-                                                                            ,-----------------.
-                                                                            | Flycheck Errors |
-    ,-----------------------------------------------------------------------'-----------------'
-      [_f_] Filter
-      [_j_] Next Error
-      [_k_] Previous Error
-      [_gg_] First Error
-      [_G_] Last Error
-    "
-    ("f"  flycheck-error-list-set-filter)
-    ("j"  flycheck-next-error)
-    ("k"  flycheck-previous-error)
-    ("gg" flycheck-first-error)
-    ("G"  (progn (goto-char (point-max)) (flycheck-previous-error)))
-    ("q" nil "Quit")
-    ("<ESC>" nil "Quit"))
-#+end_src
-
-**** hydra-gee
-
-#+begin_src emacs-lisp :name hydra-gee
-  (defhydra hydra-gee (:color blue :hint nil)
-    "
-                                                         ,-----------------.
-                                                         | Gee, cool stuff |
-  ,------------------------------------------------------'-----------------'
-      [_d_] Helm Dash
-      [_g_] Goto Line
-      [_G_] End of buffer
-      [_l_] Goto line
-      [_x_] Open URL @ pnt
-    "
-    ("d" helm-dash :exit t)
-    ("g" beginning-of-buffer)
-    ("G" end-of-buffer)
-    ("l" goto-line)
-    ("x" (lambda ()
-           (if (eq major-mode 'org-mode)
-               (org-open-at-point)
-             (browse-url-at-point))))
-
-    ("<ESC>" nil "Quit" :exit t))
-#+end_src
-
-**** hydra-version-control
-
-Hydra for version control functions.
-
-#+begin_src emacs-lisp :name hydra-version-control
-  (defhydra hydra-version-control (:color blue :hint nil)
-    "
-  git-messenger
-  -------------
-  c - Copy commit ID        s - Pop up git show --stat
-  d - Pop up git diff       S - Pop up git show --stat -p
-  m - Copy commit message   q - Quit
-
-
-                                                                      ,-------------------.
-      General                    Git                                  | Version control   |
-    ,-----------------------------------------------------------------'-------------------'
-    [_v_] Magit status          [_m_] git-messenger
-    [_k_] Monky status
-    [_a_] vc-annotate           [_s_] stage file
-                                [_u_] unstage file
-                                [_b_] blame
-                                [_t_] timemachine
-
-  "
-    ("<tab>" hydra-master/body "back")
-
-    ("a" vc-annotate)
-
-    ;; If currently monky-blame-mode then quit it, else try to blame current
-    ;; file.  If no, check magit-blame-mode and either quit that or start
-    ;; magit-blame.
-    ("b" (lambda ()
-           (interactive)
-           (if (bound-and-true-p monky-blame-mode)
-               (monky-quit-window)
-             (progn
-               (if (deftpunk/catch-error-p 'monky-blame-current-file)
-                   (if (bound-and-true-p magit-blame-mode)
-                       (magit-blame-quit)
-                     (call-interactively 'magit-blame)))))))
-
-    ("k" monky-status)
-    ("m" git-messenger:popup-message)
-    ("s" magit-stage-file)
-    ("t" git-timemachine)
-    ("u" magit-unstage-file)
-    ("v" magit-status)
-
-    ("<ESC>" nil "quit")
-    )
-#+end_src
-**** hydra-window-sizing
-
-Resize windows dynamically
-
-#+begin_src emacs-lisp :name hydra-window-sizing
-    (defhydra hydra-window-sizing (:color blue)
-      "
-  .------------------,
-  | Window Re-sizing |
-  '------------------'--------------------------------------------------------------------.
-
-                         ^Enlarge Vertically^
-
-			     ^[_k_]^
-			      ^^↑^^
-
-   Shrink Horizontally [_h_] ←    → [_l_] Enlarge Horizontally
-
-                              ^^↓^^
-                             ^[_j_]^
-
-			Shrink Vertically
-    "
-      ("<tab>" hydra-windows/back "Back to windows")
-
-      ("h" (lambda ()
-             (interactive)
-             (shrink-window-horizontally 5)) :color pink)
-      ("j" (lambda ()
-             (interactive)
-             (shrink-window 5)) :color pink)
-      ("k" (lambda ()
-             (interactive)
-             (enlarge-window 5)) :color pink)
-      ("l" (lambda ()
-             (interactive)
-             (enlarge-window-horizontally 5)) :color pink)
-
-      ("<ESC>" nil "Quit"))
-#+end_src
-
-**** hydra-windows
-
-Hydra for window/frame control and movements.
-
-#+begin_src emacs-lisp :name hydra-windows
-    (defhydra hydra-windows (:color blue :hint nil)
-      "
-                                                                                                                 ,-------------------.
-     Navigation        Movement + Winner                Actions                     More Actions                 | Window Management |
-  ,--------------------------------------------------------------------------------------------------------------'-------------------'
-       ^_k_^            [_|_] Vert split + move     [_b_] Balance windows           [_n_] Scroll other Window
-       ^^↑^^            [_-_] Horizon split + move  [_c_] Delete current Window     [_p_] Scroll other Window Up
-   _h_ ←   → _l_                                  [_d_] Ace delete windows
-       ^^↓^^            [_w_] Ace Window            [_e_] Resize Windows            [_s_] Horizontal Split
-       ^_j_^                                                                        [_v_] Vertical Split
-                        [_u_] Winner Undo
-                        [_r_] Winner redo           [_i_] Maximize Window           [_f_] New Frame
-                                                                                    [_t_] Transpose Frame
-
-       "
-       ("<tab>" hydra-master/back "Back to Main")
-
-       ;("a" yegge/swap-windows)
-       ("b" balance-windows  :exit t)
-      ("c" delete-window  :exit t)
-      ("d" ace-delete-window :exit t)
-      ("e" hydra-window-sizing/body)
-      ("f" make-frame)
-      ("i" ace-maximize-window)
-      ("h" windmove-left)
-      ("j" windmove-down)
-      ("k" windmove-up)
-      ("l" windmove-right)
-      ("n" scroll-other-window)
-      ("o" delete-other-windows  :exit t)
-      ("p" scroll-other-window-down)
-      ("r" winner-redo)
-      ("s" split-window-vertically  :exit t)
-      ("t" transpose-frame :exit t)
-      ("u" winner-undo)
-      ("v" split-window-horizontally  :exit t)
-      ("w" ace-window :exit t)
-      ("|" (lambda ()
-             (interactive)
-             (split-window-right)
-             (windmove-right)))
-      ("-" (lambda ()
-             (interactive)
-             (split-window-below)
-             (windmove-down)))
-      ("=" balance-windows)
-
-      ("<ESC>" nil "quit")
-      )
-#+end_src
-
-*** Hydra mode maps
-**** hydra-emacs-lisp
-
-A hydra for Elisp modes.  It inherits the smartparens hydra.
-
-#+begin_src emacs-lisp :name hydra-emacs-lisp
-  (defhydra hydra-emacs-lisp (:color red)
-    "
-                                                             ,-----------------.
-     Docs               Utilities                            | Emacs Lisp Mode |
-,------------------------------------------------------------'-----------------'
-  [_d_] Describe        [_i_] ELM
-                        [_p_] ELP
- "
-    ("d" describe-foo-at-point :exit t)
-    ("e" eval-expression :exit t)
-    ("i" ielm :exit t)
-    ("p" hydra-emacs-lisp-profiler/body :exit t)
-    ("r" eval-region :exit t)
-    ("x" eval-defun :exit t)
-    ("<ESC>" nil "Quit" :exit t)
-    )
-#+end_src
-
-**** hydra-org-mode
-
-A hydra for Org mode
-
-#+begin_src emacs-lisp :name hydra-orgmode
-  (defhydra hydra-orgmode-mode (:color blue
-                                :hint nil)
-    "
-                                                                          .-----------.
-                                                                          |  Org Mode |
-    ,---------------------------------------------------------------------'-----------'
-    [_e_] Mark element
-    [_h_] Helm buffer headings
-    [_s_] Mark subtree
-    [_o_] Ace link
-  "
-    ("e" org-mark-element)
-    ("h" helm-org-in-buffer-headings)
-    ("s" org-mark-subtree)
-    ("o" ace-link-org)
-    ("<ESC>" nil "Quit" :exit t))
-#+end_src
-
-**** hydra-python-mode
-
-A hydra for python.
-
-#+begin_src emacs-lisp :name hydra-python
-  (defhydra hydra-python-mode (:color blue
-                                      :hint nil)
-    "
-                                                                            .----------.
-                                                                            |  Python  |
-      ,---------------------------------------------------------------------'----------'
-      [_d_] Jedi - goto definition
-      [_m_] Python Mark function
-      [_p_] Jedi - Pop goto definition
-      [_w_] Pyvenv workon Env
-    "
-    ("d" jedi:goto-definition)
-    ("m" python-mark-defun)
-    ("p" jedi:goto-definition-pop-marker)
-    ("w" pyvenv-workon)
-    ("<ESC>" nil "Quit" :exit t))
-#+end_src
-
-*** hydra-jk
-
-A Hydra for the jk keychord - see Keychord below for more information.
-
-#+begin_src emacs-lisp :name hydra-jk
-  (defun deftpunk/hydra-major-mode-hack ()
-    "Mucho hackiness to get different hydras for different modes but the same
-  prefix key.  There has to be a better way."
-    (interactive)
-    (let ((my-hmodes '((lisp-interaction-mode . hydra-emacs-lisp/body)
-                       (python-mode . hydra-python-mode/body)
-                       (org-mode . hydra-orgmode-mode/body)
-                       (emacs-lisp-mode . hydra-emacs-lisp/body))))
-      (condition-case error
-          (funcall (assoc-default major-mode my-hmodes))
-        ('error (message "No Hydra for this major mode: %s" major-mode)))))
-
-  (defhydra hydra-jk (:color blue :hint nil)
-    "
-                                                                                     ,----------------.
-                                                                                     | Master Blaster |
-  ,----------------------------------------------------------------------------------'----------------'
-
-  "
-    ("a" avy-goto-char-timer)
-    ;; ("b" )
-    ("c" hydra-cee/body)
-    ("e" deftpunk/hydra-major-mode-hack)
-    ("f" hydra-files-projectile/body)
-    ("g" hydra-gee/body)
-    ;; ("h" )
-    ("i" helm-mini)
-    ;; ("j" )
-    ;; ("k" )
-    ("l" avy-goto-char-in-line)
-    ;; ("m" )
-    ;; ("n" hydra-toggle-stuff/body)
-    ;; ("o" )
-    ;; ("p" )
-    ("q" save-buffers-kill-terminal)
-    ;; ("r" )l
-    ("s" swiper)
-    ;; ("t" )
-    ;; ("u" )
-    ("v" hydra-version-control/body)
-    ("w" hydra-windows/body)
-    ("x" helm-M-x)
-    ;; ("y" )
-    ("z" zzz-up-to-char)
-
-    ("<ESC>" nil "Quit" :exit t)
-    )
-#+end_src
-
 *** key-chord
 
 [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]] - Map pairs of simultaneously pressed keys to commands.
@@ -2857,12 +1842,664 @@ Keychord has a couple of drawbacks
 
 #+begin_src emacs-lisp :name key-chord
   (use-package key-chord
+    :commands key-chord-mode
     :init
-    (key-chord-mode 1)
-    (key-chord-define-global "jk" 'hydra-jk/body))
+    (key-chord-mode 1))
 #+end_src
-* Notes
-** wrap around backward-kill-word to kill-region & sp-kill-region
 
-Currently <delete> will kill a region, should make other things do so
-as well, e.g. C-w
+*** which-key
+
+[[https://github.com/justbur/emacs-which-key][which-key]] - Display available keybindings.
+
+   - =which-key-show-top-level= will show most key bindings without a prefix. It
+     is most and not all, because many are probably not interesting to most
+     users.
+   - =which-key-show-major-mode= will show the currently active major-mode
+     bindings. It's similar to =C-h m= but in a which-key format. It is also
+     aware of evil commands defined using =evil-define-key=.
+   - =which-key-show-next-page= is the command used for paging.
+   - =which-key-undo= can be used to undo the last keypress when in the middle
+     of a key sequence.
+
+#+BEGIN_SRC emacs-lisp :name which-key
+    (use-package which-key
+      :after evil
+      :commands which-key-mode
+      :init
+      (setq which-key-allow-evil-operators t
+            which-key-show-operator-state-maps t))
+#+END_SRC
+
+** Ctrl/Alt/Super
+
+We get bind-keys for "free" with the install of use-package.
+
+#+begin_src emacs-lisp :name keybindings
+   ;; a
+   (global-set-key (kbd "C-a") 'crux-move-beginning-of-line)
+
+ (global-unset-key (kbd "s-a"))
+ (bind-keys* :prefix-map super-a-map
+             :prefix "s-a"
+             ("a" . mark-whole-buffer)
+             ("f" . mark-defun)
+             ("p" . mark-paragraph)
+             ("s-a" . mark-whole-buffer)
+             ("s-f" . mark-defun)
+             ("s-p" . mark-paragraph)
+   )
+
+   ;; d
+   (global-unset-key (kbd "s-d"))
+   (global-unset-key (kbd "C-s-d"))
+   (global-set-key (kbd "s-C-d") 'crux-insert-date)
+
+   ;; f
+   (global-unset-key (kbd "s-f"))
+   (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
+
+   ;; g
+   (global-unset-key (kbd "s-g"))
+ (bind-keys :prefix "s-g"
+              :prefix-map super-g-map
+              ("c" . goto-char)
+              ("g" . goto-line)
+              ("," . goto-last-change-reverse)
+              ("." . goto-last-change)
+              ("s-c" . goto-char)
+              ("s-g" . goto-line)
+   )
+
+   ;; h
+   (global-unset-key (kbd "s-h"))
+
+   ;; j
+   (global-unset-key (kbd "s-j"))
+
+   ;; k
+   (global-unset-key (kbd "s-k"))
+
+   ;; l
+   (global-unset-key (kbd "s-l"))
+
+   ;; n
+   (global-unset-key (kbd "s-n"))
+
+   ;; p
+   (global-unset-key (kbd "s-p"))
+
+   ;; r
+   (global-unset-key (kbd "s-r"))
+   (global-set-key (kbd "s-r") 'recenter-positions)
+
+   ;; t
+   (global-unset-key (kbd "s-S-t"))
+   (global-unset-key (kbd "s-t"))
+
+   ;; z
+   (global-unset-key (kbd "s-z"))
+
+   ;; -
+   (global-unset-key (kbd "s--"))
+
+   ;; arrows
+   (global-set-key (kbd "M-<left>") 'backward-word)
+   (global-set-key (kbd "M-<right>") 'forward-word)
+#+end_src
+
+** Escape
+
+Some code to use =Escape= to quit more things. Between Evil and this we should
+have most instances covered.
+
+You would think that [[https://github.com/syl20bnr/evil-escape][evil-escape]] would be a possibility but it uses =fd= as a keychord
+to <escape>.  Not really what I was wanting to do.
+
+#+begin_src emacs-lisp :name Escape keys
+ (define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
+ (define-key minibuffer-local-ns-map [escape] 'minibuffer-keyboard-quit)
+ (define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
+ (define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
+ (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
+
+ (defun my-helm-init ()
+   (interactive)
+   (define-key helm-map (kbd "ESC") 'helm-keyboard-quit))
+ (add-hook 'after-init-hook 'my-helm-init)
+
+ ;; Map Escape to cancel like C-g
+ (define-key isearch-mode-map [escape] 'isearch-abort)   ;; isearch
+ (define-key isearch-mode-map "\e" 'isearch-abort)       ;; \e seems to work better for terminals
+ ;; TODO Thu Jun 30 16:41:14 2016 - This causes splits to close for some reason???
+ ;;  (global-set-key [escape] 'keyboard-escape-quit)         ;; everywhere else
+#+end_src
+
+** Hydra maps
+*** hydra-cee
+
+Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
+
+#+begin_src emacs-lisp :name hydra-cee
+  (defhydra hydra-cee (:color blue :hint nil)
+    "
+                                                                                    ,--------------------.
+                                                                                    | Ctrl-c or the like |
+      ,-----------------------------------------------------------------------------'--------------------'
+
+                                     [_i_] Semantic or Imenu                          [_v_] Pyvenv Environment
+                                     [_k_] Show kill ring
+                                     [_l_] Flycheck            [_s_] Helm Snippets    [_y_] New Snippet
+                                     [_m_] Multiterm           [_t_] Todo/Note/Bug
+
+  "
+    ("d" crux-insert-date)
+    ("i" helm-semantic-or-imenu)
+    ("k" helm-show-kill-ring)
+    ("l" hydra-flycheck/body :exit t)
+    ("m" helm-mt)
+    ("s" helm-yas-complete)
+    ("t" deftpunk/hltodo-swiper)
+    ("v" pyvenv-workon)
+    ("y" yas-new-snippet)
+    ("<ESC>" nil "Quit" :exit t)
+    )
+#+end_src
+
+*** hydra-files-projectile
+
+#+begin_src emacs-lisp :name hydra-files-projectile
+  (defhydra hydra-files-projectile (:color blue
+                                    :hint nil)
+  "
+    ,----------------------.
+   | Files, Projects, etc. |   CURRENT PROJECT: %(if (fboundp 'projectile-project-root) (projectile-project-root) \"NO Project\")
+   '-----------------------'--------------------------------------------------------------------------.
+
+
+
+
+  _a_ Ag                                             _m_ Go to *Messages*     _s_ Go to *scratch*
+
+  _c_ Clear Projectile Cache
+                                                     _p_ Switch Projects
+                                _k_ Kill Buffer
+  _f_ Find File
+
+  "
+  ("a" (lambda ()
+         (interactive)
+         (if (no-projectile-projectp)
+             (helm-do-ag)
+           (helm-projectile-ag))))
+  ("c" projectile-invalidate-cache)
+  ("f" counsel-find-file)
+  ("k" kill-buffer) ; gets you a Helm interface to choose which buffer.
+  ("m" (lambda ()
+         (interactive)
+         (let ((messages-buffer (get-buffer-create "*Messages*")))
+           (switch-to-buffer messages-buffer))))
+  ("n" make-frame)
+  ("p" projectile-switch-project)
+  ("s" eme-goto-scratch)
+
+  ("<ESC" nil "Quit" :exit t))
+#+end_src
+
+*** hydra-flycheck
+
+A hydra to open up flycheck errors and navigation through them - [[https://github.com/abo-abo/hydra/wiki/Flycheck][Source]]
+
+Made the following changes:
+ Added the change to disable flycheck-pos-tip-mode and renable it; it slowed
+ down the movement between errors.
+ Added the option t to quit-windows-on; this closes the created window.
+
+#+begin_src emacs-lisp :name hydra-flycheck
+ (defhydra hydra-flycheck
+   (:pre (progn (setq hydra-lv t) (flycheck-list-errors) (flycheck-pos-tip-mode -1))
+         flycheck-previous-error          :post (progn (setq hydra-lv nil) (quit-windows-on "*Flycheck errors*" t) (flycheck-pos-tip-mode 1))
+         :hint nil)
+   "
+                                                                           ,-----------------.
+                                                                           | Flycheck Errors |
+   ,-----------------------------------------------------------------------'-----------------'
+     [_f_] Filter
+     [_j_] Next Error
+     [_k_] Previous Error
+     [_gg_] First Error
+     [_G_] Last Error
+   "
+   ("f"  flycheck-error-list-set-filter)
+   ("j"  flycheck-next-error)
+   ("k"  flycheck-previous-error)
+   ("gg" flycheck-first-error)
+   ("G"  (progn (goto-char (point-max)) (flycheck-previous-error)))
+   ("q" nil "Quit")
+   ("<ESC>" nil "Quit"))
+#+end_src
+
+*** hydra +version-control@git-gutter
+
+Move around the various git-gutter hunks.
+
+#+begin_src emacs-lisp :name +version-control@git-gutter
+(defhydra +version-control@git-gutter
+    (:body-pre (git-gutter-mode 1) :hint nil)
+    "
+                                     ╭─────────────────┐
+  Movement   Hunk Actions     Misc.  │ gg: +%-4s(car (git-gutter:statistic))/ -%-3s(cdr (git-gutter:statistic)) │
+  ╭──────────────────────────────────┴─────────────────╯
+     ^_g_^       [_s_] stage        [_R_] set start Rev
+     ^_k_^       [_r_] revert
+     ^↑ ^      [_m_] mark
+     ^↓ ^      [_p_] popup          ╭──────────────────────
+     ^_j_^                          │[_q_] quit
+     ^_G_^                          │[_Q_] Quit and disable"
+    ("j" (progn (git-gutter:next-hunk 1) (recenter)))
+    ("k" (progn (git-gutter:previous-hunk 1) (recenter)))
+    ("g" (progn (goto-char (point-min)) (git-gutter:next-hunk 1)))
+    ("G" (progn (goto-char (point-min)) (git-gutter:previous-hunk 1)))
+    ("s" git-gutter:stage-hunk)
+    ("r" git-gutter:revert-hunk)
+    ("m" git-gutter:mark-hunk)
+    ("p" git-gutter:popup-hunk)
+    ("R" git-gutter:set-start-revision)
+    ("q" nil :color blue)
+("Q" (git-gutter-mode -1) :color blue))
+#+end_src
+
+*** hydra-version-control
+
+Hydra for version control functions.
+
+#+begin_src emacs-lisp :name hydra-version-control
+ (defhydra hydra-version-control (:color blue :hint nil)
+   "
+ git-messenger
+ -------------
+ c - Copy commit ID        s - Pop up git show --stat
+ d - Pop up git diff       S - Pop up git show --stat -p
+ m - Copy commit message   q - Quit
+
+
+                                                                     ,-------------------.
+     General                    Git                                  | Version control   |
+   ,-----------------------------------------------------------------'-------------------'
+   [_v_] Magit status          [_m_] git-messenger
+   [_a_] vc-annotate           [_s_] stage file
+                               [_u_] unstage file
+                               [_b_] blame
+                               [_t_] timemachine
+
+ "
+   ("a" vc-annotate)
+
+   ;; If currently monky-blame-mode then quit it, else try to blame current
+   ;; file.  If no, check magit-blame-mode and either quit that or start
+   ;; magit-blame.
+   ("b" (lambda ()
+          (interactive)
+          (if (bound-and-true-p monky-blame-mode)
+              (monky-quit-window)
+            (progn
+              (if (deftpunk/catch-error-p 'monky-blame-current-file)
+                  (if (bound-and-true-p magit-blame-mode)
+                      (magit-blame-quit)
+                    (call-interactively 'magit-blame)))))))
+
+   ("g" +version-control@git-gutter/body)
+   ("m" git-messenger:popup-message)
+   ("s" magit-stage-file)
+   ("t" git-timemachine)
+   ("u" magit-unstage-file)
+   ("v" magit-status)
+
+   ("<ESC>" nil "quit")
+   )
+#+end_src
+
+*** hydra-window-sizing
+
+Resize windows dynamically
+
+#+begin_src emacs-lisp :name hydra-window-sizing
+   (defhydra hydra-window-sizing (:color blue)
+     "
+ .------------------,
+ | Window Re-sizing |
+ '------------------'--------------------------------------------------------------------.
+
+                        ^Enlarge Vertically^
+
+		     ^[_k_]^
+		      ^^↑^^
+
+  Shrink Horizontally [_h_] ←    → [_l_] Enlarge Horizontally
+
+                             ^^↓^^
+                            ^[_j_]^
+
+		Shrink Vertically
+   "
+     ("<tab>" hydra-windows/back "Back to windows")
+
+     ("h" (lambda ()
+            (interactive)
+            (shrink-window-horizontally 5)) :color pink)
+     ("j" (lambda ()
+            (interactive)
+            (shrink-window 5)) :color pink)
+     ("k" (lambda ()
+            (interactive)
+            (enlarge-window 5)) :color pink)
+     ("l" (lambda ()
+            (interactive)
+            (enlarge-window-horizontally 5)) :color pink)
+
+     ("<ESC>" nil "Quit"))
+#+end_src
+
+*** hydra-windows
+
+Hydra for window/frame control and movements.
+
+#+begin_src emacs-lisp :name hydra-windows
+   (defhydra hydra-windows (:color blue :hint nil)
+     "
+                                                                                                                ,-------------------.
+    Navigation        Movement + Winner                Actions                     More Actions                 | Window Management |
+ ,--------------------------------------------------------------------------------------------------------------'-------------------'
+      ^_k_^            [_|_] Vert split + move     [_b_] Balance windows           [_n_] Scroll other Window
+      ^^↑^^            [_-_] Horizon split + move  [_c_] Delete current Window     [_p_] Scroll other Window Up
+  _h_ ←   → _l_                                  [_d_] Ace delete windows
+      ^^↓^^            [_w_] Ace Window            [_e_] Resize Windows            [_s_] Horizontal Split
+      ^_j_^                                                                        [_v_] Vertical Split
+                       [_u_] Winner Undo
+                       [_r_] Winner redo           [_i_] Maximize Window           [_f_] New Frame
+                                                                                   [_t_] Transpose Frame
+
+      "
+     ("b" balance-windows  :exit t)
+     ("c" delete-window  :exit t)
+     ("d" ace-delete-window :exit t)
+     ("e" hydra-window-sizing/body)
+     ("f" make-frame)
+     ("i" ace-maximize-window)
+     ("h" windmove-left)
+     ("j" windmove-down)
+     ("k" windmove-up)
+     ("l" windmove-right)
+     ("n" scroll-other-window)
+     ("o" delete-other-windows  :exit t)
+     ("p" scroll-other-window-down)
+     ("r" winner-redo)
+     ("s" split-window-vertically  :exit t)
+     ("t" transpose-frame :exit t)
+     ("u" winner-undo)
+     ("v" split-window-horizontally  :exit t)
+     ("w" ace-window :exit t)
+     ("|" (lambda ()
+            (interactive)
+            (split-window-right)
+            (windmove-right)))
+     ("-" (lambda ()
+            (interactive)
+            (split-window-below)
+            (windmove-down)))
+     ("=" balance-windows)
+
+     ("<ESC>" nil "quit")
+     )
+#+end_src
+
+** Hydra mode maps
+*** hydra-emacs-lisp
+
+ hydra for Elisp modes.  It inherits the smartparens hydra.
+
+#+begin_src emacs-lisp :name hydra-emacs-lisp
+ (defhydra hydra-emacs-lisp (:color red)
+   "
+                                                            ,-----------------.
+    Docs               Utilities                            | Emacs Lisp Mode |
+------------------------------------------------------------'-----------------'
+ [_d_] Describe        [_i_] ELM
+                       [_p_] ELP
+"
+   ("d" describe-foo-at-point :exit t)
+   ("e" eval-expression :exit t)
+   ("i" ielm :exit t)
+   ("p" hydra-emacs-lisp-profiler/body :exit t)
+   ("r" eval-region :exit t)
+   ("x" eval-defun :exit t)
+   ("<ESC>" nil "Quit" :exit t)
+   )
+#+end_src
+
+*** hydra-org-mode
+
+ hydra for Org mode
+
+#+begin_src emacs-lisp :name hydra-orgmode
+ (defhydra hydra-orgmode-mode (:color blue
+                               :hint nil)
+   "
+                                                                         .-----------.
+                                                                         |  Org Mode |
+   ,---------------------------------------------------------------------'-----------'
+   [_e_] Mark element
+   [_h_] Helm buffer headings
+   [_s_] Mark subtree
+   [_o_] Ace link
+ "
+   ("e" org-mark-element)
+   ("h" helm-org-in-buffer-headings)
+   ("s" org-mark-subtree)
+   ("o" ace-link-org)
+   ("<ESC>" nil "Quit" :exit t))
+#+end_src
+
+*** hydra-python-mode
+
+ hydra for python.
+
+#+begin_src emacs-lisp :name hydra-python
+ (defhydra hydra-python-mode (:color blue
+                                     :hint nil)
+   "
+                                                                           .----------.
+                                                                           |  Python  |
+     ,---------------------------------------------------------------------'----------'
+     [_d_] Jedi - goto definition
+     [_m_] Python Mark function
+     [_p_] Jedi - Pop goto definition
+     [_w_] Pyvenv workon Env
+   "
+   ("d" jedi:goto-definition)
+   ("m" python-mark-defun)
+   ("p" jedi:goto-definition-pop-marker)
+   ("w" pyvenv-workon)
+   ("<ESC>" nil "Quit" :exit t))
+#+end_src
+
+** hydra-jk
+
+ Hydra for the jk keychord - see Keychord below for more information.
+
+#+begin_src emacs-lisp :name hydra-jk
+ (defun deftpunk/hydra-major-mode-hack ()
+   "Mucho hackiness to get different hydras for different modes but the same
+ prefix key.  There has to be a better way."
+   (interactive)
+   (let ((my-hmodes '((lisp-interaction-mode . hydra-emacs-lisp/body)
+                      (python-mode . hydra-python-mode/body)
+                      (org-mode . hydra-orgmode-mode/body)
+                      (emacs-lisp-mode . hydra-emacs-lisp/body))))
+     (condition-case error
+         (funcall (assoc-default major-mode my-hmodes))
+       ('error (message "No Hydra for this major mode: %s" major-mode)))))
+
+ (defhydra hydra-jk (:color blue :hint nil)
+  "
+,----------------.
+| Master Blaster |
+'----------------'---------------------------------------------------------------------------------
+
+    [_x_] Helm/Counsel M-x        [_w_] Window Management
+  "
+  ("q" save-buffers-kill-terminal)
+  ("w" hydra-windows/body)
+  ("x" helm-M-x)
+
+  ("<ESC>" nil "Quit" :exit t)
+  )
+#+end_src
+
+** Evil States, Evil maps, Leader and Local Leader mappings
+
+#+BEGIN_SRC emacs-lisp :name evil-mappings
+
+;;;
+;;; Evil maps - not state maps
+;;;
+
+;; Add some bindings to the window "C-w <something" map.
+;; Thu Nov 22 22:54:18 2018 - we have to bind evil-window-map this way, as
+;; opposed to using general.el
+(define-key evil-window-map "a" 'ace-window)               ; was unused
+(define-key evil-window-map "b" 'balance-windows)          ; replaces evil-window-bottom-right.
+(define-key evil-window-map "d" 'ace-delete-window)        ; was unused
+(define-key evil-window-map "e" 'hydra-window-sizing/body) ; was unused
+(define-key evil-window-map "f" 'make-frame)               ; was unused
+(define-key evil-window-map "i" 'ace-maximize-window)      ; was unused
+(define-key evil-window-map "r" 'winner-redo)              ; replaces evil-window-rotate-downwards
+(define-key evil-window-map "u" 'winner-undo)              ; was unused
+
+;;;
+;;; Evil Insert state map
+;;;
+(general-define-key
+ :states 'insert
+ "C-a" 'crux-move-beginning-of-line ; replaces evil-paste-last-insertion
+ "C-e" 'move-end-of-line            ; replaces evil-copy-from-below
+ "C-h" 'evil-shift-right-line       ; also bound to C-t
+ "C-k" 'kill-line                   ; I don't care about inserting digraphs in insert mode.
+ "C-l" 'recenter-top-bottom         ; I find this handy in insert mode
+)
+
+;;;
+;;; Evil Normal state map
+;;;
+(general-define-key
+ :states 'normal
+ ;; run the macro in the q register
+ "Q" "@q"
+ "U" 'undo-tree-redo
+ "Y" "yg_"
+)
+
+;; Some easy window moving keys
+;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order to
+;; get this to work(?)
+(global-unset-key  (kbd "C-j"))
+(global-unset-key  (kbd "C-k"))
+(global-unset-key  (kbd "C-l"))
+;; (global-unset-key (kbd "C-h"))
+(define-key evil-normal-state-map (kbd "C-j") 'windmove-down)
+(define-key evil-normal-state-map (kbd "C-k") 'windmove-up)
+(define-key evil-normal-state-map (kbd "C-h") 'windmove-left)
+(define-key evil-normal-state-map (kbd "C-l") 'windmove-right)
+
+;;;
+;;; Evil visual state map
+;;;
+
+;; Indent visually.
+(define-key evil-visual-state-map (kbd "<") (lambda ()
+                                              (interactive)
+                                              (evil-shift-left (region-beginning) (region-end))
+                                              (evil-normal-state)
+                                              (evil-visual-restore)))
+(define-key evil-visual-state-map (kbd ">") (lambda ()
+                                              (interactive)
+                                              (evil-shift-right (region-beginning) (region-end))
+                                              (evil-normal-state)
+                                              (evil-visual-restore)))
+
+;;;
+;;; Leader keys
+;;;
+(general-create-definer my-leader-def
+  ;; :prefix my-leader
+  :prefix "SPC")
+
+(my-leader-def 'normal 'override
+  "c" 'hydra-cee/body
+  "f" 'hydra-files-projectile/body
+  "i" 'helm-mini
+  "k" 'flex//kill-current-buffer
+  "q" 'save-buffers-kill-terminal
+  "r" 'counsel-rg
+  "s" 'swiper
+  "v" 'hydra-version-control/body
+  "w" 'save-buffer
+)
+
+;;;
+;;; 'jk' binding
+;;;
+(key-chord-define-global "jk" 'hydra-jk/body)
+
+;; Moved to here so that all of the bindings are picked up.
+(which-key-mode t)
+;; Escape out of which-key mode - there is a slight lag because which-key is
+;; initially looking for Escape as a key in the available keys table.
+(define-key which-key-mode-map (kbd "ESC") 'which-key-abort)
+#+END_SRC
+
+* Notes
+** Investigations
+
+These are things/packages etc. that I may or may not want to use in the future.
+
+*** helpful
+https://github.com/Wilfred/helpful
+
+*** pcre2el
+;; pcre2el
+;; https://github.com/joddie/pcre2el/tree/0b5b2a2c173aab3fd14aac6cf5e90ad3bf58fa7d
+;; Work with regex in emacs.
+;(use-package pcre2el
+;  :commands rxt-quote-pcre)
+
+** Fixes, workarounds and improvements
+*** wrap around backward-kill-word to kill-region & sp-kill-region
+
+ Currently <delete> will kill a region, should make other things do so
+ as well, e.g. C-w
+
+*** create a hydra for scrolling other window
+    bind it to something available in evil-window-map
+
+ scroll up
+ scroll down
+ scroll left
+ scroll right
+
+scroll-other-window-down will actually scroll the window up ... Emacs
+scroll-other-window scrolls down
+
+*** Org mode + Evil rebinds C-j & C-k
+ move these to s-j & s-k -> Super key bindings
+*** shell-pop vs. multi-term vs. multi-run
+    which one, which one to run a terminal in Emacs
+*** make following links work in Orgmode
+ gx doesn't seem to work
+ ace-link-org doesn't work either
+*** after +version-control@git-gutter, how do I get back to where I was?
+ C-o doesn't help here.
+*** why is company interfering with normal completion??
+ C-n isn't working with Company
+*** PlantUML (sequence diagrams) in Orgmode
+http://www.alvinsim.com/diagrams-with-plantuml-and-emacs/
+https://joppot.info/en/2017/10/30/4107
