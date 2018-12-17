@@ -140,7 +140,7 @@ highlighted until you press the next key.
    ;; whitespace-mode
    whitespace-line-column fill-column
    whitespace-style '(face indentation tabs tab-mark spaces space-mark newline newline-mark
-                      trailing lines-tail)
+                           trailing lines-tail)
    whitespace-display-mappings '((tab-mark ?\t [?› ?\t])
                                  (newline-mark ?\n [?¬ ?\n])
                                  (space-mark ?\  [?·] [?.]))
@@ -149,66 +149,81 @@ highlighted until you press the next key.
    truncate-partial-width-windows 50
    )
 
-   ;; column-number-mode
-   ;; Display the column number in the modeline
-   (column-number-mode 1)
+  ;;; Turn on flyspell for programming modes
+  (add-hook 'prog-mode-hook #'flyspell-prog-mode)
 
-   ;; Delete regions using the *Delete* key.
-   (delete-selection-mode 1)
+  ;; auto-fill comments in prog-mode derived modes.
+  ;; this only works for programming modes that define a comment syntax; the
+  ;; syntax is not adapting, e.g. 3 semi-colons starting a comment is not carried
+  ;; forward to the next line.
+  (defun flex-emacs:prog-auto-fill-comments ()
+    "I want auto-filling of comments like that Other Editor"
+    (interactive)
+    (set (make-local-variable 'comment-auto-fill-only-comments) t)
+    (set (make-local-variable 'fill-column) 79)
+    (auto-fill-mode t))
+  (add-hook 'prog-mode-hook #'flex-emacs:prog-auto-fill-comments)
 
-   ;; ediff
-   ;; magit + ediff - Use the two together to resolve merge conflicts.
-   ;; https://coderwall.com/p/mcrwag/use-magit-ediff-to-resolve-merge-conflicts
-   (setq ediff-diff-options "-w"
-         ediff-use-long-help-message 1
-         ediff-split-window-function #'split-window-horizontally
-         ediff-window-setup-function #'ediff-setup-windows-plain)
-   ; Run winner undo afterwards in an attempt to get back to some "sane" window layout.
-   (add-hook 'ediff-after-quit-hook-internal #'winner-undo)
+  ;; column-number-mode
+  ;; Display the column number in the modeline
+  (column-number-mode 1)
 
-   ;; recentf
-   ;; Keep track of recently opened files
-   (setq recentf-save-file (concat flex-cache-dir "recentf")
-         recentf-max-menu-items 0
-         recentf-max-saved-items 300
-         recentf-filename-handlers '(file-truename)
-         recentf-exclude
-         (list "^/tmp/" "^/ssh:" "\\.?ido\\.last$" "\\.revive$" "/TAGS$"
-                "^/var/folders/.+$"
-                ;; ignore private temp files (but not all of them)
-                (concat "^" (file-truename flex-local-dir))))
-    (add-hook! 'flex-init-hook #'recentf-mode)
+  ;; Delete regions using the *Delete* key.
+  (delete-selection-mode 1)
 
-    ;; revert buffers for changed files
-   (global-auto-revert-mode 1)
-   (setq auto-revert-verbose nil)
+  ;; ediff
+  ;; magit + ediff - Use the two together to resolve merge conflicts.
+  ;; https://coderwall.com/p/mcrwag/use-magit-ediff-to-resolve-merge-conflicts
+  (setq ediff-diff-options "-w"
+        ediff-use-long-help-message 1
+        ediff-split-window-function #'split-window-horizontally
+        ediff-window-setup-function #'ediff-setup-windows-plain)
+                                          ; Run winner undo afterwards in an attempt to get back to some "sane" window layout.
+  (add-hook 'ediff-after-quit-hook-internal #'winner-undo)
 
-   ;; savehist / saveplace
-   (setq savehist-file (concat flex-cache-dir "savehist")
-         ; keep emacs from being slow to exit after enabling saveplace.
-         save-place-forget-unreadable-files nil
-         savehist-save-minibuffer-history t
-         savehist-autosave-interval nil ; save on kill only
-         savehist-additional-variables '(kill-ring search-ring regexp-search-ring)
-         save-place-file (concat flex-cache-dir "saveplace"))
-   (add-hook! 'flex-init-hook #'(savehist-mode save-place-mode))
+  ;; recentf
+  ;; Keep track of recently opened files
+  (setq recentf-save-file (concat flex-cache-dir "recentf")
+        recentf-max-menu-items 0
+        recentf-max-saved-items 300
+        recentf-filename-handlers '(file-truename)
+        recentf-exclude
+        (list "^/tmp/" "^/ssh:" "\\.?ido\\.last$" "\\.revive$" "/TAGS$"
+              "^/var/folders/.+$"
+              ;; ignore private temp files (but not all of them)
+              (concat "^" (file-truename flex-local-dir))))
+  (add-hook! 'flex-init-hook #'recentf-mode)
 
-   ;; More dealing with whitespace.
-   (add-hook 'prog-mode-hook '(lambda ()
-                                (setq show-trailing-whitespace 1)))
-   ;; Delete trailing whitespace just before saving.
-   (add-hook 'before-save-hook 'delete-trailing-whitespace)
+  ;; revert buffers for changed files
+  (global-auto-revert-mode 1)
+  (setq auto-revert-verbose nil)
 
-   ;;;
-   ;;; Advising and hooking.
-   ;;;
-   ;;; Functions used are from core/autoload/
+  ;; savehist / saveplace
+  (setq savehist-file (concat flex-cache-dir "savehist")
+                                          ; keep emacs from being slow to exit after enabling saveplace.
+        save-place-forget-unreadable-files nil
+        savehist-save-minibuffer-history t
+        savehist-autosave-interval nil ; save on kill only
+        savehist-additional-variables '(kill-ring search-ring regexp-search-ring)
+        save-place-file (concat flex-cache-dir "saveplace"))
+  (add-hook! 'flex-init-hook #'(savehist-mode save-place-mode))
 
-   ;; Quit.
-   (advice-add #'quit-window :around #'flex*quit-window)
+  ;; More dealing with whitespace.
+  (add-hook 'prog-mode-hook '(lambda ()
+                               (setq show-trailing-whitespace 1)))
+  ;; Delete trailing whitespace just before saving.
+  (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-   ;; We don't want to even bury the *scratch* buffer.
-   (add-hook 'kill-buffer-query-functions #'flex|dont-kill-scratch-buffer)
+     ;;;
+     ;;; Advising and hooking.
+     ;;;
+     ;;; Functions used are from core/autoload/
+
+  ;; Quit.
+  (advice-add #'quit-window :around #'flex*quit-window)
+
+  ;; We don't want to even bury the *scratch* buffer.
+  (add-hook 'kill-buffer-query-functions #'flex|dont-kill-scratch-buffer)
 
 #+END_SRC
 
@@ -317,7 +332,7 @@ Mastering Emacs has a good article on its configuration and usage - [[https://ma
               ;(autopair-mode -1)
               (setq term-buffer-maximum-size 10000
                 show-trailing-whitespace nil)))
-      (setq multi-term-program "/bin/zsh"
+      (setq multi-term-program "/bin/bash"
             multi-term-switch-after-close nil
             term-bind-key-alist '(("C-c C-c" . term-interrupt-subjob)
                       ("M-p" . previous-line)
