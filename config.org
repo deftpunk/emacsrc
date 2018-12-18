@@ -1561,9 +1561,9 @@ Because work.
 **** Initial Configuration
 
 #+begin_src emacs-lisp :name python
-(require 'smartparens-python)
+  (require 'smartparens-python)
 
-(defun deftmacs:python-mode ()
+  (defun deftmacs:python-mode ()
     (interactive)
     ;; (add-to-list (make-local-variable 'company-backends 'company-jedi))
     ;; I prefer superword-mode for python
@@ -1581,19 +1581,16 @@ Because work.
     ;; Turn off flyspell-mode - it interferes with jedi popup timing.
     ;; NOTE: Also make sure NOT to enable flyspell-prog-mode as this will interfere as well.
     (flyspell-mode 0)
+    (flyspell-prog-mode 0)
 
     ;; flycheck
     (flycheck-mode 1)
     (setq flycheck-flake8rc "~/.flake8"
           flycheck-flake8-maximum-line-length 105
           flycheck-checker 'python-flake8)
-
-    ;; autofill comments.
-    (setq-local comment-auto-fill-only-comments t)
-    (auto-fill-mode 1)
     )
 
-  (add-hook 'python-mode-hook 'deftmacs:python-mode)
+    (add-hook 'python-mode-hook 'deftmacs:python-mode)
 #+end_src
 
 **** pyvenv
