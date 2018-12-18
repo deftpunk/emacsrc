@@ -1879,79 +1879,47 @@ Keychord has a couple of drawbacks
 
 ** Ctrl/Alt/Super
 
-We get bind-keys for "free" with the install of use-package.
-
 #+begin_src emacs-lisp :name keybindings
-   ;; a
-   (global-set-key (kbd "C-a") 'crux-move-beginning-of-line)
+  ;; a
+  (global-unset-key (kbd "s-a"))
+  ;; d
+  (global-unset-key (kbd "s-d"))
+  (global-unset-key (kbd "C-s-d"))
+  (global-set-key (kbd "s-C-d") 'crux-insert-date)
+  ;; f
+  (global-unset-key (kbd "s-f"))
+  (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
+  ;; g
+  (global-unset-key (kbd "s-g"))
+  ;; h
+  (global-unset-key (kbd "s-h"))
+  ;; j
+  (global-unset-key (kbd "s-j"))
+  ;; k
+  (global-unset-key (kbd "s-k"))
+  ;; l
+  (global-unset-key (kbd "s-l"))
+  ;; n
+  (global-unset-key (kbd "s-n"))
+  ;; p
+  (global-unset-key (kbd "s-p"))
+  ;; r
+  (global-unset-key (kbd "s-r"))
+  (global-set-key (kbd "s-r") 'recenter-positions)
+  ;; t
+  (global-unset-key (kbd "s-S-t"))
+  (global-unset-key (kbd "s-t"))
+  ;; z
+  (global-unset-key (kbd "s-z"))
+  ;; -
+  (global-unset-key (kbd "s--"))
+  ;; arrows
+  (global-set-key (kbd "M-<left>") 'backward-word)
+  (global-set-key (kbd "M-<right>") 'forward-word)
 
- (global-unset-key (kbd "s-a"))
- (bind-keys* :prefix-map super-a-map
-             :prefix "s-a"
-             ("a" . mark-whole-buffer)
-             ("f" . mark-defun)
-             ("p" . mark-paragraph)
-             ("s-a" . mark-whole-buffer)
-             ("s-f" . mark-defun)
-             ("s-p" . mark-paragraph)
-   )
+  ;; Rebind =C-x C-e= so that it evaulutates regions as well.
+  (bind-key "C-x C-e" 'sanityinc/eval-last-sexp-or-region emacs-lisp-mode-map)
 
-   ;; d
-   (global-unset-key (kbd "s-d"))
-   (global-unset-key (kbd "C-s-d"))
-   (global-set-key (kbd "s-C-d") 'crux-insert-date)
-
-   ;; f
-   (global-unset-key (kbd "s-f"))
-   (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
-
-   ;; g
-   (global-unset-key (kbd "s-g"))
- (bind-keys :prefix "s-g"
-              :prefix-map super-g-map
-              ("c" . goto-char)
-              ("g" . goto-line)
-              ("," . goto-last-change-reverse)
-              ("." . goto-last-change)
-              ("s-c" . goto-char)
-              ("s-g" . goto-line)
-   )
-
-   ;; h
-   (global-unset-key (kbd "s-h"))
-
-   ;; j
-   (global-unset-key (kbd "s-j"))
-
-   ;; k
-   (global-unset-key (kbd "s-k"))
-
-   ;; l
-   (global-unset-key (kbd "s-l"))
-
-   ;; n
-   (global-unset-key (kbd "s-n"))
-
-   ;; p
-   (global-unset-key (kbd "s-p"))
-
-   ;; r
-   (global-unset-key (kbd "s-r"))
-   (global-set-key (kbd "s-r") 'recenter-positions)
-
-   ;; t
-   (global-unset-key (kbd "s-S-t"))
-   (global-unset-key (kbd "s-t"))
-
-   ;; z
-   (global-unset-key (kbd "s-z"))
-
-   ;; -
-   (global-unset-key (kbd "s--"))
-
-   ;; arrows
-   (global-set-key (kbd "M-<left>") 'backward-word)
-   (global-set-key (kbd "M-<right>") 'forward-word)
 #+end_src
 
 ** Escape
@@ -2144,16 +2112,11 @@ Hydra for version control functions.
    ;; If currently monky-blame-mode then quit it, else try to blame current
    ;; file.  If no, check magit-blame-mode and either quit that or start
    ;; magit-blame.
-   ("b" (lambda ()
-          (interactive)
-          (if (bound-and-true-p monky-blame-mode)
-              (monky-quit-window)
-            (progn
-              (if (deftpunk/catch-error-p 'monky-blame-current-file)
-                  (if (bound-and-true-p magit-blame-mode)
-                      (magit-blame-quit)
-                    (call-interactively 'magit-blame)))))))
-
+  ("b" (lambda ()
+         (interactive)
+         (if (bound-and-true-p magit-blame-mode)
+             (magit-blame-quit)
+           (call-interactively 'magit-blame))))
    ("g" +version-control@git-gutter/body)
    ("m" git-messenger:popup-message)
    ("s" magit-stage-file)
@@ -2204,59 +2167,6 @@ Resize windows dynamically
             (enlarge-window-horizontally 5)) :color pink)
 
      ("<ESC>" nil "Quit"))
-#+end_src
-
-*** hydra-windows
-
-Hydra for window/frame control and movements.
-
-#+begin_src emacs-lisp :name hydra-windows
-   (defhydra hydra-windows (:color blue :hint nil)
-     "
-                                                                                                                ,-------------------.
-    Navigation        Movement + Winner                Actions                     More Actions                 | Window Management |
- ,--------------------------------------------------------------------------------------------------------------'-------------------'
-      ^_k_^            [_|_] Vert split + move     [_b_] Balance windows           [_n_] Scroll other Window
-      ^^↑^^            [_-_] Horizon split + move  [_c_] Delete current Window     [_p_] Scroll other Window Up
-  _h_ ←   → _l_                                  [_d_] Ace delete windows
-      ^^↓^^            [_w_] Ace Window            [_e_] Resize Windows            [_s_] Horizontal Split
-      ^_j_^                                                                        [_v_] Vertical Split
-                       [_u_] Winner Undo
-                       [_r_] Winner redo           [_i_] Maximize Window           [_f_] New Frame
-                                                                                   [_t_] Transpose Frame
-
-      "
-     ("b" balance-windows  :exit t)
-     ("c" delete-window  :exit t)
-     ("d" ace-delete-window :exit t)
-     ("e" hydra-window-sizing/body)
-     ("f" make-frame)
-     ("i" ace-maximize-window)
-     ("h" windmove-left)
-     ("j" windmove-down)
-     ("k" windmove-up)
-     ("l" windmove-right)
-     ("n" scroll-other-window)
-     ("o" delete-other-windows  :exit t)
-     ("p" scroll-other-window-down)
-     ("r" winner-redo)
-     ("s" split-window-vertically  :exit t)
-     ("t" transpose-frame :exit t)
-     ("u" winner-undo)
-     ("v" split-window-horizontally  :exit t)
-     ("w" ace-window :exit t)
-     ("|" (lambda ()
-            (interactive)
-            (split-window-right)
-            (windmove-right)))
-     ("-" (lambda ()
-            (interactive)
-            (split-window-below)
-            (windmove-down)))
-     ("=" balance-windows)
-
-     ("<ESC>" nil "quit")
-     )
 #+end_src
 
 ** Hydra mode maps
@@ -2352,10 +2262,9 @@ Hydra for window/frame control and movements.
 | Master Blaster |
 '----------------'---------------------------------------------------------------------------------
 
-    [_x_] Helm/Counsel M-x        [_w_] Window Management
+    [_x_] Helm/Counsel M-x        [_q_] Exit Emacs
   "
   ("q" save-buffers-kill-terminal)
-  ("w" hydra-windows/body)
   ("x" helm-M-x)
 
   ("<ESC>" nil "Quit" :exit t)
@@ -2369,9 +2278,9 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
 
 #+BEGIN_SRC emacs-lisp :name evil-mappings
 
-  ;;;
-  ;;; Evil maps - not state maps
-  ;;;
+    ;;;
+    ;;; Evil maps - not state maps
+    ;;;
 
   (general-define-key
    :states 'normal
@@ -2383,18 +2292,27 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
   ;; Add some bindings to the window "C-w <something" map.
   ;; Thu Nov 22 22:54:18 2018 - we have to bind evil-window-map this way, as
   ;; opposed to using general.el
-  (define-key evil-window-map "a" 'ace-window)               ; was unused
   (define-key evil-window-map "b" 'balance-windows)          ; replaces evil-window-bottom-right.
   (define-key evil-window-map "d" 'ace-delete-window)        ; was unused
   (define-key evil-window-map "e" 'hydra-window-sizing/body) ; was unused
   (define-key evil-window-map "f" 'make-frame)               ; was unused
   (define-key evil-window-map "i" 'ace-maximize-window)      ; was unused
+  (define-key evil-window-map "m" 'doom/toggle-fullscreen)   ; was unused
   (define-key evil-window-map "r" 'winner-redo)              ; replaces evil-window-rotate-downwards
   (define-key evil-window-map "u" 'winner-undo)              ; was unused
+  (define-key evil-window-map "-" 'ace-window)               ; was unused
+  (define-key evil-window-map "\\" '(lambda ()
+                                      (interactive)
+                                      (split-window-right)
+                                      (windmove-right)))               ; was unused
+  (define-key evil-window-map "/" '(lambda ()
+                                     (interactive)
+                                     (split-window-below)
+                                     (windmove-down)))               ; was unused
 
-  ;;;
-  ;;; Evil Insert state map
-  ;;;
+    ;;;
+    ;;; Evil Insert state map
+    ;;;
   (general-define-key
    :states 'insert
    "C-a" 'crux-move-beginning-of-line ; replaces evil-paste-last-insertion
@@ -2402,18 +2320,18 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
    "C-h" 'evil-shift-right-line       ; also bound to C-t
    "C-k" 'kill-line                   ; I don't care about inserting digraphs in insert mode.
    "C-l" 'recenter-top-bottom         ; I find this handy in insert mode
-  )
+   )
 
-  ;;;
-  ;;; Evil Normal state map
-  ;;;
+    ;;;
+    ;;; Evil Normal state map
+    ;;;
   (general-define-key
    :states 'normal
    ;; run the macro in the q register
    "Q" "@q"
    "U" 'undo-tree-redo
    "Y" "yg_"
-  )
+   )
 
   ;; Some easy window moving keys
   ;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order to
@@ -2427,9 +2345,9 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
   (define-key evil-normal-state-map (kbd "C-h") 'windmove-left)
   (define-key evil-normal-state-map (kbd "C-l") 'windmove-right)
 
-  ;;;
-  ;;; Evil visual state map
-  ;;;
+    ;;;
+    ;;; Evil visual state map
+    ;;;
 
   ;; Indent visually.
   (define-key evil-visual-state-map (kbd "<") (lambda ()
@@ -2443,9 +2361,9 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
                                                 (evil-normal-state)
                                                 (evil-visual-restore)))
 
-  ;;;
-  ;;; Leader keys
-  ;;;
+    ;;;
+    ;;; Leader keys
+    ;;;
   (general-create-definer my-leader-def
     ;; :prefix my-leader
     :prefix "SPC")
@@ -2460,11 +2378,11 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
     "s" 'swiper
     "v" 'hydra-version-control/body
     "w" 'save-buffer
-  )
+    )
 
-  ;;;
-  ;;; 'jk' binding
-  ;;;
+    ;;;
+    ;;; 'jk' binding
+    ;;;
   (key-chord-define-global "jk" 'hydra-jk/body)
 
   ;; Moved to here so that all of the bindings are picked up.
