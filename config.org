@@ -1592,7 +1592,6 @@ Because work.
     (setq jedi:complete-on-dot t)
     (setq jedi:get-in-function-call-delay 500)
     (setq jedi:tooltip-method '(popup))
-    (add-to-list 'company-backends '(company-jedi company-files))
 
     ;; Turn off flyspell-mode - it interferes with jedi popup timing.
     ;; NOTE: Also make sure NOT to enable flyspell-prog-mode as this will interfere as well.
@@ -1607,9 +1606,6 @@ Because work.
     ;; autofill comments.
     (setq-local comment-auto-fill-only-comments t)
     (auto-fill-mode 1)
-
-    ;; line numbers
-    ;; (nlinum-mode)
     )
 
   (add-hook 'python-mode-hook 'deftmacs:python-mode)
@@ -1623,7 +1619,7 @@ Using [[https://github.com/jorgenschaefer/pyvenv][pyvenv]] to manage conda envir
   (use-package pyvenv
     :ensure t
     :config
-    (setenv "WORKON_HOME" "/Users/ebodine/miniconda3/envs")
+    (setenv "WORKON_HOME" "~/miniconda3/envs")
     (pyvenv-mode 1)
     (pyvenv-tracking-mode 1))
 #+end_src
@@ -1718,7 +1714,27 @@ YAML mode
 #+end_src
 
 * Prose
-*** lorem-ipsum
+** flyspell
+
+Check spelling on the fly.  Uses ispell under the hood.
+
+#+BEGIN_SRC emacs-lisp :name flyspell
+(use-package flyspell
+  :defer 1
+  :custom
+  (flyspell-abbrev-p t) ; Correct spelling errors & add them to abbrev_defs at the same time.
+  (flyspell-issue-message-flag nil)
+  (flyspell-issue-welcome-flag nil)
+  (flyspell-mode 1))
+
+(use-package flyspell-correct-ivy
+  :after flyspell
+  :bind (:map flyspell-mode-map
+        ("C-;" . flyspell-correct-word-generic))
+  :custom (flyspell-correct-interface 'flyspell-correct-ivy))
+#+END_SRC
+
+** lorem-ipsum
 
 [[https://github.com/jschaf/emacs-lorem-ipsum][Lorem Ipsum]] add filler text to whatever you are working on.  The following
 commands are available:
@@ -1731,7 +1747,7 @@ commands are available:
     :defer t)
 #+end_src
 
-*** Markdown mode
+** Markdown mode
 
 [[http://jblevins.org/projects/markdown-mode/][Markdown Mode]] - Major mode for editing [[http://daringfireball.net/projects/markdown/][Markdown]] formatted text.
 
@@ -1741,11 +1757,12 @@ commands are available:
     :mode (("README\\.md\\'" . gfm-mode)
            ("\\.md\\'"       . markdown-mode)
            ("\\.markdown\\'" . markdown-mode))
-    :init (setq markdown-command "multimarkdown"))
-
-  (smartparens-mode -1)
-
-  (setq-local helm-dash-docsets '("Markdown"))
+    :init (setq markdown-command "multimarkdown")
+  :config
+  (defun flex-emacs:mardown ()
+    (interactive)
+    (smartparens-mode -1))
+  (add-hook 'markdown-mode #'flex-emacs:mardown))
 #+end_src
 
 [[http://joostkremers.github.io/pandoc-mode/][Pandoc]] - Convert text written in one markup language into another markup language.
@@ -1768,14 +1785,13 @@ Dependencies: Node.js & vmd
   (use-package vmd-mode)
 #+end_src
 
-*** Text mode
+** Text mode
 
 #+begin_src emacs-lisp :name text mode
   (add-hook 'text-mode-hook '(lambda ()
                                (auto-fill-mode 1)
                                (setq word-wrap 1)))
 #+end_src
-
 
 * Keybindings
 ** Configuration & Settings
