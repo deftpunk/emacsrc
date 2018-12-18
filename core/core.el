@@ -151,10 +151,8 @@ ability to invoke the debugger in debug mode."
             kill-buffer-query-functions))
 
 ;; Move custom defs out of init.el & try to keep stuff out of custom.el
-;; http://www.holgerschurig.de/en/emacs-dont-let-packages-pollute-custom-el/
 (setq custom-file (concat flex-etc-dir "custom.el"))
 (load custom-file t t)
-(defun package--save-selected-packages (&rest opt) nil)
 
 (eval-and-compile
   (setq after-init-time nil)
@@ -209,18 +207,6 @@ ability to invoke the debugger in debug mode."
         load-path (append flex--base-load-path flex--package-load-path))
   (require 'use-package)
   (require 'paradox)
-
-  ;; Now that package--save-selected-packages doesn't actually save anything,
-  ;; =package-list-packages= & =paradox-list-packages= list everything as a
-  ;; dependency because they don't know what is installed manually and what is
-  ;; installed automatically.  Fix that - see custom.el URL link above.
-  (defun my-use-package-ensure-elpa (name ensure state context &optional no-refresh)
-  (let ((package (or (when (eq ensure t) (use-package-as-symbol name))
-                     ensure)))
-    (when package
-      (add-to-list 'package-selected-packages package)))
-  (use-package-ensure-elpa name ensure state context no-refresh))
-  (setq use-package-ensure-function #'my-use-package-ensure-elpa)
 
   (load! core-lib)
 
