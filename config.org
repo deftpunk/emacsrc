@@ -1424,21 +1424,6 @@ Borrowed from Sacha Chau who borrowed it from Steve Purcell - change
     (add-hook hook 'elisp-slime-nav-mode)))
 #+end_src
 
-**** CANCELED eval-sexp-fu
-
-Thu Oct 12 19:34:50 2017 - canceled because it has some deprecation issues.
-
-Flash the region that is evaluated (visual feedback) in elisp.
-
-#+begin_src emacs-lisp :name eval-sexp-fu
-  (use-package eval-sexp-fu
-    :load-path "~/tmp/eval-sexp-fu.el"
-    :init
-    (setq eval-sexp-fu-flash-duration 0.4)
-    :config
-    (turn-on-eval-sexp-fu-flash-mode))
-#+end_src
-
 **** eldoc
 
 #+begin_src emacs-lisp :name eldoc
