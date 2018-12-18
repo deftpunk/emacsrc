@@ -55,11 +55,7 @@
                 :commands (osx-clipboard-mode)
                 :init
                 (osx-clipboard-mode +1)))))
-
-      (IS-LINUX
-       ;; native tooltips are ugly!
-       (setq x-gtk-use-system-tooltips nil)
-       ))
+       )
 
 (provide 'core-os)
 ;;; core-os.el ends here
