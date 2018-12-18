@@ -904,7 +904,6 @@ Emacs that evil does not cover by default.
 
 #+BEGIN_SRC emacs-lisp :name evil-commentary
   (use-package evil-commentary
-    :commands evil-commentary-mode
     :config
     (evil-commentary-mode))
 #+END_SRC
@@ -915,6 +914,33 @@ Emacs that evil does not cover by default.
 
 #+BEGIN_SRC emacs-lisp :name evil-magit
 (use-package evil-magit)
+#+END_SRC
+
+** Evil Numbers
+
+http://github.com/cofi/evil-numbers
+Increment/Decrement numbers in normal & visual modes.
+
+#+BEGIN_SRC emacs-lisp :name evil-numbers
+  (use-package evil-numbers
+    :defer t
+    :config
+    (define-key evil-normal-state-map (kbd "C-c +") 'evil-numbers/inc-at-pt)
+    (define-key evil-visual-state-map (kbd "C-c +") 'evil-numbers/inc-at-pt)
+
+    (define-key evil-normal-state-map (kbd "C-c -") 'evil-numbers/dec-at-pt)
+    (define-key evil-visual-state-map (kbd "C-c -") 'evil-numbers/dec-at-pt))
+#+END_SRC
+
+** Evil Surround
+
+Package emulates surround.vim by Tpope.
+https://github.com/emacs-evil/evil-surround
+
+#+BEGIN_SRC emacs-lisp :name evil-surround
+(use-package evil-surround
+  :config
+  (global-evil-surround-mode 1))
 #+END_SRC
 
 * Org mode
@@ -1065,6 +1091,19 @@ setq org-modules (quote (org-protocol)))
     ;; its done (since it's a minor-mode).
     (add-hook! 'magit-blame-mode-hook
       (evil-local-mode (if magit-blame-mode -1 +1)))))
+#+END_SRC
+
+** Magit Todos
+
+https://github.com/alphapapa/magit-todos
+Show TODOs in Magit status buffer for each file.
+
+
+#+BEGIN_SRC emacs-lisp :name magit-todos
+(use-package magit-todos
+  :after magit
+  :config
+  (magit-todos-mode 1))
 #+END_SRC
 
 ** git-gutter & git-gutter-fringe
@@ -2479,3 +2518,7 @@ The following is a Helm example - it finds examples, it just doesn't go to them.
                              (delete-non-matching-lines hl-todo--regexp)))
                    :get-line #'buffer-substring)
         :buffer "*helm hl-todo*"))
+
+*** j binding in magit-todos
+
+The default =j <char>= binding needs to be removed
