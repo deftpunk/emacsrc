@@ -397,7 +397,6 @@ Things from the intertubes that improve upon Emacs the editor, e.g. completion, 
 
 #+begin_src emacs-lisp :name aggressive-indent-mode
     (use-package aggressive-indent
-      :commands (aggressive-indent-mode)
       :config
       (add-hook! 'prog-mode-hook #'aggressive-indent-mode))
 #+end_src
@@ -410,79 +409,6 @@ Things from the intertubes that improve upon Emacs the editor, e.g. completion, 
     :load-path "emacswikilibs/bookmark-plus/")
 #+end_src
 
-*** CANCELLED Company
-
-[[http://company-mode.github.io/][Company Completion]] - text completion framework.
-
-#+begin_src emacs-lisp :name company
-    (use-package company
-      :defer t
-      :diminish company-mode
-      :bind (:map company-active-map
-                 ("M-n" . nil)
-                 ("M-p" . nil)
-                 ([tab] . company-complete)
-                 ("C-j" . company-select-next)
-                 ("C-k" . company-select-previous)
-                 ("C-;" . helm-company))
-      :init
-      (setq company-idle-delay 0.1
-            company-tooltip-limit 99
-            company-minimum-prefix-length 2
-            company-echo-delay 0                ; Remove annoying blinking
-            company-selection-wrap-around t
-            company-show-numbers t
-            ;; change the navigation direction if the popup is near the bottom of
-            ;; of the window
-            company-tooltip-flip-when-above t
-            company-dabbrev-downcase nil
-            company-dabbrev-code-everywhere t
-            company-backends '((company-capf
-                                company-dabbrev
-                                company-dabbrev-code)))
-
-  ;; The current candidate isn't displayed inline except when there's only one
-  ;; left. You can rectify this by switching out
-  ;; company-preview-if-just-one-frontend for company-preview-frontend:
-  ;; (setq company-frontends
-  ;;       '(company-pseudo-tooltip-unless-just-one-frontend
-  ;;         company-preview-frontend
-  ;;         company-echo-metadata-frontend))
-
-  ;; (setq company-auto-complete nil)
-
-      :config
-      (use-package helm-company
-        :bind (:map company-mode-map
-                 ("C-;" . helm-company)))
-
-      (global-company-mode))
-#+end_src
-
-**** company-jedi
-
-[[https://github.com/syohex/emacs-company-jedi][company-jedi]] - a company mode completion backend for Python Jedi.
-
-Use a python-mode-hook to add company-jedi backend as a local variable when
-python files are opened.
-
-#+begin_src emacs-lisp :name company-jedi
-    (use-package company-jedi
-      :defer t)
-#+end_src
-
-**** company-quickhelp
-
-[[https://github.com/expez/company-quickhelp][company-quickhelp]] - Documentation popup for company mode.
-
-#+begin_src emacs-lisp :name company-quickhelp
-  (use-package company-quickhelp
-    :init
-    (setq company-quickhelp-delay 1.0
-          company-quickhelp-max-lines 30)
-    :config (company-quickhelp-mode 1))
-#+end_src
-
 *** Counsel, Avy, Ivy, Swiper
 
 [[https://github.com/abo-abo/swiper][avy, ivy, counsel and swiper]] - avy, ivy, counsel and swiper from the great abo-abo,
@@ -492,42 +418,51 @@ who also came up with hydra.
 - Counsel, a collection of Ivy-enhanced versions of common Emacs commands.
 - Swiper, an Ivy-enhanced alternative to isearch.
 
-Turning on counsel-mode to see remaps of Emacs commands - https://github.com/abo-abo/swiper#user-content-counsel
+Turning on counsel-mode to see remaps of Emacs commands
+- https://github.com/abo-abo/swiper#user-content-counsel
 
 #+BEGIN_SRC emacs-lisp :name counsel-swiper
-(use-package avy
-  :commands (avy-goto-char-2 avy-goto-line)
-  :config
-  (setq avy-all-windows nil
-        avy-background t))
+  (use-package avy
+    :commands (avy-goto-char-2 avy-goto-line)
+    :config
+    (setq avy-all-windows nil
+          avy-background t))
 
-(use-package counsel
-  :commands counsel-mode
-  :bind (:map ivy-minibuffer-map
-              ([escape] . minibuffer-keyboard-quit))
-  :init
-  (setq counsel-rg-base-command
-        "rg -i -M 120 --no-heading --line-number --color never %s .")
-  :config
-  (counsel-mode 1)
-)
-
-(use-package swiper
-  :commands (swiper)
-  :bind (:map ivy-minibuffer-map
-              ("C-w" . ivy-backward-kill-word)
-              ("C-y" . ivy-yank-word)
-              ([escape] . minibuffer-keyboard-quit))
-  :init
-  (setq ivy-wrap t     ; make ivy-next-line & ivy-previous-line cycle around.
-        ivy-height 25  ; make the minibuffer just a little taller.
-        ivy-use-virtual-buffers t
-        ivy-count-format "%d/%d"
-        )
-  :config
-  (ivy-mode 1))
+  (use-package counsel
+    :commands counsel-mode
+    :bind (:map ivy-minibuffer-map
+                ([escape] . minibuffer-keyboard-quit))
+    :init
+    (setq counsel-rg-base-command
+          "rg -i -M 120 --no-heading --line-number --color never %s .")
+    :config
+    (counsel-mode 1)
+  )
 
   (load "counsel-autoloads" nil nil) ; we really want everything available.
+
+  (use-package swiper
+    :commands (swiper)
+    :bind (:map ivy-minibuffer-map
+                ("C-w" . ivy-backward-kill-word)
+                ("C-y" . ivy-yank-word)
+                ([escape] . minibuffer-keyboard-quit))
+    :init
+    (setq ivy-wrap t     ; make ivy-next-line & ivy-previous-line cycle around.
+          ivy-height 25  ; make the minibuffer just a little taller.
+          ivy-use-virtual-buffers t
+          ivy-count-format "%d/%d"
+          )
+    :config
+    (ivy-mode 1))
+
+  (use-package ivy-rich
+    :ensure t
+    :after (ivy)
+    :init
+    (setq ivy-rich-path-style 'abbrev
+          ivy-virtual-abbreviate 'full)
+    :config (ivy-rich-mode 1))
 #+END_SRC
 
 *** easy-kill
@@ -640,10 +575,21 @@ Keys bound here:
    `C-h M-k'    `describe-keymap'
    `C-h M-l'    `find-function-on-key'
 
-   #+begin_src emacs-lisp :name help-fns
-  (use-package help-fns+
-    :load-path "emacswikilibs/help-fns-plus/")
-   #+end_src
+#+BEGIN_SRC emacs-lisp :name help-fns
+(use-package help-fns+
+  :load-path "emacswikilibs/help-fns-plus/")
+#+END_SRC
+
+*** hl-todo
+
+[[https://github.com/tarsius/hl-todo][hl-todo]] - Highlight TODO and similar keywords in comments and strings.
+By default it is only active in modes that derive from prog-mode.  It is a
+dependency for =magit-hl-todos= which toggles in =magit-status=.
+
+#+BEGIN_SRC emacs-lisp :name hl-todo
+(use-package hl-todo)
+(add-hook 'prog-mode-hook 'hl-todo-mode)
+#+END_SRC
 
 *** list-environment
 
@@ -708,24 +654,15 @@ Emacs sessions by saving the state to and restoring it from a file.
     )
 #+end_src
 
-***** helm-projectile
-
-[[http://tuhdo.github.io/helm-projectile.html][helm-projectile]] use helm to
-find files & buffers in projectile with a good explanation [[http://tuhdo.github.io/helm-projectile.html][Exploring large projects]]
-
-#+begin_src emacs-lisp :name helm-projectile
-  (use-package helm-projectile
     :defer t
-    :config
-    (setq helm-projectile-sources-list
-          '(helm-source-projectile-projects
-            helm-source-projectile-recentf-list
-            helm-source-projectile-buffers-list
-            helm-source-projectile-files-list))
-    (helm-projectile-on))
+**** counsel-projectile
 
-  (setq projectile-indexing-method 'native)
-#+end_src
+[[https://github.com/ericdanan/counsel-projectile][counsel-projectile]]
+
+#+BEGIN_SRC emacs-lisp :name counsel-projectile
+  (use-package counsel-projectile
+    )
+#+END_SRC
 
 *** Quickrun
 
@@ -2372,104 +2309,114 @@ Hydra for window/frame control and movements.
 
 ** Evil States, Evil maps, Leader and Local Leader mappings
 
+Keymapping with Evil adds a little more complexity - see the [[https://github.com/syl20bnr/spacemacs/wiki/Keymaps-guide][Spacemacs Keymap Guide]] and
+starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Keymap Precedence section]] of noctuid's [[https://github.com/noctuid/evil-guide][Evil Guide]] .
+
 #+BEGIN_SRC emacs-lisp :name evil-mappings
 
-;;;
-;;; Evil maps - not state maps
-;;;
+  ;;;
+  ;;; Evil maps - not state maps
+  ;;;
 
-;; Add some bindings to the window "C-w <something" map.
-;; Thu Nov 22 22:54:18 2018 - we have to bind evil-window-map this way, as
-;; opposed to using general.el
-(define-key evil-window-map "a" 'ace-window)               ; was unused
-(define-key evil-window-map "b" 'balance-windows)          ; replaces evil-window-bottom-right.
-(define-key evil-window-map "d" 'ace-delete-window)        ; was unused
-(define-key evil-window-map "e" 'hydra-window-sizing/body) ; was unused
-(define-key evil-window-map "f" 'make-frame)               ; was unused
-(define-key evil-window-map "i" 'ace-maximize-window)      ; was unused
-(define-key evil-window-map "r" 'winner-redo)              ; replaces evil-window-rotate-downwards
-(define-key evil-window-map "u" 'winner-undo)              ; was unused
+  (general-define-key
+   :states 'normal
+   :keymaps 'help-mode-map
+   "o" 'ace-link-help        ; was getting overwritten by evil-collection-help.el
+   "SPC" 'nil                ; don't want anything messing with our leader key
+   )
 
-;;;
-;;; Evil Insert state map
-;;;
-(general-define-key
- :states 'insert
- "C-a" 'crux-move-beginning-of-line ; replaces evil-paste-last-insertion
- "C-e" 'move-end-of-line            ; replaces evil-copy-from-below
- "C-h" 'evil-shift-right-line       ; also bound to C-t
- "C-k" 'kill-line                   ; I don't care about inserting digraphs in insert mode.
- "C-l" 'recenter-top-bottom         ; I find this handy in insert mode
-)
+  ;; Add some bindings to the window "C-w <something" map.
+  ;; Thu Nov 22 22:54:18 2018 - we have to bind evil-window-map this way, as
+  ;; opposed to using general.el
+  (define-key evil-window-map "a" 'ace-window)               ; was unused
+  (define-key evil-window-map "b" 'balance-windows)          ; replaces evil-window-bottom-right.
+  (define-key evil-window-map "d" 'ace-delete-window)        ; was unused
+  (define-key evil-window-map "e" 'hydra-window-sizing/body) ; was unused
+  (define-key evil-window-map "f" 'make-frame)               ; was unused
+  (define-key evil-window-map "i" 'ace-maximize-window)      ; was unused
+  (define-key evil-window-map "r" 'winner-redo)              ; replaces evil-window-rotate-downwards
+  (define-key evil-window-map "u" 'winner-undo)              ; was unused
 
-;;;
-;;; Evil Normal state map
-;;;
-(general-define-key
- :states 'normal
- ;; run the macro in the q register
- "Q" "@q"
- "U" 'undo-tree-redo
- "Y" "yg_"
-)
+  ;;;
+  ;;; Evil Insert state map
+  ;;;
+  (general-define-key
+   :states 'insert
+   "C-a" 'crux-move-beginning-of-line ; replaces evil-paste-last-insertion
+   "C-e" 'move-end-of-line            ; replaces evil-copy-from-below
+   "C-h" 'evil-shift-right-line       ; also bound to C-t
+   "C-k" 'kill-line                   ; I don't care about inserting digraphs in insert mode.
+   "C-l" 'recenter-top-bottom         ; I find this handy in insert mode
+  )
 
-;; Some easy window moving keys
-;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order to
-;; get this to work(?)
-(global-unset-key  (kbd "C-j"))
-(global-unset-key  (kbd "C-k"))
-(global-unset-key  (kbd "C-l"))
-;; (global-unset-key (kbd "C-h"))
-(define-key evil-normal-state-map (kbd "C-j") 'windmove-down)
-(define-key evil-normal-state-map (kbd "C-k") 'windmove-up)
-(define-key evil-normal-state-map (kbd "C-h") 'windmove-left)
-(define-key evil-normal-state-map (kbd "C-l") 'windmove-right)
+  ;;;
+  ;;; Evil Normal state map
+  ;;;
+  (general-define-key
+   :states 'normal
+   ;; run the macro in the q register
+   "Q" "@q"
+   "U" 'undo-tree-redo
+   "Y" "yg_"
+  )
 
-;;;
-;;; Evil visual state map
-;;;
+  ;; Some easy window moving keys
+  ;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order to
+  ;; get this to work(?)
+  (global-unset-key  (kbd "C-j"))
+  (global-unset-key  (kbd "C-k"))
+  (global-unset-key  (kbd "C-l"))
+  ;; (global-unset-key (kbd "C-h"))
+  (define-key evil-normal-state-map (kbd "C-j") 'windmove-down)
+  (define-key evil-normal-state-map (kbd "C-k") 'windmove-up)
+  (define-key evil-normal-state-map (kbd "C-h") 'windmove-left)
+  (define-key evil-normal-state-map (kbd "C-l") 'windmove-right)
 
-;; Indent visually.
-(define-key evil-visual-state-map (kbd "<") (lambda ()
-                                              (interactive)
-                                              (evil-shift-left (region-beginning) (region-end))
-                                              (evil-normal-state)
-                                              (evil-visual-restore)))
-(define-key evil-visual-state-map (kbd ">") (lambda ()
-                                              (interactive)
-                                              (evil-shift-right (region-beginning) (region-end))
-                                              (evil-normal-state)
-                                              (evil-visual-restore)))
+  ;;;
+  ;;; Evil visual state map
+  ;;;
 
-;;;
-;;; Leader keys
-;;;
-(general-create-definer my-leader-def
-  ;; :prefix my-leader
-  :prefix "SPC")
+  ;; Indent visually.
+  (define-key evil-visual-state-map (kbd "<") (lambda ()
+                                                (interactive)
+                                                (evil-shift-left (region-beginning) (region-end))
+                                                (evil-normal-state)
+                                                (evil-visual-restore)))
+  (define-key evil-visual-state-map (kbd ">") (lambda ()
+                                                (interactive)
+                                                (evil-shift-right (region-beginning) (region-end))
+                                                (evil-normal-state)
+                                                (evil-visual-restore)))
 
-(my-leader-def 'normal 'override
-  "c" 'hydra-cee/body
-  "f" 'hydra-files-projectile/body
-  "i" 'helm-mini
-  "k" 'flex//kill-current-buffer
-  "q" 'save-buffers-kill-terminal
-  "r" 'counsel-rg
-  "s" 'swiper
-  "v" 'hydra-version-control/body
-  "w" 'save-buffer
-)
+  ;;;
+  ;;; Leader keys
+  ;;;
+  (general-create-definer my-leader-def
+    ;; :prefix my-leader
+    :prefix "SPC")
 
-;;;
-;;; 'jk' binding
-;;;
-(key-chord-define-global "jk" 'hydra-jk/body)
+  (my-leader-def 'normal 'override
+    "c" 'hydra-cee/body
+    "f" 'hydra-files-projectile/body
+    "i" 'helm-mini
+    "k" 'flex//kill-current-buffer
+    "q" 'save-buffers-kill-terminal
+    "r" 'counsel-rg
+    "s" 'swiper
+    "v" 'hydra-version-control/body
+    "w" 'save-buffer
+  )
 
-;; Moved to here so that all of the bindings are picked up.
-(which-key-mode t)
-;; Escape out of which-key mode - there is a slight lag because which-key is
-;; initially looking for Escape as a key in the available keys table.
-(define-key which-key-mode-map (kbd "ESC") 'which-key-abort)
+  ;;;
+  ;;; 'jk' binding
+  ;;;
+  (key-chord-define-global "jk" 'hydra-jk/body)
+
+  ;; Moved to here so that all of the bindings are picked up.
+  (which-key-mode t)
+  ;; Escape out of which-key mode - there is a slight lag because which-key is
+  ;; initially looking for Escape as a key in the available keys table.
+  (define-key which-key-mode-map (kbd "ESC") 'which-key-abort)
 #+END_SRC
 
 * Notes
@@ -2518,3 +2465,17 @@ scroll-other-window scrolls down
 *** PlantUML (sequence diagrams) in Orgmode
 http://www.alvinsim.com/diagrams-with-plantuml-and-emacs/
 https://joppot.info/en/2017/10/30/4107
+*** ivy or helm completion for hl-todo
+The following is a Helm example - it finds examples, it just doesn't go to them...
+
+(defun helm-hl-todo-items ()
+  (interactive)
+  "Show `hl-todo'-keyword items in buffer."
+  (helm :sources (helm-build-in-buffer-source "hl-todo items"
+                   :init (lambda ()
+                           (with-current-buffer (helm-candidate-buffer 'global)
+                             (insert (with-helm-current-buffer (buffer-string)))
+                             (goto-char (point-min))
+                             (delete-non-matching-lines hl-todo--regexp)))
+                   :get-line #'buffer-substring)
+        :buffer "*helm hl-todo*"))
