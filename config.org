@@ -771,6 +771,38 @@ https://www.reddit.com/r/emacs/comments/9zxnvm/undotreevisualize_super_slow/
         (list (cons "." (concat flex-cache-dir "undo-tree-hist/")))))
 #+end_src
 
+*** vimish folds
+
+https://github.com/mrkkrp/vimish-fold Vim-like text folding for Emacs.
+
+This is a package to perform text folding like in Vim. It has the following features:
+
+  - folding of active regions;
+  - good visual feedback: it's obvious which part of text is folded;
+  - persistence by default: when you kill a buffer your folds don't disappear;
+  - persistence scales well, you can work on hundreds of files with lots of folds
+    without adverse effects;
+  - it does not break indentation;
+  - folds can be toggled from folded state to unfolded and back very easily;
+  - quick navigation between existing folds;
+  - you can use mouse to unfold folds (good for beginners and not only for them);
+  - for fans of the avy package: you can use avy to fold text with minimal
+    number of key strokes!
+
+    #+BEGIN_SRC emacs-lisp :name vimish-fold
+      (use-package vimish-fold
+        :commands vimish-fold-global-mode
+        :defer 1
+        :bind
+        (:map vimish-fold-folded-keymap ("<tab>" . vimish-fold-unfold)
+              :map vimish-fold-unfolded-keymap ("<tab>" . vimish-fold-refold))
+        :init
+        (setq-default vimish-fold-dir (expand-file-name ".vimish-fold/" flex-local-dir))
+        (vimish-fold-global-mode 1)
+        :config
+        (setq-default vimish-fold-header-width 79))
+    #+END_SRC
+
 *** wgrep
 
 [[https://github.com/mhayashi1120/Emacs-wgrep][wgrep]] - Allows you to edit a grep buffer and apply those changes to the file buffer.
@@ -2260,9 +2292,9 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
 
 #+BEGIN_SRC emacs-lisp :name evil-mappings
 
-    ;;;
-    ;;; Evil maps - not state maps
-    ;;;
+     ;;;
+     ;;; Evil maps - not state maps
+     ;;;
 
   (general-define-key
    :states 'normal
@@ -2292,9 +2324,9 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
                                      (split-window-below)
                                      (windmove-down)))               ; was unused
 
-    ;;;
-    ;;; Evil Insert state map
-    ;;;
+     ;;;
+     ;;; Evil Insert state map
+     ;;;
   (general-define-key
    :states 'insert
    "C-a" 'crux-move-beginning-of-line ; replaces evil-paste-last-insertion
@@ -2304,9 +2336,9 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
    "C-l" 'recenter-top-bottom         ; I find this handy in insert mode
    )
 
-    ;;;
-    ;;; Evil Normal state map
-    ;;;
+     ;;;
+     ;;; Evil Normal state map
+     ;;;
   (general-define-key
    :states 'normal
    ;; run the macro in the q register
@@ -2327,9 +2359,9 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
   (define-key evil-normal-state-map (kbd "C-h") 'windmove-left)
   (define-key evil-normal-state-map (kbd "C-l") 'windmove-right)
 
-    ;;;
-    ;;; Evil visual state map
-    ;;;
+     ;;;
+     ;;; Evil visual state map
+     ;;;
 
   ;; Indent visually.
   (define-key evil-visual-state-map (kbd "<") (lambda ()
@@ -2343,9 +2375,9 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
                                                 (evil-normal-state)
                                                 (evil-visual-restore)))
 
-    ;;;
-    ;;; Leader keys
-    ;;;
+     ;;;
+     ;;; Leader keys
+     ;;;
   (general-create-definer my-leader-def
     ;; :prefix my-leader
     :prefix "SPC")
@@ -2362,23 +2394,17 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
     "w" 'save-buffer
     )
 
-    ;;;
-    ;;; 'jk' binding
-    ;;;
+     ;;;
+     ;;; 'jk' binding
+     ;;;
   (key-chord-define-global "jk" 'hydra-jk/body)
 
   ;; Moved to here so that all of the bindings are picked up.
   (which-key-mode t)
-  ;; Escape out of which-key mode - there is a slight lag because which-key is
-  ;; initially looking for Escape as a key in the available keys table.
-  (define-key which-key-mode-map (kbd "ESC") 'which-key-abort)
 #+END_SRC
 
 * Notes
-** Investigations
-
-These are things/packages etc. that I may or may not want to use in the future.
-
+** New plugins to Investigate
 *** helpful
 https://github.com/Wilfred/helpful
 
@@ -2388,6 +2414,9 @@ https://github.com/Wilfred/helpful
 ;; Work with regex in emacs.
 ;(use-package pcre2el
 ;  :commands rxt-quote-pcre)
+
+*** List of "good" configurations:
+https://github.com/caisah/emacs.dz
 
 ** Fixes, workarounds and improvements
 *** wrap around backward-kill-word to kill-region & sp-kill-region
@@ -2438,3 +2467,69 @@ The following is a Helm example - it finds examples, it just doesn't go to them.
 *** j binding in magit-todos
 
 The default =j <char>= binding needs to be removed
+
+** Reference
+    ** byte compile files
+ C-x d mydir/predictive RET  ;; Open the predictive directory in Dired.
+  % m \.el$ RET               ;; Marks all .el files.
+  B                           ;; Byte compiles all marked files. Answer `y' at the prompt.
+
+*** Tail a remote file
+ /ssh:root@10.0.6.130:/var/log/hydra.log
+ M-x auto-revert-tail-mode
+
+*** Tramp
+ HOW TO USE TRAMP IN EMACS TO OPEN A FILE?
+ Simply type Ctr-x Ctr-f. You will be prompted for file-name:
+
+ Find file: /home/ (or similiar)
+
+ Suppose you are going to use a ssh-connection, type something like this:
+
+ Find file: /ssh:username@myhost.world.univ:filename
+
+ AUTO-SAVE AND BACKUP
+ Set tramp-auto-save-directory.
+ Set backup-directory-alist to nil or turn off backup-directory-alist for tramp:
+
+  (require 'tramp)
+      (add-to-list 'backup-directory-alist
+                   (cons tramp-file-name-regexp nil))
+
+*** Windows Hints
+ 1. Many things don't like spaces in the path names when building,
+    sourcing
+ 2. When using TRAMP to open remote Linux/Unix files do the following
+    (making sure that PuTTY is in the PATH variable):
+ Ctrl-x,Ctrl-f
+ /plink:ebodine@10.0.11.189:~/test.org
+
+*** Get Alt key to work in emacs/ubuntu
+
+ Enable Alt Key in Xterm
+
+ Normally, if you try the key sequence Alt+1 in xterm, it will output a special
+ character. To enable the Alt key:
+
+ Add the following to the .inputrc file in your home directory. Create one if it
+ doesn’t exist already.
+
+ set meta-flag on
+ set convert-meta off
+ set output-meta on
+
+ Add the following to the .Xdefaults file in your home directory.
+
+ XTerm*metaSendsEscape: true
+ XTerm*eightBitInput: false
+
+ Open xterm if its not already, and execute the following command in the xterm
+ Window.
+
+ xrdb -load ~/.Xdefaults
+
+ Restart all xterm windows. The Alt key should work now.qq
+
+
+
+
