@@ -68,6 +68,7 @@ these first before installing/running Emacs.
       - gls
       - coreutils
       - cask
+      - ctags
       - ripgrep
       - ispell
    3. Install Node.js & the vmd module - =npm install -g vmd=
