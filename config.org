@@ -409,6 +409,24 @@ Things from the intertubes that improve upon Emacs the editor, e.g. completion, 
     :load-path "emacswikilibs/bookmark-plus/")
 #+end_src
 
+*** Company Mode
+
+[[http://company-mode.github.io/][Company Mode]] for autocompletion
+
+company-quickhelp, company-dict, company-statistics, company-yasnippet
+
+The various languages I use have there own company-<lang> plugins.
+
+#+BEGIN_SRC emacs-lisp :name company
+  (use-package company
+    :init
+    (setq company-idle-delay 1
+          company-minimum-prefix-length 1
+          company-selection-wrap-around t)
+    :config
+    (add-hook 'after-init-hook 'global-company-mode))
+#+END_SRC
+
 *** Counsel, Avy, Ivy, Swiper
 
 [[https://github.com/abo-abo/swiper][avy, ivy, counsel and swiper]] - avy, ivy, counsel and swiper from the great abo-abo,
@@ -1338,11 +1356,10 @@ Show TODOs in Magit status buffer for each file.
 
 *** yasnippet
 
-I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snippet needs - the [[http://joaotavora.github.io/yasnippet/][manual]].
+I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snippet needs - the [[http://joaotavora.github.io/yasnippet/][manual]] and [[https://github.com/AndreaCrotti/yasnippet-snippets][yasnippet-snippets]]
+for the snippets collection.
 
 #+begin_src emacs-lisp :name yasnippet
-  (use-package yasnippet-snippets)
-
   (use-package yasnippet
     :commands yas-global-mode
     :mode ("/\\.emacs\\.d/snippets/" . snippet-mode)
@@ -1350,6 +1367,7 @@ I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snipp
     (setq yas-snippet-dirs '("~/.emacs.d/snippets")
           yas-verbosity 3)
     (yas-global-mode 1)
+    (use-package yasnippet-snippets)
     (use-package helm-c-yasnippet))
 #+end_src
 
