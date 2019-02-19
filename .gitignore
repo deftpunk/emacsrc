@@ -13,9 +13,13 @@
 crumbs/
 elpa/
 url/
+.local/
+etc/
 
 # We can't get these through melpa so I git clone them.  I don't like submodules.
 emacswikilibs/
 
 # The generated elisp config file
 config.el
+
+projectile-bookmarks.eld
