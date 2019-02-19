@@ -2044,27 +2044,27 @@ Made the following changes:
  Added the option t to quit-windows-on; this closes the created window.
 
 #+begin_src emacs-lisp :name hydra-flycheck
- (defhydra hydra-flycheck
-   (:pre (progn (setq hydra-lv t) (flycheck-list-errors) (flycheck-pos-tip-mode -1))
-         flycheck-previous-error          :post (progn (setq hydra-lv nil) (quit-windows-on "*Flycheck errors*" t) (flycheck-pos-tip-mode 1))
-         :hint nil)
-   "
-                                                                           ,-----------------.
-                                                                           | Flycheck Errors |
-   ,-----------------------------------------------------------------------'-----------------'
-     [_f_] Filter
-     [_j_] Next Error
-     [_k_] Previous Error
-     [_gg_] First Error
-     [_G_] Last Error
-   "
-   ("f"  flycheck-error-list-set-filter)
-   ("j"  flycheck-next-error)
-   ("k"  flycheck-previous-error)
-   ("gg" flycheck-first-error)
-   ("G"  (progn (goto-char (point-max)) (flycheck-previous-error)))
-   ("q" nil "Quit")
-   ("<ESC>" nil "Quit"))
+  (defhydra hydra-flycheck
+    (:pre (progn (setq hydra-lv t) (flycheck-list-errors) (flycheck-pos-tip-mode -1))
+          :post (progn (setq hydra-lv nil) (quit-windows-on "*Flycheck errors*" t) (flycheck-pos-tip-mode 1))
+          :hint nil)
+    "
+                                                                            ,-----------------.
+                                                                            | Flycheck Errors |
+    ,-----------------------------------------------------------------------'-----------------'
+      [_f_] Filter
+      [_j_] Next Error
+      [_k_] Previous Error
+      [_gg_] First Error
+      [_G_] Last Error
+    "
+    ("f"  flycheck-error-list-set-filter)
+    ("j"  flycheck-next-error)
+    ("k"  flycheck-previous-error)
+    ("gg" flycheck-first-error)
+    ("G"  (progn (goto-char (point-max)) (flycheck-previous-error)))
+    ("q" nil "Quit")
+    ("<ESC>" nil "Quit"))
 #+end_src
 
 *** hydra +version-control@git-gutter
