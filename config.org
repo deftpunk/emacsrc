@@ -632,8 +632,12 @@ Emacs sessions by saving the state to and restoring it from a file.
 #+begin_src emacs-lisp :name Projectile
   (use-package projectile
     :defer t
-    :commands (projectile-global-mode projectile-project-root)
-    :init (add-hook 'after-init-hook 'projectile-global-mode)
+    :commands (projectile--mode projectile-project-root)
+    :init
+    (add-hook 'after-init-hook 'projectile--mode)
+    ;; Move cache files to .local
+    (setq projectile-cache-file (expand-file-name "projectile.cache" flex-cache-dir)
+          projectile-known-projects-file (expand-file-name "projectile-bookmarks.eld" flex-cache-dir))
     :config
     (setq projectile-globally-ignored-file-suffixes '("*.pyc"  "*.class"))
     (setq projectile-completion-system 'ivy
