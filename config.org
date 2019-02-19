@@ -1649,6 +1649,17 @@ Using [[https://github.com/jorgenschaefer/pyvenv][pyvenv]] to manage conda envir
 #+end_src
 
 * Miscellaneous file type support
+*** Ansible
+
+    [[https://github.com/k1LoW/emacs-ansible][emacs-ansible]] Minor mode for dealing with Ansible files.  Requires yasnippet.
+
+#+BEGIN_SRC emacs-lisp :name ansible
+  (use-package ansible)
+  (use-package ansible-doc)
+  (use-package company-ansible
+    :config (add-to-list 'company-backends 'company-ansible))
+#+END_SRC
+
 *** csv
 
 Comma (or other delimiter) separated files.
