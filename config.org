@@ -1813,6 +1813,13 @@ Dependencies: Node.js & vmd
 
 * Keybindings
 ** Configuration & Settings
+
+=Hydra & General Tips=
+Hydra is useful for its menu and if you want to use a set of keybindings for a period of time, e.g.
+resize windows.
+
+General is potentially useful anytime that you are defining keys.
+
 *** General
 
 [[https://github.com/noctuid/general.el][general.el]] - Use general.el to setup evil-mode, leader and other keybindings.
@@ -1894,51 +1901,6 @@ Keychord has a couple of drawbacks
       (setq which-key-allow-evil-operators t
             which-key-show-operator-state-maps t))
 #+END_SRC
-
-** Ctrl/Alt/Super
-
-#+begin_src emacs-lisp :name keybindings
-  ;; a
-  (global-unset-key (kbd "s-a"))
-  ;; d
-  (global-unset-key (kbd "s-d"))
-  (global-unset-key (kbd "C-s-d"))
-  (global-set-key (kbd "s-C-d") 'crux-insert-date)
-  ;; f
-  (global-unset-key (kbd "s-f"))
-  (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
-  ;; g
-  (global-unset-key (kbd "s-g"))
-  ;; h
-  (global-unset-key (kbd "s-h"))
-  ;; j
-  (global-unset-key (kbd "s-j"))
-  ;; k
-  (global-unset-key (kbd "s-k"))
-  ;; l
-  (global-unset-key (kbd "s-l"))
-  ;; n
-  (global-unset-key (kbd "s-n"))
-  ;; p
-  (global-unset-key (kbd "s-p"))
-  ;; r
-  (global-unset-key (kbd "s-r"))
-  (global-set-key (kbd "s-r") 'recenter-positions)
-  ;; t
-  (global-unset-key (kbd "s-S-t"))
-  (global-unset-key (kbd "s-t"))
-  ;; z
-  (global-unset-key (kbd "s-z"))
-  ;; -
-  (global-unset-key (kbd "s--"))
-  ;; arrows
-  (global-set-key (kbd "M-<left>") 'backward-word)
-  (global-set-key (kbd "M-<right>") 'forward-word)
-
-  ;; Rebind =C-x C-e= so that it evaulutates regions as well.
-  (bind-key "C-x C-e" 'sanityinc/eval-last-sexp-or-region emacs-lisp-mode-map)
-
-#+end_src
 
 ** Escape
 
@@ -2287,6 +2249,55 @@ Resize windows dynamically
 
   ("<ESC>" nil "Quit" :exit t)
   )
+#+end_src
+
+** Ctrl/Alt/Super
+
+#+begin_src emacs-lisp :name keybindings
+  ;; a
+  (global-unset-key (kbd "s-a"))
+  ;; d
+  (global-unset-key (kbd "s-d"))
+  (global-unset-key (kbd "C-s-d"))
+  (global-set-key (kbd "s-C-d") 'crux-insert-date)
+  ;; f
+  (global-unset-key (kbd "s-f"))
+  (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
+  ;; g
+  (global-unset-key (kbd "s-g"))
+  ;; h
+  (global-unset-key (kbd "s-h"))
+  ;; i
+  (global-unset-key (kbd "s-i"))
+  (bind-key "s-i" 'helm-mini)
+  ;; j
+  (global-unset-key (kbd "s-j"))
+  ;; k
+  (global-unset-key (kbd "s-k"))
+  ;; l
+  (global-unset-key (kbd "s-l"))
+  ;; n
+  (global-unset-key (kbd "s-n"))
+  ;; p
+  (global-unset-key (kbd "s-p"))
+  (bind-key "s-p" 'hydra-files-projectile/body)
+  ;; r
+  (global-unset-key (kbd "s-r"))
+  (global-set-key (kbd "s-r") 'recenter-positions)
+  ;; t
+  (global-unset-key (kbd "s-S-t"))
+  (global-unset-key (kbd "s-t"))
+  ;; z
+  (global-unset-key (kbd "s-z"))
+  ;; -
+  (global-unset-key (kbd "s--"))
+  ;; arrows
+  (global-set-key (kbd "M-<left>") 'backward-word)
+  (global-set-key (kbd "M-<right>") 'forward-word)
+
+  ;; Rebind =C-x C-e= so that it evaulutates regions as well.
+  (bind-key "C-x C-e" 'sanityinc/eval-last-sexp-or-region emacs-lisp-mode-map)
+
 #+end_src
 
 ** Evil States, Evil maps, Leader and Local Leader mappings
