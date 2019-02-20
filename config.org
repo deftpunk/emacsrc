@@ -634,10 +634,10 @@ Emacs sessions by saving the state to and restoring it from a file.
     :defer t
     :commands (projectile-mode projectile-project-root)
     :init
-    (add-hook 'after-init-hook 'projectile-mode)
     ;; Move cache files to .local
     (setq projectile-cache-file (expand-file-name "projectile.cache" flex-cache-dir)
           projectile-known-projects-file (expand-file-name "projectile-bookmarks.eld" flex-cache-dir))
+    (add-hook 'after-init-hook 'projectile-mode)
     :config
     (setq projectile-globally-ignored-file-suffixes '("*.pyc"  "*.class"))
     (setq projectile-completion-system 'ivy
@@ -1685,6 +1685,14 @@ Comma (or other delimiter) separated files.
     :config (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
 #+END_SRC
 
+*** Groovy / Jenkinsfile
+
+[[https://github.com/Groovy-Emacs-Modes/groovy-emacs-modes][Groovy / Jenkinsfile]] support.
+
+#+BEGIN_SRC emacs-lisp :name groovy
+  (use-package groovy-mode)
+#+END_SRC
+
 *** jinja2
 
 [[https://github.com/paradoxxxzero/jinja2-mode][jinja2-mode]] - A major mode for jinja2 templates.
@@ -2049,29 +2057,29 @@ Made the following changes:
 Move around the various git-gutter hunks.
 
 #+begin_src emacs-lisp :name +version-control@git-gutter
-(defhydra +version-control@git-gutter
-    (:body-pre (git-gutter-mode 1) :hint nil)
-    "
-                                     ╭─────────────────┐
-  Movement   Hunk Actions     Misc.  │ gg: +%-4s(car (git-gutter:statistic))/ -%-3s(cdr (git-gutter:statistic)) │
-  ╭──────────────────────────────────┴─────────────────╯
-     ^_g_^       [_s_] stage        [_R_] set start Rev
-     ^_k_^       [_r_] revert
-     ^↑ ^      [_m_] mark
-     ^↓ ^      [_p_] popup          ╭──────────────────────
-     ^_j_^                          │[_q_] quit
-     ^_G_^                          │[_Q_] Quit and disable"
-    ("j" (progn (git-gutter:next-hunk 1) (recenter)))
-    ("k" (progn (git-gutter:previous-hunk 1) (recenter)))
-    ("g" (progn (goto-char (point-min)) (git-gutter:next-hunk 1)))
-    ("G" (progn (goto-char (point-min)) (git-gutter:previous-hunk 1)))
-    ("s" git-gutter:stage-hunk)
-    ("r" git-gutter:revert-hunk)
-    ("m" git-gutter:mark-hunk)
-    ("p" git-gutter:popup-hunk)
-    ("R" git-gutter:set-start-revision)
-    ("q" nil :color blue)
-("Q" (git-gutter-mode -1) :color blue))
+  (defhydra +version-control@git-gutter
+      (:body-pre (git-gutter-mode 1) :hint nil)
+      "
+                                       ╭─────────────────┐
+    Movement   Hunk Actions     Misc.  │ gg: +%-4s(car (git-gutter:statistic))/ -%-3s(cdr (git-gutter:statistic)) │
+    ╭──────────────────────────────────┴─────────────────╯
+       ^_g_^       [_s_] stage        [_R_] set start Rev
+       ^_k_^       [_r_] revert
+       ^↑ ^      [_m_] mark
+       ^↓ ^      [_p_] popup          ╭──────────────────────
+       ^_j_^                          │[_q_] quit
+       ^_G_^                          │[_Q_] Quit and disable"
+      ("j" (progn (git-gutter:next-hunk 1) (recenter)))
+      ("k" (progn (git-gutter:previous-hunk 1) (recenter)))
+      ("g" (progn (goto-char (point-min)) (git-gutter:next-hunk 1)))
+      ("G" (progn (goto-char (point-max)) (git-gutter:previous-hunk 1)))
+      ("s" git-gutter:stage-hunk)
+      ("r" git-gutter:revert-hunk)
+      ("m" git-gutter:mark-hunk)
+      ("p" git-gutter:popup-hunk)
+      ("R" git-gutter:set-start-revision)
+      ("q" nil :color blue)
+  ("Q" (git-gutter-mode -1) :color blue))
 #+end_src
 
 *** hydra-version-control
