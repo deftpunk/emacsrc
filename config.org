@@ -2310,9 +2310,18 @@ Resize windows dynamically
   (global-unset-key (kbd "s-z"))
   ;; -
   (global-unset-key (kbd "s--"))
+  (bind-key "s--" 'ace-window)
   ;; arrows
   (global-set-key (kbd "M-<left>") 'backward-word)
   (global-set-key (kbd "M-<right>") 'forward-word)
+
+  ;; These bindings match how window & tab (frames) work in iTerm
+  ;; ns-next-frame & ns-prev-frame are bound to s-<left> & s-<right> respectively.
+  (bind-key "s-M-<left>" 'windmove-left)
+  (bind-key "s-M-<right>" 'windmove-right)
+  (bind-key "s-M-<up>" 'windmove-up)
+  (bind-key "s-M-<down>" 'windmove-down)
+
 
   ;; Rebind =C-x C-e= so that it evaulutates regions as well.
   (bind-key "C-x C-e" 'sanityinc/eval-last-sexp-or-region emacs-lisp-mode-map)
