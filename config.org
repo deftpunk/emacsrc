@@ -781,6 +781,14 @@ https://www.reddit.com/r/emacs/comments/9zxnvm/undotreevisualize_super_slow/
         (list (cons "." (concat flex-cache-dir "undo-tree-hist/")))))
 #+end_src
 
+*** Unfill
+
+[[https://github.com/purcell/unfill][unfill]] Providing the inverse of =fill-paragraph= and =fill-region=
+
+#+BEGIN_SRC emacs-lisp :name unfill
+  (use-package unfill
+    :bind ([remap fill-paragraph] . unfill-toggle))
+#+END_SRC
 *** vimish folds
 
 https://github.com/mrkkrp/vimish-fold Vim-like text folding for Emacs.
