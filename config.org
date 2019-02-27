@@ -610,6 +610,12 @@ modify them in the *Process Environment* buffer.  =M-x list-environment=
   :commands (move-text-up move-text-down))
 #+END_SRC
 
+*** neotree
+
+#+BEGIN_SRC emacs-lisp :name neotree
+  (use-package neotree)
+#+END_SRC
+
 *** Persistent Scratch
 [[https://github.com/Fanael/persistent-scratch][
 persistent-scratch]] is an Emacs package that preserves the state of scratch buffers across
@@ -1107,6 +1113,20 @@ setq org-modules (quote (org-protocol)))
 #+end_src
 
 * Version Control
+
+** browse-at-remote
+
+[[https://github.com/rmuslimov/browse-at-remote][browse-at-remote]] Easiest way to open particular link on github/gitlab/bitbucket/stash/git.savannah.gnu.org/sourcehut
+from Emacs. It supports various kind of emacs buffer, like:
+
+- file buffer
+- dired buffer
+- magit-mode buffers representing code
+- vc-annotate mode (use get there by pressing C-x v g by default)
+
+#+BEGIN_SRC emacs-lisp :name browse-at-remote
+  (use-package browse-at-remote)
+#+END_SRC
 
 ** Magit
 
@@ -1641,6 +1661,13 @@ Using [[https://github.com/jorgenschaefer/pyvenv][pyvenv]] to manage conda envir
     (pyvenv-mode 1)
     (pyvenv-tracking-mode 1))
 #+end_src
+
+*** Rust
+
+#+BEGIN_SRC emacs-lisp :name Rust
+  (use-package rust-mode
+    :mode "\\.rs'")
+#+END_SRC
 
 *** Shell
 
