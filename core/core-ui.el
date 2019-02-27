@@ -118,23 +118,26 @@
 ;; doom themes
 ;; Make me look really pretty
 ;; https://github.com/hlissner/emacs-doom-themes
-(use-package doom-themes
-    :init
-    (setq doom-themes-enable-bold t
-          doom-themes-enable-italic t)
-    :config
-    ;; Enable flashing mode-line on errors
-    (doom-themes-visual-bell-config)
+;; (use-package doom-themes
+;;   :init
+;;   (setq doom-themes-enable-bold t
+;;         doom-themes-enable-italic t)
+;;   :config
+;;   ;; Enable flashing mode-line on errors
+;;   (doom-themes-visual-bell-config)
 
-    ;; or for treemacs users
-    (doom-themes-treemacs-config)
+;;   ;; or for treemacs users
+;;   (doom-themes-neotree-config)
 
-    ;; Corrects (and improves) org-mode's native fontification.
-    (doom-themes-org-config))
-(load-theme 'doom-nord-light t)
+;;   ;; Corrects (and improves) org-mode's native fontification.
+;;   (doom-themes-org-config))
+;; (load-theme 'doom-molokai t)
 
 ;; If I get tired of the doom-themes, kaolin-ocean is a possibility
 ;; https://github.com/ogdenwebb/emacs-kaolin-themes
+
+(use-package monokai-theme)
+(load-theme 'monokai t)
 
 ;;;
 ;;; Highlighting
