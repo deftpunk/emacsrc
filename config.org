@@ -789,6 +789,7 @@ https://www.reddit.com/r/emacs/comments/9zxnvm/undotreevisualize_super_slow/
   (use-package unfill
     :bind ([remap fill-paragraph] . unfill-toggle))
 #+END_SRC
+
 *** vimish folds
 
 https://github.com/mrkkrp/vimish-fold Vim-like text folding for Emacs.
@@ -2122,44 +2123,45 @@ Move around the various git-gutter hunks.
 Hydra for version control functions.
 
 #+begin_src emacs-lisp :name hydra-version-control
- (defhydra hydra-version-control (:color blue :hint nil)
-   "
- git-messenger
- -------------
- c - Copy commit ID        s - Pop up git show --stat
- d - Pop up git diff       S - Pop up git show --stat -p
- m - Copy commit message   q - Quit
+  (defhydra hydra-version-control (:color blue :hint nil)
+    "
+  git-messenger
+  -------------
+  c - Copy commit ID        s - Pop up git show --stat
+  d - Pop up git diff       S - Pop up git show --stat -p
+  m - Copy commit message   q - Quit
 
 
-                                                                     ,-------------------.
-     General                    Git                                  | Version control   |
-   ,-----------------------------------------------------------------'-------------------'
-   [_v_] Magit status          [_m_] git-messenger
-   [_a_] vc-annotate           [_s_] stage file
-                               [_u_] unstage file
-                               [_b_] blame
-                               [_t_] timemachine
+                                                                      ,-------------------.
+      General                    Git                                  | Version control   |
+    ,-----------------------------------------------------------------'-------------------'
+    [_v_] Magit status          [_m_] git-messenger
+    [_a_] vc-annotate           [_s_] stage file
+                                [_u_] unstage file
+                                [_b_] blame
+                                [_t_] timemachine
 
- "
-   ("a" vc-annotate)
+  "
+    ("a" vc-annotate)
 
-   ;; If currently monky-blame-mode then quit it, else try to blame current
-   ;; file.  If no, check magit-blame-mode and either quit that or start
-   ;; magit-blame.
-  ("b" (lambda ()
-         (interactive)
-         (if (bound-and-true-p magit-blame-mode)
-             (magit-blame-quit)
-           (call-interactively 'magit-blame))))
-   ("g" +version-control@git-gutter/body)
-   ("m" git-messenger:popup-message)
-   ("s" magit-stage-file)
-   ("t" git-timemachine)
-   ("u" magit-unstage-file)
-   ("v" magit-status)
+    ;; If currently monky-blame-mode then quit it, else try to blame current
+    ;; file.  If no, check magit-blame-mode and either quit that or start
+    ;; magit-blame.
+    ("b" (lambda ()
+           (interactive)
+           (if (bound-and-true-p magit-blame-mode)
+               (magit-blame-quit)
+             (call-interactively 'magit-blame))))
+    ("g" +version-control@git-gutter/body)
+    ("m" git-messenger:popup-message)
+    ("s" magit-stage-file)
+    ("t" git-timemachine)
+    ("u" magit-unstage-file)
+    ("w" browse-at-remote)
+    ("v" magit-status)
 
-   ("<ESC>" nil "quit")
-   )
+    ("<ESC>" nil "quit")
+    )
 #+end_src
 
 *** hydra-window-sizing
