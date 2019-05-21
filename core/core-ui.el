@@ -113,7 +113,7 @@
 (use-package doom-modeline
   :init
   (setq doom-modeline-minor-modes t)
-  :hook (after-init . doom-modeline-init))
+  :hook (after-init . doom-modeline-mode))
 
 ;; doom themes
 ;; Make me look really pretty
