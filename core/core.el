@@ -197,7 +197,7 @@ ability to invoke the debugger in debug mode."
   ;;; core*.el file loading
   ;;;
 
-  ;; core-packaging installs "use-package" & "paradox" - then "requires" them.
+  ;; core-packaging installs "use-package" & "paradox", then
   ;; makes sure that the flex-local-dir, flex-etc-dir & flex-cache-dir are present.
   (load (concat flex-core-dir "core-packaging") nil t)
   (eval-when-compile (flex-initialize t))
@@ -220,13 +220,6 @@ ability to invoke the debugger in debug mode."
             "%s in autoloads.el -> %s"
             (car ex) (error-message-string ex))))
 
-  (load! core-os) ; consistent behavior across OSes
-
-  (unless noninteractive
-    (load! core-ui)         ; draw me like one of your French editors
-    (load! core-popups)     ; taming sudden yet inevitable windows
-    )
-
   ;;;
   ;;; Load up the Org configuration file.
   ;;;
@@ -235,7 +228,7 @@ ability to invoke the debugger in debug mode."
   ;; See - http://www.holgerschurig.de/en/emacs-efficiently-untangling-elisp/
   (add-hook 'after-save-hook (apply-partially #'my-tangle-config-org-hook-func flex-orgfile flex-elfile))
   (when (or (not (file-exists-p flex-elfile))
-	    (file-newer-than-file-p flex-orgfile flex-elfile))
+            (file-newer-than-file-p flex-orgfile flex-elfile))
     (my-tangle-config-org flex-orgfile flex-elfile))
   (load-file flex-elfile)
 

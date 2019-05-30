@@ -2,230 +2,399 @@
 #+AUTHOR: Deftpunk
 #+STARTUP: content
 #+OPTIONS: toc:4 :num:nil ^:nil
+* OS
+
+This is a direct copy of the core/core-os.el file in doom-emacs, many
+thanks to Henrik - henrik@lissner.net
+
+** General Configuration
+
+#+begin_src emacs-lisp :name os_configuration
+(defconst IS-MAC   (eq system-type 'darwin))
+(defconst IS-LINUX (eq system-type 'gnu/linux))
+
+;; clipboard
+(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING)
+      save-interprogram-paste-before-kill t
+      mouse-yank-at-point t
+      ;; Use a shared clipboard
+      select-enable-clipboard t
+      select-enable-primary t)
+
+(after! evil
+  ;; stop copying each visual state move to the clipboard:
+  ;; https://bitbucket.org/lyro/evil/issue/336/osx-visual-state-copies-the-region-on
+  ;; Most of this code grokked from:
+  ;; http://stackoverflow.com/questions/15873346/elisp-rename-macro
+  (advice-add #'evil-visual-update-x-selection :override #'ignore))
+#+end_src
+
+** MacOSX
+
+Some MacOSX specific configuration
+
+#+begin_src emacs-lisp :name macosx
+
+;; paste-to-osx & copy-from-osx are autoloads from autoload/os.el - they make
+;; use of pbpaste and pbcopy under the hood.
+(setq interprogram-cut-function 'paste-to-osx
+      interprogram-paste-function 'copy-from-osx)
+
+(cond (IS-MAC
+       (setq
+             ;; sane trackpad/mouse scroll settings
+             mac-redisplay-dont-reset-vscroll t
+             mac-mouse-wheel-smooth-scroll nil
+             mouse-wheel-scroll-amount '(5 ((shift) . 2))  ; one line at a time
+             mouse-wheel-progressive-speed nil             ; don't accelerate scrolling
+             ;; Curse Lion and its sudden but inevitable fullscreen mode!
+             ;; NOTE Meaningless to railwaycat's emacs-mac build
+             ns-use-native-fullscreen nil
+             ;; Don't open files from the workspace in a new frame
+             ns-pop-up-frames nil)
+
+       (cond ((display-graphic-p)
+              ;; A known problem with GUI Emacs on MacOS: it runs in an isolated
+              ;; environment, so envvars will be wrong. That includes the PATH
+              ;; Emacs picks up. `exec-path-from-shell' fixes this. This is slow
+              ;; and benefits greatly from compilation.
+              ;; https://github.com/purcell/exec-path-from-shell
+              (use-package exec-path-from-shell
+                :commands (exec-path-from-shell-initialize exec-path-from-shell-variables)
+                :init
+                (setq exec-path-from-shell-check-startup-files nil)
+                (setq exec-path-from-shell-variables '("PATH" "GOPATH" "GOBIN" "GOROOT" "PYTHONPATH"))
+                (exec-path-from-shell-initialize))
+              (use-package osx-clipboard
+                :commands (osx-clipboard-mode)
+                :init
+                (osx-clipboard-mode +1)))))
+       )
+#+end_src
+
 * UI
+** UI configuration values
 
-Most of the UI configuration takes place in =core/core-ui.el=, this includes setting up the
-modeline, fonts and themes.  This section is for extraneous highlighting and fancy display
-like that.
+Some basic UI configuration values and variables.
 
-** beacon
+#+begin_src emacs-lisp :name ui_configuration
+(defvar flex-fringe-size '12
+  "Default fringe width - set it to something big enough for line number, flycheck, etc.")
 
-[[https://github.com/Malabarba/beacon][Never lose your cursor again]] - Whenever the window scrolls a light will shine
+;; Hook(s)
+(defvar flex-init-ui-hook nil
+  "List of hooks to run when the theme and font is initialized (or reloaded with
+`flex//reload-theme').")
+
+;; Frame transparency for Mac
+(when IS-MAC
+  (set-frame-parameter (selected-frame) 'alpha '(95 95))
+  (add-to-list 'default-frame-alist '(alpha 95 95)))
+
+(setq-default
+ bidi-display-reordering nil ; disable bidirectional text for tiny performance boost
+ blink-matching-paren nil    ; don't blink--too distracting
+ cursor-in-non-selected-windows nil  ; hide cursors in other windows
+ indicate-buffer-boundaries 'right
+ display-line-numbers-width 4
+ display-time-default-load-average nil
+ frame-inhibit-implied-resize t
+ ;; remove continuation arrow on right fringe
+ fringe-indicator-alist (delq (assq 'continuation fringe-indicator-alist)
+                              fringe-indicator-alist)
+ highlight-nonselected-windows nil
+ image-animate-loop t
+ indicate-buffer-boundaries nil
+ indicate-empty-lines nil
+ max-mini-window-height 0.3
+ mode-line-default-help-echo nil ; disable mode-line mouseovers
+ mouse-yank-at-point t           ; middle-click paste at point, not at click
+ ibuffer-use-other-window t
+ resize-mini-windows 'grow-only  ; Minibuffer resizing
+ show-help-function nil          ; hide :help-echo text
+ split-width-threshold 160       ; favor horizontal splits
+ uniquify-buffer-name-style 'forward
+ use-dialog-box nil              ; always avoid GUI
+ visible-cursor nil
+ x-stretch-cursor nil
+ ;; defer jit font locking slightly to [try to] improve Emacs performance
+ jit-lock-defer-time nil
+ jit-lock-stealth-nice 0.1
+ jit-lock-stealth-time 0.2
+ jit-lock-stealth-verbose nil
+;; `pos-tip' defaults
+ pos-tip-internal-border-width 6
+ pos-tip-border-width 1
+ ;; no beeping or blinking please
+ ring-bell-function #'ignore
+ visible-bell nil)
+
+(fset #'yes-or-no-p #'y-or-n-p) ; y/n instead of yes/no
+#+end_src
+
+** UI related builtin modes
+
+Configure some builtin modes related to UI
+
+#+begin_src emacs-lisp :name ui_builtin_modes
+;; undo/redo changes to Emacs' window layout
+(defvar winner-dont-bind-my-keys t) ; I'll bind keys myself
+(autoload 'winner-mode "winner" nil t)
+(add-hook 'flex-init-ui-hook #'winner-mode)
+
+;; highlight matching delimiters
+(setq show-paren-delay 0.1
+      show-paren-highlight-openparen t
+      show-paren-when-point-inside-paren t)
+(add-hook 'flex-init-ui-hook #'show-paren-mode)
+
+;;; More reliable inter-window border
+;; The native border "consumes" a pixel of the fringe on righter-most splits,
+;; `window-divider' does not. Available since Emacs 25.1.
+(setq-default window-divider-default-places t
+              window-divider-default-bottom-width 0
+              window-divider-default-right-width 1)
+(add-hook 'flex-init-ui-hook #'window-divider-mode)
+
+;; prompts the user for confirmation when deleting a non-empty frame
+(define-key global-map [remap delete-frame] #'flex/delete-frame)
+
+;; Set the frame title to the full path of the buffer we are working on.
+(setq frame-title-format
+      '((:eval (if (buffer-file-name)
+                   (abbreviate-file-name (buffer-file-name))
+                 "%b"))))
+
+;; auto-enabled in Emacs 25+; I'll do it myself
+(global-eldoc-mode -1)
+;; a good indicator that Emacs isn't frozen
+(add-hook 'flex-post-init-hook #'blink-cursor-mode)
+;; standardize default fringe width
+(if (fboundp 'fringe-mode) (fringe-mode flex-fringe-size))
+
+;; I use Roboto Mono and also use Symbola as a fallback to display unicode characters.
+;; https://github.com/ryanoasis/nerd-fonts
+;; http://www.fontspace.com/unicode-fonts-for-ancient-scripts/symbola
+(set-frame-font "RobotoMono Nerd Font 12")
+(when (member "Symbola" (font-family-list))
+	      (set-fontset-font t 'unicode "Symbola" nil 'prepend))
+
+;; Highlight the current line.
+(global-hl-line-mode 1)
+#+end_src
+
+** Modeline and Themes
+
+Set up the modeline and themes.
+
+*** all the icons
+
+[[https://github.com/domtronn/all-the-icons.el][all the icons]] make all of the icons look pretty. A utility package to collect
+various Icon Fonts and propertize them within Emacs.
+
+#+begin_src emacs-lisp :name all_the_icons
+(use-package all-the-icons)
+#+end_src
+
+*** Doom Modeline
+
+
+[[https://github.com/seagle0128/doom-modeline][doom modeline]] a really nice and performant modeline.
+
+#+begin_src emacs-lisp :name doom_modeline
+(use-package doom-modeline
+  :init
+  (setq doom-modeline-minor-modes t)
+  :hook (after-init . doom-modeline-mode))
+  #+end_src
+
+*** Themes
+
+#+begin_src emacs-lisp :name themes
+;; doom themes
+;; Make me look really pretty
+;; https://github.com/hlissner/emacs-doom-themes
+;; (use-package doom-themes
+;;   :init
+;;   (setq doom-themes-enable-bold t
+;;         doom-themes-enable-italic t)
+;;   :config
+;;   ;; Enable flashing mode-line on errors
+;;   (doom-themes-visual-bell-config)
+
+;;   ;; or for treemacs users
+;;   (doom-themes-neotree-config)
+
+;;   ;; Corrects (and improves) org-mode's native fontification.
+;;   (doom-themes-org-config))
+;; (load-theme 'doom-molokai t)
+
+;; If I get tired of the doom-themes, kaolin-ocean is a possibility
+;; https://github.com/ogdenwebb/emacs-kaolin-themes
+
+(use-package monokai-theme)
+(load-theme 'monokai t)
+#+end_src
+
+** Highlighting
+
+*** Beacon
+
+[[https://github.com/Malabarba/beacon][beacon]] Never lose your cursor.  Whenever the window scrolls a light will shine
 on top of your cursor so you know where it is.
 
 #+begin_src emacs-lisp :name beacon
-  (use-package beacon
-    :config
-    (beacon-mode 1))
+(use-package beacon
+  :config
+  (beacon-mode 1))
 #+end_src
 
-** Highlight cl-lib
+*** cl-lib
 
-[[https://github.com/skeeto/cl-lib-highlight][cli-lib-highlight]] - Syntax highlighting for cl-lib, so that =cl-loop=,
-=cl-defun=, =cl-defstruct= and the like get highlighted
+[[https://github.com/skeeto/cl-lib-highlight][cl-lib]] Syntax highlighting for cl-lib, so that =cl-loop=, =cl-defun=,
+=cl-defstruct= and the like get highlighted
 
-#+BEGIN_SRC emacs-lisp :name cl-lib-highlight
-  (use-package cl-lib-highlight
-    :config
-    (cl-lib-highlight-initialize))
-#+END_SRC
-
-** Highlight Escape sequences
-
-[[https://github.com/dgutov/highlight-escape-sequences/blob/master/highlight-escape-sequences.el][highlight-escape-sequences]] - what the title says.
-
-#+begin_src emacs-lisp :name highlight-escape
-  (use-package highlight-escape-sequences
-    :defer t
-    :init
-    (add-hook 'prog-mode-hook #'hes-mode)
-    :config
-    (put 'hes-escape-backslash-face 'face-alias 'font-lock-builtin-face)
-    (put 'hes-escape-sequence-face 'face-alias 'font-lock-builtin-face))
+#+begin_src emacs-lisp :name cl-lib
+(use-package cl-lib-highlight
+  :config
+  (cl-lib-highlight-initialize))
 #+end_src
 
-** Highlight Numbers
+*** highlight escape sequences
 
-[[https://github.com/Fanael/highlight-numbers][highlight-numbers]] - Highlight numeric literals in source code.
+[[https://github.com/dgutov/highlight-escape-sequences/blob/master/highlight-escape-sequences.el][highlight-escape-sequences]] highlight escape sequences with the builtin face.
+
+#+begin_src emacs-lisp :name highlight-escape-sequences
+(use-package highlight-escape-sequences
+  :defer t
+  :commands hes-mode
+  :init
+  (add-hook 'prog-mode-hook 'hes-mode)
+  :config
+  (put 'hes-escape-backslash-face 'face-alias 'font-lock-builtin-face)
+  (put 'hes-escape-sequence-face 'face-alias 'font-lock-builtin-face))
+#+end_src
+
+*** highlight numbers
+
+
+[[https://github.com/Fanael/highlight-numbers][highlight-numbers]] Highlight numeric literals in source code.
 
 #+begin_src emacs-lisp :name highlight-numbers
-  (use-package highlight-numbers
-    :defer t
-    :init (add-hook 'prog-mode-hook #'highlight-numbers-mode))
+(use-package highlight-numbers
+  :defer t
+  :commands highlight-numbers-mode
+  :init (add-hook 'prog-mode-hook #'highlight-numbers-mode))
 #+end_src
 
-** Highlight Quotes
+*** highlight quotes
 
-[[https://github.com/Fanael/highlight-quoted][highlight-quoted]] - Highlight Lisp quotes and quoted symbols
+[[https://github.com/Fanael/highlight-quoted][highlight-quotes]] Highlight Lisp quotes and quoted symbols
 
-#+begin_src emacs-lisp :name highlight-quoted
-  (use-package highlight-quoted
-    :defer t
-    :config
-    (add-hook 'emacs-lisp-mode-hook 'highlight-quoted-mode))
+#+begin_src emacs-lisp :name highlight-quotes
+(use-package highlight-quoted
+  :config
+  (add-hook 'emacs-lisp-mode-hook 'highlight-quoted-mode))
 #+end_src
 
-** Highlight Symbols
+*** highlight symbols
 
-[[https://github.com/gennad/auto-highlight-symbol][highlight-symbol]] - Highlight the symbol under point.
+
+[[https://github.com/gennad/auto-highlight-symbol][highlight-symbol]] Highlight the symbol under point.
 
 #+begin_src emacs-lisp :name highlight-symbol
-    (use-package auto-highlight-symbol
-      :defer t
-      :init
-      (setq ahs-case-fold-search nil
-            ahs-default-range 'ahs-range-whole-buffer
-            ahs-idle-interval 0.25
-            ahs-inhibit-face-list nil)
-      ;; but a box around the face.
-      (custom-set-faces `(ahs-face ((t (:box t)))))
-      (custom-set-faces `(ahs-definition-face ((t (:box t)))))
-      (custom-set-faces `(ahs-plugin-whole-buffer-face ((t (:box t)))))
-      :config
-      (add-hook 'prog-mode-hook 'auto-highlight-symbol-mode))
+(use-package auto-highlight-symbol
+  :defer t
+  :commands auto-highlight-symbol-mode
+  :init
+  (setq ahs-case-fold-search nil
+        ahs-default-range 'ahs-range-whole-buffer
+        ahs-idle-interval 0.25
+        ahs-inhibit-face-list nil)
+  ;; but a box around the face.
+  (custom-set-faces `(ahs-face ((t (:box t)))))
+  (custom-set-faces `(ahs-definition-face ((t (:box t)))))
+  (custom-set-faces `(ahs-plugin-whole-buffer-face ((t (:box t)))))
+  :config
+  (add-hook 'prog-mode-hook 'auto-highlight-symbol-mode))
 #+end_src
 
-** Volatile highlights
+*** volatile highlights
 
-[[https://www.emacswiki.org/emacs/VolatileHighlights][Volatile highlights]] - temporarily highlights changes to the buffer associated with certain commands that
+[[https://www.emacswiki.org/emacs/VolatileHighlights][volatile-highlights]] Temporarily highlights changes to the buffer associated with certain commands that
 add blocks of text at once. An example is that if you paste (yank) a block of text, it will be
 highlighted until you press the next key.
 
-#+begin_src emacs-lisp :naame volatile-highlights
-  (use-package volatile-highlights
-    :config
-    (volatile-highlights-mode 1))
+#+begin_src emacs-lisp :name volatile_highlights
+(use-package volatile-highlights
+  :commands (vhl/define-extension vhl/install-extension volatile-highlights-mode)
+  :defer t
+  :config
+  (volatile-highlights-mode 1))
 
-  ;; Support evil-mode
-  (vhl/define-extension 'evil 'evil-paste-after 'evil-paste-before
-                        'evil-paste-pop 'evil-move)
-  (vhl/install-extension 'evil)
+;; Support evil-mode
+(vhl/define-extension 'evil 'evil-paste-after 'evil-paste-before
+                      'evil-paste-pop 'evil-move)
+(vhl/install-extension 'evil)
 
-  ;; Supporting undo-tree.
-  (vhl/define-extension 'undo-tree 'undo-tree-yank 'undo-tree-move)
-  (vhl/install-extension 'undo-tree)
+;; Supporting undo-tree.
+(vhl/define-extension 'undo-tree 'undo-tree-yank 'undo-tree-move)
+(vhl/install-extension 'undo-tree)
+#+end_src
+
+*** UI hooks
+
+Run the UI hook - ideally this should make graphic, terminal & daemon Emacs look the same.
+
+#+begin_src emacs-lisp :name ui_hooks
+(run-hooks 'flex-init-ui-hook)
 #+end_src
 
 * Editor
-** Editor Settings
+** Editor Values
 
-#+BEGIN_SRC emacs-lisp :name EditorSettings
-  (setq-default
-   ;; abbreviations
-   abbrev-file-name (expand-file-name "abbrev_defs" user-emacs-directory)
-   default-abbrev-mode t
-   save-abbrevs 'silently
-   ;; bookmarks
-   bookmark-default-file (concat flex-etc-dir "bookmarks")
-   bookmark-version-control t
-   bookmark-save-flag t
-   ;; Formatting
-   delete-trailing-lines nil
-   fill-column 105
-   sentence-end-double-space nil
-   word-wrap t
-   ;; Scrolling
-   hscroll-margin 1
-   hscroll-step 1
-   scroll-conservatively 1001
-   scroll-margin 0
-   scroll-preserve-screen-position t
-   mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))) ;make mouse scrolling smooth
-   ;; Whitespace - the other religous war.  use whitespace NOT tabs.
-   tab-width 4
-   indent-tabs-mode nil
-   c-basic-offset 4
-   require-final-newline t
-   tabify-regexp "^\t* [ \t]+" ; for :retab
-   ;; whitespace-mode
-   whitespace-line-column fill-column
-   whitespace-style '(face indentation tabs tab-mark spaces space-mark newline newline-mark
-                           trailing lines-tail)
-   whitespace-display-mappings '((tab-mark ?\t [?› ?\t])
-                                 (newline-mark ?\n [?¬ ?\n])
-                                 (space-mark ?\  [?·] [?.]))
-   ;; Wrapping
-   truncate-lines t
-   truncate-partial-width-windows 50
-   )
+Some default editor values.
 
-  ;;; Turn on flyspell for programming modes
-  (add-hook 'prog-mode-hook #'flyspell-prog-mode)
-
-  ;; auto-fill comments in prog-mode derived modes.
-  ;; this only works for programming modes that define a comment syntax; the
-  ;; syntax is not adapting, e.g. 3 semi-colons starting a comment is not carried
-  ;; forward to the next line.
-  (defun flex-emacs:prog-auto-fill-comments ()
-    "I want auto-filling of comments like that Other Editor"
-    (interactive)
-    (set (make-local-variable 'comment-auto-fill-only-comments) t)
-    (set (make-local-variable 'fill-column) 79)
-    (auto-fill-mode t))
-  (add-hook 'prog-mode-hook #'flex-emacs:prog-auto-fill-comments)
-
-  ;; column-number-mode
-  ;; Display the column number in the modeline
-  (column-number-mode 1)
-
-  ;; Delete regions using the *Delete* key.
-  (delete-selection-mode 1)
-
-  ;; ediff
-  ;; magit + ediff - Use the two together to resolve merge conflicts.
-  ;; https://coderwall.com/p/mcrwag/use-magit-ediff-to-resolve-merge-conflicts
-  (setq ediff-diff-options "-w"
-        ediff-use-long-help-message 1
-        ediff-split-window-function #'split-window-horizontally
-        ediff-window-setup-function #'ediff-setup-windows-plain)
-                                          ; Run winner undo afterwards in an attempt to get back to some "sane" window layout.
-  (add-hook 'ediff-after-quit-hook-internal #'winner-undo)
-
-  ;; recentf
-  ;; Keep track of recently opened files
-  (setq recentf-save-file (concat flex-cache-dir "recentf")
-        recentf-max-menu-items 0
-        recentf-max-saved-items 300
-        recentf-filename-handlers '(file-truename)
-        recentf-exclude
-        (list "^/tmp/" "^/ssh:" "\\.?ido\\.last$" "\\.revive$" "/TAGS$"
-              "^/var/folders/.+$"
-              ;; ignore private temp files (but not all of them)
-              (concat "^" (file-truename flex-local-dir))))
-  (add-hook! 'flex-init-hook #'recentf-mode)
-
-  ;; revert buffers for changed files
-  (global-auto-revert-mode 1)
-  (setq auto-revert-verbose nil)
-
-  ;; savehist / saveplace
-  (setq savehist-file (concat flex-cache-dir "savehist")
-                                          ; keep emacs from being slow to exit after enabling saveplace.
-        save-place-forget-unreadable-files nil
-        savehist-save-minibuffer-history t
-        savehist-autosave-interval nil ; save on kill only
-        savehist-additional-variables '(kill-ring search-ring regexp-search-ring)
-        save-place-file (concat flex-cache-dir "saveplace"))
-  (add-hook! 'flex-init-hook #'(savehist-mode save-place-mode))
-
-  ;; More dealing with whitespace.
-  (add-hook 'prog-mode-hook '(lambda ()
-                               (setq show-trailing-whitespace 1)))
-  ;; Delete trailing whitespace just before saving.
-  (add-hook 'before-save-hook 'delete-trailing-whitespace)
-
-     ;;;
-     ;;; Advising and hooking.
-     ;;;
-     ;;; Functions used are from core/autoload/
-
-  ;; Quit.
-  (advice-add #'quit-window :around #'flex*quit-window)
-
-  ;; We don't want to even bury the *scratch* buffer.
-  (add-hook 'kill-buffer-query-functions #'flex|dont-kill-scratch-buffer)
-
-#+END_SRC
+#+begin_src emacs-lisp :name editor_values
+(setq-default
+ ;; abbreviations
+ abbrev-file-name (expand-file-name "abbrev_defs" user-emacs-directory)
+ default-abbrev-mode t
+ save-abbrevs 'silently
+ ;; bookmarks
+ bookmark-default-file (concat flex-etc-dir "bookmarks")
+ bookmark-version-control t
+ bookmark-save-flag t
+ ;; Formatting
+ delete-trailing-lines nil
+ fill-column 105
+ sentence-end-double-space nil
+ word-wrap t
+ ;; Scrolling
+ hscroll-margin 1
+ hscroll-step 1
+ scroll-conservatively 1001
+ scroll-margin 0
+ scroll-preserve-screen-position t
+ mouse-wheel-scroll-amount '(1 ((shift) . 5) ((control))) ;make mouse scrolling smooth
+ ;; Whitespace - the other religous war.  use whitespace NOT tabs.
+ tab-width 4
+ indent-tabs-mode nil
+ c-basic-offset 4
+ require-final-newline t
+ tabify-regexp "^\t* [ \t]+" ; for :retab
+ ;; whitespace-mode
+ whitespace-line-column fill-column
+ whitespace-style '(face indentation tabs tab-mark spaces space-mark newline newline-mark
+                         trailing lines-tail)
+ whitespace-display-mappings '((tab-mark ?\t [?› ?\t])
+                               (newline-mark ?\n [?¬ ?\n])
+                               (space-mark ?\  [?·] [?.]))
+ ;; Wrapping
+ truncate-lines t
+ truncate-partial-width-windows 50
+ )
+#+end_src
 
 *** Dired
 
@@ -364,6 +533,81 @@ Mastering Emacs has a good article on its configuration and usage - [[https://ma
                       ("M-," . term-send-input)
                       ("M-." . comint-dynamic-complete)))))))
 #+END_SRC
+
+** Builtin Emacs Editor Modes
+
+Miscelaneous builtin modes & etc. related to the editor.
+
+#+begin_src emacs-lisp :name misc_editor_modes
+;; auto-fill comments in prog-mode derived modes.
+;; this only works for programming modes that define a comment syntax; the
+;; syntax is not adapting, e.g. 3 semi-colons starting a comment is not carried
+;; forward to the next line.
+(defun flex-emacs:prog-auto-fill-comments ()
+  "I want auto-filling of comments like that Other Editor"
+  (interactive)
+  (set (make-local-variable 'comment-auto-fill-only-comments) t)
+  (set (make-local-variable 'fill-column) 79)
+  (auto-fill-mode t))
+(add-hook 'prog-mode-hook #'flex-emacs:prog-auto-fill-comments)
+
+;; column-number-mode
+;; Display the column number in the modeline
+(column-number-mode 1)
+
+;; Delete regions using the *Delete* key.
+(delete-selection-mode 1)
+
+;; ediff
+;; magit + ediff - Use the two together to resolve merge conflicts.
+;; https://coderwall.com/p/mcrwag/use-magit-ediff-to-resolve-merge-conflicts
+(setq ediff-diff-options "-w"
+      ediff-use-long-help-message 1
+      ediff-split-window-function #'split-window-horizontally
+      ediff-window-setup-function #'ediff-setup-windows-plain)
+                                        ; Run winner undo afterwards in an attempt to get back to some "sane" window layout.
+(add-hook 'ediff-after-quit-hook-internal #'winner-undo)
+
+;; recentf
+;; Keep track of recently opened files
+(setq recentf-save-file (concat flex-cache-dir "recentf")
+      recentf-max-menu-items 0
+      recentf-max-saved-items 300
+      recentf-filename-handlers '(file-truename)
+      recentf-exclude
+      (list "^/tmp/" "^/ssh:" "\\.?ido\\.last$" "\\.revive$" "/TAGS$"
+            "^/var/folders/.+$"
+            ;; ignore private temp files (but not all of them)
+            (concat "^" (file-truename flex-local-dir))))
+(add-hook! 'flex-init-hook #'recentf-mode)
+
+;; revert buffers for changed files
+(global-auto-revert-mode 1)
+(setq auto-revert-verbose nil)
+
+;; savehist / saveplace
+(setq savehist-file (concat flex-cache-dir "savehist")
+                                        ; keep emacs from being slow to exit after enabling saveplace.
+      save-place-forget-unreadable-files nil
+      savehist-save-minibuffer-history t
+      savehist-autosave-interval nil ; save on kill only
+      savehist-additional-variables '(kill-ring search-ring regexp-search-ring)
+      save-place-file (concat flex-cache-dir "saveplace"))
+(add-hook! 'flex-init-hook #'(savehist-mode save-place-mode))
+
+;; More dealing with whitespace.
+(add-hook 'prog-mode-hook '(lambda ()
+                             (setq show-trailing-whitespace 1)))
+
+;; Delete trailing whitespace just before saving.
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+
+;; Quit.
+(advice-add #'quit-window :around #'flex*quit-window)
+
+;; We don't want to even bury the *scratch* buffer.
+(add-hook 'kill-buffer-query-functions #'flex|dont-kill-scratch-buffer)
+#+end_src
 
 ** Editor Modes
 
@@ -1798,7 +2042,10 @@ Check spelling on the fly.  Uses ispell under the hood.
   (flyspell-abbrev-p t) ; Correct spelling errors & add them to abbrev_defs at the same time.
   (flyspell-issue-message-flag nil)
   (flyspell-issue-welcome-flag nil)
-  (flyspell-mode 1))
+  (flyspell-mode 1)
+  :config
+  ;; Turn on flyspell for programming modes, then we can turn flyspell off selectively.
+  (add-hook 'prog-mode-hook #'flyspell-prog-mode))
 
 (use-package flyspell-correct-ivy
   :after flyspell
@@ -2334,6 +2581,7 @@ Resize windows dynamically
   (global-unset-key (kbd "s-l"))
   ;; n
   (global-unset-key (kbd "s-n"))
+  (global-set-key (kbd "s-n") 'new-frame)
   ;; p
   (global-unset-key (kbd "s-p"))
   (bind-key "s-p" 'hydra-files-projectile/body)
@@ -2473,6 +2721,14 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
     "v" 'hydra-version-control/body
     "w" 'save-buffer
     )
+
+    ;;;
+    ;;; Local Leader
+    ;;;
+    (general-create-definer my-local-leader-def
+      :prefix "SPC SPC")
+      (my-local-leader-def 'normal 'override
+        "s" 'avy-goto-char-2)
 
      ;;;
      ;;; 'jk' binding
