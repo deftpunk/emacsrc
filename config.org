@@ -831,7 +831,9 @@ By default it is only active in modes that derive from prog-mode.  It is a
 dependency for =magit-hl-todos= which toggles in =magit-status=.
 
 #+BEGIN_SRC emacs-lisp :name hl-todo
-(use-package hl-todo)
+(use-package hl-todo
+  :init
+  (setq hl-todo-highlight-punctuation ":"))
 (add-hook 'prog-mode-hook 'hl-todo-mode)
 #+END_SRC
 
@@ -992,8 +994,11 @@ https://emacsredux.com/blog/2018/09/29/super-save-0-dot-3/
 (use-package super-save
   :commands (super-save-mode super-save-triggers super-save-hook-triggers)
   :init
-  (setq super-save-remote-files nil)
+  (setq super-save-remote-files nil
+        super-save-auto-save-when-idle t)
   :config
+  ;; Turn off the builtin auto-save-mode
+  (setq auto-save-default nil)
   (add-to-list 'super-save-triggers 'ace-window)
   (add-to-list 'super-save-hook-triggers 'find-file-hook)
   (super-save-mode +1))
@@ -1257,11 +1262,13 @@ Markup:
 
 http://ergoemacs.org/emacs/emacs_org_markup.
 
+Consider using https://github.com/alphapapa/org-web-tools
+
 ** library of functions for Org mode
 
-ODO: Change the size or the screenshot before pasting it in.
+TODO: Change the size or the screenshot before pasting it in.
 
-+begin_src emacs-lisp :name deftmacs-org-functions
+#+begin_src emacs-lisp :name deftmacs-org-functions
  ;; Modified from -> http://stackoverflow.com/a/31868530
  (defun defmacs::org-paste-screenshot ()
    "Paste the screenshot previously taken by the OS."
@@ -1284,78 +1291,75 @@ ODO: Change the size or the screenshot before pasting it in.
                                          ; insert into file if correctly taken
    (if (file-exists-p filename)
        (insert (concat "[[file:" filename "]]"))))
-+end_src
+#+end_src
 
 ** Initial configuration
 
-+begin_src emacs-lisp :name Org mode
-   (use-package org-plus-contrib
-     :defer t
-     :mode (("\\.org$" . org-mode))
-     :init
-     (setq org-startup-indented t
-           org-startup-folded "showall"
-           org-ellipsis "⤵"              ;; Make the outline fold more compact.
-           )
+#+begin_src emacs-lisp :name Org mode
+  (use-package org-plus-contrib
+    :defer t
+    :mode (("\\.org$" . org-mode))
+    :init
+    (setq org-startup-indented t
+          org-src-preserve-indentation t  ;; especially useful for Python in src code blocks
+          org-startup-folded "showall"
+          org-ellipsis "⤵"              ;; Make the outline fold more compact.
+          )
 
-     ;; Modifications to Org mode Speed Keys - from Sacha Chau
-     ;; To list all of the Speed Keys, go to the begining of a header and press ?
-     (defun my/org-use-speed-commands-for-headings-and-lists ()
-       "Activate speed commands on list items too."
-       (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
-           (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
-     (setq org-use-speed-commands 'my/org-use-speed-commands-for-headings-and-lists)
+    ;; Modifications to Org mode Speed Keys - from Sacha Chau
+    ;; To list all of the Speed Keys, go to the begining of a header and press ?
+    (defun my/org-use-speed-commands-for-headings-and-lists ()
+      "Activate speed commands on list items too."
+      (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
+          (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
+    (setq org-use-speed-commands 'my/org-use-speed-commands-for-headings-and-lists)
 
-     :config
-     (org-load-modules-maybe t)
-     ;; Some general configuration.
-     (add-hook 'org-mode-hook (lambda ()
-                                 (visual-line-mode 1)  ;; soft wrap
-                                 (setq fill-column 120))))
-   (eval-after-load 'org-mode
-     (diminish 'org-indent-mode))
+    :config
+    (org-load-modules-maybe t)
+    ;; Some general configuration.
+    (add-hook 'org-mode-hook (lambda ()
+                               (visual-line-mode 1)  ;; soft wrap
+                               (setq fill-column 120))))
 
-
-
- ;; Tracking TODO state changes
- ;; The ! exclamation will add a timestamp
- ;; The @ ampersand will ask for a note with time-stamp
- (setq org-todo-keywords
-       '((sequence "TODO(t!)" "WORKING(w!)" "DONE(d!)" "CANCELLED(c@!)" )))
-+end_src
+  ;; Tracking TODO state changes
+  ;; The ! exclamation will add a timestamp
+  ;; The @ ampersand will ask for a note with time-stamp
+  (setq org-todo-keywords
+        '((sequence "TODO(t!)" "WORKING(w!)" "DONE(d!)" "CANCELLED(c@!)" )))
+#+end_src
 
 ** Tags
 
-isplay TAGS from column 72
+Display TAGS from column 72
 
-+begin_src emacs-lisp :name org-tags
+#+begin_src emacs-lisp :name org-tags
  (setq org-tags-column -72)
-+end_src
+#+end_src
 
 ** org-bullets
 
-[https://github.com/sabof/org-bullets][org-bullets]] - UTF-8 bullets for org-mode bullets
+[[https://github.com/sabof/org-bullets][org-bullets]] - UTF-8 bullets for org-mode bullets
 
-+begin_src emacs-lisp :name org-bullets
-use-package org-bullets
+#+begin_src emacs-lisp :name org-bullets
+(use-package org-bullets
  :defer t
  :init
  (add-hook 'org-mode-hook (lambda ()
                             (org-bullets-mode 1))))
-+end_src
+#+end_src
 
 ** org-capture & org-protocol
 
-[http://christiantietze.de/posts/2018/05/emacs-org-mode-global-capture-macos/][global-capture-macos]]
+[[http://christiantietze.de/posts/2018/05/emacs-org-mode-global-capture-macos/][global-capture-macos]]
 
-+BEGIN_SRC emacs-lisp :name org-capture
+#+BEGIN_SRC emacs-lisp :name org-capture
 
-setq org-modules (quote (org-protocol)))
+(setq org-modules (quote (org-protocol)))
 
  (setq org-capture-templates
          (quote (("t" "todo" entry (file "~/tmp/Notes/general.org")
                   "* TODO %?\n%a\n"))))
-+END_SRC
+#+END_SRC
 
 ** org-download
 
@@ -1380,6 +1384,8 @@ from Emacs. It supports various kind of emacs buffer, like:
 #+BEGIN_SRC emacs-lisp :name browse-at-remote
   (use-package browse-at-remote)
 #+END_SRC
+
+** Git
 
 ** Magit
 
@@ -1560,6 +1566,19 @@ Show TODOs in Magit status buffer for each file.
 #+BEGIN_SRC emacs-lisp :name git-link
 (use-package git-link
   :commands (git-link git-link-commit git-link-homepage))
+#+END_SRC
+
+** Mercurial
+
+Because I still have to deal with this at work for some really old internal repos.
+
+*** [[https://github.com/ananthakumaran/monky][Monky]]
+
+Magit for Hg - make Mercurial just a little more palatable - [[https://ananthakumaran.in/monky/index.html][User Manual]]
+
+#+BEGIN_SRC emacs-lisp :name monky
+  (use-package monky
+    :init (setq monky-process-type 'cmdserver))
 #+END_SRC
 
 * Software Development
@@ -2044,6 +2063,7 @@ Check spelling on the fly.  Uses ispell under the hood.
   (flyspell-issue-welcome-flag nil)
   (flyspell-mode 1)
   :config
+  (add-hook 'text-mode-hook #'flyspell-mode)
   ;; Turn on flyspell for programming modes, then we can turn flyspell off selectively.
   (add-hook 'prog-mode-hook #'flyspell-prog-mode))
 
@@ -2382,8 +2402,8 @@ Hydra for version control functions.
                                                                       ,-------------------.
       General                    Git                                  | Version control   |
     ,-----------------------------------------------------------------'-------------------'
-    [_v_] Magit status          [_m_] git-messenger
-    [_a_] vc-annotate           [_s_] stage file
+                                [_m_] git-messenger
+    [_a_] vc-annotate           [_s_] Magit status
                                 [_u_] unstage file
                                 [_b_] blame
                                 [_t_] timemachine
@@ -2401,11 +2421,10 @@ Hydra for version control functions.
              (call-interactively 'magit-blame))))
     ("g" +version-control@git-gutter/body)
     ("m" git-messenger:popup-message)
-    ("s" magit-stage-file)
     ("t" git-timemachine)
     ("u" magit-unstage-file)
     ("w" browse-at-remote)
-    ("v" magit-status)
+    ("s" magit-status)
 
     ("<ESC>" nil "quit")
     )
@@ -2713,12 +2732,12 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
   (my-leader-def 'normal 'override
     "c" 'hydra-cee/body
     "f" 'hydra-files-projectile/body
+    "g" 'hydra-version-control/body
     "i" 'helm-mini
     "k" 'flex//kill-current-buffer
     "q" 'save-buffers-kill-terminal
     "r" 'counsel-rg
     "s" 'swiper
-    "v" 'hydra-version-control/body
     "w" 'save-buffer
     )
 

@@ -9,6 +9,8 @@
 
 (define-abbrev-table 'anaconda-nav-mode-abbrev-table '())
 
+(define-abbrev-table 'ansible-doc-module-mode-abbrev-table '())
+
 (define-abbrev-table 'apropos-mode-abbrev-table '())
 
 (define-abbrev-table 'awk-mode-abbrev-table
@@ -308,6 +310,8 @@
 
 (define-abbrev-table 'grep-mode-abbrev-table '())
 
+(define-abbrev-table 'groovy-mode-abbrev-table '())
+
 (define-abbrev-table 'gud-mode-abbrev-table '())
 
 (define-abbrev-table 'helm-ag-mode-abbrev-table '())
@@ -317,6 +321,8 @@
 (define-abbrev-table 'helm-major-mode-abbrev-table '())
 
 (define-abbrev-table 'helm-moccur-mode-abbrev-table '())
+
+(define-abbrev-table 'helm-occur-mode-abbrev-table '())
 
 (define-abbrev-table 'help-mode-abbrev-table '())
 
@@ -394,6 +400,8 @@
 
 (define-abbrev-table 'magit-submodule-list-mode-abbrev-table '())
 
+(define-abbrev-table 'magit-todos-list-mode-abbrev-table '())
+
 (define-abbrev-table 'magit-wazzup-mode-abbrev-table '())
 
 (define-abbrev-table 'makefile-automake-mode-abbrev-table '())
@@ -416,6 +424,8 @@
 
 (define-abbrev-table 'monky-log-edit-mode-abbrev-table '())
 
+(define-abbrev-table 'monky-mode-abbrev-table '())
+
 (define-abbrev-table 'neotree-mode-abbrev-table '())
 
 (define-abbrev-table 'nrepl-connections-buffer-mode-abbrev-table '())
@@ -432,7 +442,10 @@
 
 (define-abbrev-table 'org-export-stack-mode-abbrev-table '())
 
-(define-abbrev-table 'org-mode-abbrev-table '())
+(define-abbrev-table 'org-mode-abbrev-table
+  '(
+    ("conidisd" "Consider" nil 0)
+   ))
 
 (define-abbrev-table 'outline-mode-abbrev-table '())
 
@@ -461,6 +474,10 @@
 
 (define-abbrev-table 'python-mode-skeleton-abbrev-table '())
 
+(define-abbrev-table 'reb-lisp-mode-abbrev-table '())
+
+(define-abbrev-table 'reb-mode-abbrev-table '())
+
 (define-abbrev-table 'rst-mode-abbrev-table
   '(
    ))
@@ -470,6 +487,8 @@
 (define-abbrev-table 'ruby-mode-abbrev-table '())
 
 (define-abbrev-table 'rust-mode-abbrev-table '())
+
+(define-abbrev-table 'rxt-help-mode-abbrev-table '())
 
 (define-abbrev-table 'salt-mode--doc-mode-abbrev-table '())
 
