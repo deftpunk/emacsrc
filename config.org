@@ -620,6 +620,13 @@ Miscelaneous builtin modes & etc. related to the editor.
 (add-hook 'kill-buffer-query-functions #'flex|dont-kill-scratch-buffer)
 #+end_src
 
+*** visual line mode
+
+#+BEGIN_SRC emacs-lisp :name visual-line-mode
+(global-visual-line-mode 1)
+(setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
+#+END_SRC
+
 ** Editor Modes
 
 Things from the intertubes that improve upon Emacs the editor, e.g. completion, navigation, etc.
