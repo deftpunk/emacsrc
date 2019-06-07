@@ -13,6 +13,8 @@
 
 (define-abbrev-table 'apropos-mode-abbrev-table '())
 
+(define-abbrev-table 'array-mode-abbrev-table '())
+
 (define-abbrev-table 'awk-mode-abbrev-table
   '(
    ))
@@ -195,6 +197,7 @@
     ("dleete" "" nil 1)
     ("docstrting" "docstring" nil 1)
     ("dont" "don't" nil 8)
+    ("eidt" "edit" nil 1)
     ("embarassing" "embarrassing" nil 1)
     ("emial" "Email" nil 1)
     ("environemnt" "environment" nil 1)
@@ -472,7 +475,9 @@
     ("sysx" "import sys; sys.exit(-1)" nil 1)
    ))
 
-(define-abbrev-table 'python-mode-skeleton-abbrev-table '())
+(define-abbrev-table 'python-mode-skeleton-abbrev-table
+  '(
+   ))
 
 (define-abbrev-table 'reb-lisp-mode-abbrev-table '())
 
@@ -550,6 +555,8 @@
 
 (define-abbrev-table 'vc-annotate-mode-abbrev-table '())
 
+(define-abbrev-table 'vc-bzr-log-view-mode-abbrev-table '())
+
 (define-abbrev-table 'vc-dir-mode-abbrev-table '())
 
 (define-abbrev-table 'vc-git-log-edit-mode-abbrev-table '())
@@ -559,6 +566,8 @@
 (define-abbrev-table 'vc-git-region-history-mode-abbrev-table '())
 
 (define-abbrev-table 'vc-hg-log-view-mode-abbrev-table '())
+
+(define-abbrev-table 'vc-svn-log-view-mode-abbrev-table '())
 
 (define-abbrev-table 'vera-mode-abbrev-table '())
 

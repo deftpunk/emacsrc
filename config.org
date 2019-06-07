@@ -187,7 +187,7 @@ Configure some builtin modes related to UI
 ;; I use Roboto Mono and also use Symbola as a fallback to display unicode characters.
 ;; https://github.com/ryanoasis/nerd-fonts
 ;; http://www.fontspace.com/unicode-fonts-for-ancient-scripts/symbola
-(set-frame-font "RobotoMono Nerd Font 12")
+(set-frame-font "RobotoMono Nerd Font 13")
 (when (member "Symbola" (font-family-list))
 	      (set-fontset-font t 'unicode "Symbola" nil 'prepend))
 
@@ -545,6 +545,16 @@ Mastering Emacs has a good article on its configuration and usage - [[https://ma
                       ("M-." . comint-dynamic-complete)))))))
 #+END_SRC
 
+**** Eshell
+
+Emacs' builtin shell.
+
+https://masteringemacs.org/article/complete-guide-mastering-eshell
+
+#+BEGIN_SRC emacs-lisp :name eshell
+(setq eshell-aliases-file (concat flex-local-dir "eshell/alias"))
+#+END_SRC
+
 ** Builtin Emacs Editor Modes
 
 Miscelaneous builtin modes & etc. related to the editor.
@@ -893,6 +903,27 @@ Emacs sessions by saving the state to and restoring it from a file.
   :config
   (persistent-scratch-setup-default))
 #+end_src
+
+*** [[https://github.com/nex3/perspective-el][Perspective]]
+
+Perspectives for Emacs.
+
+Commands are all prefixed by C-x x. Here are the main commands:
+Key -- Command
+
+    s -- persp-switch: Query a perspective to switch or create
+    k -- persp-remove-buffer: Query a buffer to remove from current perspective
+    c -- persp-kill : Query a perspective to kill
+    r -- persp-rename: Rename current perspective
+    a -- persp-add-buffer: Query an open buffer to add to current perspective
+    A -- persp-set-buffer: Add buffer to current perspective and remove it from all others
+    i -- persp-import: Import a given perspective from another frame.
+    n, <right> -- persp-next : Switch to next perspective
+    p, <left> -- persp-prev: Switch to previous perspective
+
+#+BEGIN_SRC emacs-lisp :name perspectives
+;; (use-package perspective)
+#+END_SRC
 
 *** Projectile
 
@@ -1353,14 +1384,13 @@ Display TAGS from column 72
  (setq org-tags-column -72)
 #+end_src
 
-** org-bullets
+** [[https://github.com/sabof/org-bullets][org-bullets]]
 
-[[https://github.com/sabof/org-bullets][org-bullets]] - UTF-8 bullets for org-mode bullets
+UTF-8 bullets for org-mode bullets.  You can go crazy with these.
 
 #+begin_src emacs-lisp :name org-bullets
 (use-package org-bullets
- :defer t
- :init
+ :config
  (add-hook 'org-mode-hook (lambda ()
                             (org-bullets-mode 1))))
 #+end_src
@@ -1438,7 +1468,7 @@ Show TODOs in Magit status buffer for each file.
   (magit-todos-mode 1))
 #+END_SRC
 
-** git-gutter & git-gutter-fringe
+* git-gutter & git-gutter-fringe
 
 [[https://github.com/syohex/emacs-git-gutter][git-gutter]] - Highlighting uncommited changes in the buffer.
 
@@ -2252,22 +2282,23 @@ You would think that [[https://github.com/syl20bnr/evil-escape][evil-escape]] wo
 to <escape>.  Not really what I was wanting to do.
 
 #+begin_src emacs-lisp :name Escape keys
- (define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
- (define-key minibuffer-local-ns-map [escape] 'minibuffer-keyboard-quit)
- (define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
- (define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
- (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-ns-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
+(define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
 
- (defun my-helm-init ()
-   (interactive)
-   (define-key helm-map (kbd "ESC") 'helm-keyboard-quit))
- (add-hook 'after-init-hook 'my-helm-init)
+(defun my-helm-init ()
+  (interactive)
+  (define-key helm-map (kbd "C-w") 'backward-kill-word)
+  (define-key helm-map (kbd "ESC") 'helm-keyboard-quit))
+(add-hook 'after-init-hook 'my-helm-init)
 
- ;; Map Escape to cancel like C-g
- (define-key isearch-mode-map [escape] 'isearch-abort)   ;; isearch
- (define-key isearch-mode-map "\e" 'isearch-abort)       ;; \e seems to work better for terminals
- ;; TODO Thu Jun 30 16:41:14 2016 - This causes splits to close for some reason???
- ;;  (global-set-key [escape] 'keyboard-escape-quit)         ;; everywhere else
+;; Map Escape to cancel like C-g
+(define-key isearch-mode-map [escape] 'isearch-abort)   ;; isearch
+(define-key isearch-mode-map "\e" 'isearch-abort)       ;; \e seems to work better for terminals
+;; TODO Thu Jun 30 16:41:14 2016 - This causes splits to close for some reason???
+;;  (global-set-key [escape] 'keyboard-escape-quit)         ;; everywhere else
 #+end_src
 
 ** Hydra maps
