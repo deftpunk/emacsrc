@@ -61,11 +61,3 @@ contained buffer. I rarely don't want that buffer killed, so...
   (let ((eme-scratch-buffer (get-buffer-create "*scratch*")))
     (switch-to-buffer eme-scratch-buffer)
     (lisp-interaction-mode)))
-
-;; Streamline the process for single file edit and commit.
-;; From: https://emacs.stackexchange.com/a/20160
-;;;###autoload
-(defun my-magit-stage-all-and-commit()
-  (interactive)
-  (magit-stage-modified)
-  (magit-commit))

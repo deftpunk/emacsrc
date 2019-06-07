@@ -1,0 +1,8 @@
+l
+ls
+ls
+helm-find-file
+find-file
+find-file config.el
+alias l 'ls'
+l
