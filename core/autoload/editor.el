@@ -11,7 +11,7 @@
   "Temporary windows often have q bound to `quit-window', which only buries the
 contained buffer. I rarely don't want that buffer killed, so...
 "
-  (message "running flex*quite-window")
+  (message "running flex*quit-window")
   (funcall orig-fn (not kill) window))
 
 ;;;###autoload
