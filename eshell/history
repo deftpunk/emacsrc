@@ -6,3 +6,11 @@ find-file
 find-file config.el
 alias l 'ls'
 l
+git push
+ssh-add -l ~/.ssh/netapp_bitbucket
+git push
+l
+alias l 'ls alh'
+l
+alias l 'ls -alh'
+l
