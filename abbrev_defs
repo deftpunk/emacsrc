@@ -250,6 +250,7 @@
     ("pelase" "please" nil 1)
     ("pirnt" "print" nil 3)
     ("plya" "play" nil 1)
+    ("probelm" "problem" nil 1)
     ("probrelms" "problems" nil 1)
     ("pyhton" "python" nil 2)
     ("rasie" "raise" nil 2)
@@ -257,6 +258,7 @@
     ("recieved" "received" nil 1)
     ("redeploy" "re-deploy" nil 1)
     ("redploy" "redeploy" nil 1)
+    ("refressh" "refresh" nil 1)
     ("resutl" "result" nil 1)
     ("retrun" "return" nil 7)
     ("rsults" "results" nil 1)
@@ -293,6 +295,7 @@
     ("wehn" "when" nil 1)
     ("weill" "will" nil 1)
     ("whilre" "while" nil 1)
+    ("witeness" "witness" nil 1)
     ("workign" "working" nil 1)
     ("wyh" "why" nil 1)
    ))
@@ -566,6 +569,8 @@
 (define-abbrev-table 'vc-git-region-history-mode-abbrev-table '())
 
 (define-abbrev-table 'vc-hg-log-view-mode-abbrev-table '())
+
+(define-abbrev-table 'vc-mtn-log-view-mode-abbrev-table '())
 
 (define-abbrev-table 'vc-svn-log-view-mode-abbrev-table '())
 
