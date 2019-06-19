@@ -2044,16 +2044,6 @@ Comma (or other delimiter) separated files.
     (setq csv-separators '("," ";" "|" " "))))
 #+end_src
 
-*** Docker file mode
-
-[[https://github.com/spotify/dockerfile-mode][dockerfile-mode]] for editing Docker files
-
-#+BEGIN_SRC emacs-lisp
-  (use-package dockerfile-mode
-    :ensure t
-    :config (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
-#+END_SRC
-
 *** Groovy / Jenkinsfile
 
 [[https://github.com/Groovy-Emacs-Modes/groovy-emacs-modes][Groovy / Jenkinsfile]] support.
@@ -2118,6 +2108,72 @@ YAML mode
               (lambda ()
                 (setq-local eclectric-indent-mode nil))))
 #+end_src
+
+* Utility Functionality
+** Docker
+*** [[https://github.com/Silex/docker.el][Docker]]
+
+Manage Docker from Emacs.
+
+Use M-x docker, select a resource then then mark or unmark items using the following keybindings
+
+Binding 	Description
+? 	List actions
+l 	Configure listing
+m 	Mark item
+u 	Unmark item
+t 	Toggle marks
+U 	Unmark all
+s 	Sort
+r 	Mark items by regexp
+< 	Shrink column
+> 	Enlarge column
+
+C-c C-e 	Export to csv
+
+Then select an action and follow the popup instructions.
+Supported commands
+
+    docker container: attach, cp, diff, inspect, kill, logs, pause, rename, restart, rm, start, stop, unpause
+    docker image: inspect, pull, push, rm, run, tag
+    docker network: rm
+    docker volume: rm
+    docker-machine: create, env, restart, rm, start, stop
+    docker-compose: build, config, create, down, exec, logs, pull, push, remove, restart, run, start, stop, up
+
+You can also enter dired or open a file inside a container or volume.
+
+#+BEGIN_SRC emacs-lisp :name docker.el
+(use-package docker
+  :bind ("C-c d" . docker))
+#+END_SRC
+
+*** [[https://github.com/spotify/dockerfile-mode][dockerfile-mode]]
+
+Editing Docker files
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dockerfile-mode
+    :ensure t
+    :config (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
+#+END_SRC
+
+
+*** [[https://github.com/emacs-pe/docker-tramp.el][docker-tramp]]
+
+TRAMP integration for docker containers
+
+Offers the TRAMP method docker to access running containers
+
+C-x C-f /docker:user@container:/path/to/file
+
+where
+  user           is the user that you want to use (optional)
+  container      is the id or name of the container
+
+#+BEGIN_SRC emacs-lisp :name docker-tramp
+(use-package docker-tramp)
+#+END_SRC
 
 * Prose
 ** flyspell
