@@ -555,7 +555,42 @@ https://masteringemacs.org/article/complete-guide-mastering-eshell
 (setq eshell-aliases-file (concat flex-local-dir "eshell/alias")
       ;; kill buffers created by visual programs when program exits.
       eshell-destroy-buffer-when-process-dies t
+      ;; Do an ls after cd
+      eshell-list-files-after-cd t
       )
+#+END_SRC
+
+***** [[https://github.com/xuchunyang/eshell-z][eshell-z]]
+
+cd to frequent directory in eshell, Emacs port of https://github.com/rupa/z
+
+Usage
+
+~ $ z -h
+usage: z [-chlrtx] [regex1 regex2 ... regexn]
+
+    -c, --current        estrict matches to subdirectories of the current directory
+    -h, --help           show a brief help message
+    -l, --list           list only
+    -r, --rank           match by rank only
+    -t, --time           match by recent access only
+    -x, --delete         remove the current directory from the datafile
+
+examples:
+
+    z foo         cd to most frecent dir matching foo
+    z foo bar     cd to most frecent dir matching foo, then bar
+    z -r foo      cd to highest ranked dir matching foo
+    z -t foo      cd to most recently accessed dir matching foo
+    z -l foo      list all dirs matching foo (by frecency)
+
+#+BEGIN_SRC emacs-lisp :name eshell-z
+(use-package eshell-z
+  :defer t)
+
+(add-hook 'eshell-mode-hook
+          (defun my-eshell-mode-hook ()
+            (require 'eshell-z)))
 #+END_SRC
 
 ** Builtin Emacs Editor Modes
@@ -810,6 +845,10 @@ Browse Dash docsets inside emacs.
 Some packages and utilities to help with Help Mode
 
 # TODO: fix the keybindings in this section.
+
+#+BEGIN_SRC emacs-lisp :name help-mode
+(setq help-window-select t)
+#+END_SRC
 
 **** finder
 
@@ -1693,6 +1732,14 @@ Magit for Hg - make Mercurial just a little more palatable - [[https://ananthaku
     :defer t)
 #+end_src
 
+*** sr-speedbar
+
+A very poor - but its all we got - class/object browser.
+
+#+BEGIN_SRC emacs-lisp :name sr-speedbar
+(use-package sr-speedbar)
+#+END_SRC
+
 *** yasnippet
 
 I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snippet needs - the [[http://joaotavora.github.io/yasnippet/][manual]].
@@ -1957,7 +2004,10 @@ Because work.
     ;; (add-to-list (make-local-variable 'company-backends 'company-jedi))
     ;; I prefer superword-mode for python
     (superword-mode)
-    (diminish 'superword-mode)
+    ;; turn on builtin semantic stuff
+    (semantic-mode)
+    ;; TODO: re-enable when I get all the diminish stuff figured out.
+    ;; (diminish 'superword-mode)
 
     ;; Jedi for autocomplete
     ;; Thu Aug 10 09:25:28 2017 - commented jedi:setup out and now
@@ -2154,7 +2204,6 @@ Editing Docker files
 
 #+BEGIN_SRC emacs-lisp
   (use-package dockerfile-mode
-    :ensure t
     :config (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
 #+END_SRC
 

@@ -14,3 +14,19 @@ alias l 'ls alh'
 l
 alias l 'ls -alh'
 l
+cd 
+cd tmp/
+l
+ls
+conda create -n some-test python=3.7
+yeah
+#
+alias ff 'helm-find-file $1'
+alias l 'ls -alh $1'
+l
+ls -alh --sort
+man ls
+l
+docker-machine env box
+docker-machine ls
+docker-machine env
