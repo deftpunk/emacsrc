@@ -718,10 +718,9 @@ Things from the intertubes that improve upon Emacs the editor, e.g. completion, 
     :load-path "emacswikilibs/bookmark-plus/")
 #+end_src
 
-*** Counsel, Avy, Ivy, Swiper
+*** [[https://github.com/abo-abo/swiper][avy, ivy, counsel and swiper]]
 
-[[https://github.com/abo-abo/swiper][avy, ivy, counsel and swiper]] - avy, ivy, counsel and swiper from the great abo-abo,
-who also came up with hydra.
+avy, ivy, counsel and swiper from the great abo-abo, who also came up with hydra.
 
 - Ivy, a generic completion mechanism for Emacs.
 - Counsel, a collection of Ivy-enhanced versions of common Emacs commands.
@@ -731,47 +730,61 @@ Turning on counsel-mode to see remaps of Emacs commands
 - https://github.com/abo-abo/swiper#user-content-counsel
 
 #+BEGIN_SRC emacs-lisp :name counsel-swiper
-  (use-package avy
-    :commands (avy-goto-char-2 avy-goto-line)
-    :config
-    (setq avy-all-windows nil
-          avy-background t))
+(use-package avy
+  :commands (avy-goto-char-2 avy-goto-line)
+  :config
+  (setq avy-all-windows nil
+        avy-background t))
 
-  (use-package counsel
-    :commands counsel-mode
-    :bind (:map ivy-minibuffer-map
-                ([escape] . minibuffer-keyboard-quit))
-    :init
-    (setq counsel-rg-base-command
-          "rg -i -M 120 --no-heading --line-number --color never %s .")
-    :config
-    (counsel-mode 1)
+(use-package counsel
+  :commands counsel-mode
+  :bind (:map ivy-minibuffer-map
+              ([escape] . minibuffer-keyboard-quit))
+  :init
+  (setq counsel-rg-base-command
+        "rg -i -M 120 --no-heading --line-number --color never %s .")
+  :config
+  (counsel-mode 1)
   )
 
-  (load "counsel-autoloads" nil nil) ; we really want everything available.
+(load "counsel-autoloads" nil nil) ; we really want everything available.
 
-  (use-package swiper
-    :commands (swiper)
-    :bind (:map ivy-minibuffer-map
-                ("C-w" . ivy-backward-kill-word)
-                ("C-y" . ivy-yank-word)
-                ([escape] . minibuffer-keyboard-quit))
-    :init
-    (setq ivy-wrap t     ; make ivy-next-line & ivy-previous-line cycle around.
-          ivy-height 25  ; make the minibuffer just a little taller.
-          ivy-use-virtual-buffers t
-          ivy-count-format "%d/%d"
-          )
-    :config
-    (ivy-mode 1))
+(use-package swiper
+  :commands (swiper)
+  :bind (:map ivy-minibuffer-map
+              ("C-w" . ivy-backward-kill-word)
+              ("C-y" . ivy-yank-word)
+              ([escape] . minibuffer-keyboard-quit))
+  :init
+  (setq ivy-wrap t     ; make ivy-next-line & ivy-previous-line cycle around.
+        ivy-height 25  ; make the minibuffer just a little taller.
+        ivy-use-virtual-buffers t
+        ivy-count-format "%d/%d"
+        )
+  :config
+  (ivy-mode 1))
 
-  (use-package ivy-rich
-    :ensure t
-    :after (ivy)
-    :init
-    (setq ivy-rich-path-style 'abbrev
-          ivy-virtual-abbreviate 'full)
-    :config (ivy-rich-mode 1))
+(use-package ivy-rich
+  :ensure t
+  :after (ivy)
+  :init
+  (setq ivy-rich-path-style 'abbrev
+        ivy-virtual-abbreviate 'full)
+  :config (ivy-rich-mode 1))
+#+END_SRC
+
+**** [[https://github.com/ericdanan/counsel-projectile][counsel-projectile]]
+
+Ivy UI for Projectile
+
+#+BEGIN_SRC emacs-lisp :name counsel-projectile
+(use-package counsel-projectile
+  :init
+  (setq counsel-projectile-sort-projects t
+        counsel-projectile-sort-files t
+        counsel-projectile-sort-directories t)
+  :config
+  '(counsel-projectile-find-file . file-newer-than-file-p))
 #+END_SRC
 
 *** easy-kill
@@ -1798,6 +1811,14 @@ count_of_ = get_total("");
 #+END_SRC
 
 ** Programming Languages
+*** Clojure
+
+**** [[https://cider.mx/][Cider]]
+
+#+BEGIN_SRC emacs-lisp :name cider
+(use-package cider)
+#+END_SRC
+
 *** Common Lisp
 
 #+begin_src emacs-lisp :name common-lisp
