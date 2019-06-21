@@ -880,7 +880,7 @@ Adds a neat way to look at just the Commentary section - http://irreal.org/blog/
 
 The following bindings are made here:
 
-#+BEGIN_QUOTE
+#+BEGIN_VERSE
    `C-h u'      `manual-entry'
    `C-h C-a'    `apropos'
    `C-h C-l'    `locate-library'
@@ -890,7 +890,7 @@ The following bindings are made here:
    `C-h C-M-a'  `tags-apropos'
    [mouse-1]    `mouse-help-on-click' (non-mode-line)
    [mouse-1]    `mouse-help-on-mode-line-click' (mode-line)
-#+END_QUOTE
+#+END_VERSE
 
 #+begin_src emacs-lisp :name help-plus
   (use-package help+
