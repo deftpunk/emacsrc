@@ -207,10 +207,9 @@ Make all of the icons look pretty. A utility package to collect various Icon Fon
 (use-package all-the-icons)
 #+end_src
 
-*** Doom Modeline
+*** [[https://github.com/seagle0128/doom-modeline][doom modeline]]
 
-
-[[https://github.com/seagle0128/doom-modeline][doom modeline]] a really nice and performant modeline.
+A really nice and performant modeline broken out of [[https://github.com/hlissner/doom-emacs][doom-emacs]] by its author.
 
 #+begin_src emacs-lisp :name doom_modeline
 (use-package doom-modeline
@@ -679,9 +678,9 @@ Miscelaneous builtin modes & etc. related to the editor.
 
 Things from the intertubes that improve upon Emacs the editor, e.g. completion, navigation, etc.
 
-*** ace-link
+*** [[https://github.com/abo-abo/ace-link][ace-link]]
 
-[[https://github.com/abo-abo/ace-link][ace-link]] - Select a link to jump to in Info, help, woman, org or eww modes
+Select a link to jump to in Info, help, woman, org or eww modes
 
 #+begin_src emacs-lisp :name ace-link
   (use-package ace-link
@@ -881,6 +880,7 @@ Adds a neat way to look at just the Commentary section - http://irreal.org/blog/
 
 The following bindings are made here:
 
+#+BEGIN_QUOTE
    `C-h u'      `manual-entry'
    `C-h C-a'    `apropos'
    `C-h C-l'    `locate-library'
@@ -890,6 +890,7 @@ The following bindings are made here:
    `C-h C-M-a'  `tags-apropos'
    [mouse-1]    `mouse-help-on-click' (non-mode-line)
    [mouse-1]    `mouse-help-on-mode-line-click' (mode-line)
+#+END_QUOTE
 
 #+begin_src emacs-lisp :name help-plus
   (use-package help+
@@ -902,19 +903,27 @@ The following bindings are made here:
 
 Keys bound here:
 
-   `C-h B'      `describe-buffer'
-   `C-h c'      `describe-command'     (replaces `describe-key-briefly')
-   `C-h o'      `describe-option'
-   `C-h C-c'    `describe-key-briefly' (replaces `C-h c')
-   `C-h C-o'    `describe-option-of-type'
-   `C-h M-c'    `describe-copying'     (replaces `C-h C-c')
-   `C-h M-f'    `describe-file'
-   `C-h M-k'    `describe-keymap'
-   `C-h M-l'    `find-function-on-key'
+   - `C-h B'      `describe-buffer'
+   - `C-h c'      `describe-command'     (replaces `describe-key-briefly')
+   - `C-h o'      `describe-option'
+   - `C-h C-c'    `describe-key-briefly' (replaces `C-h c')
+   - `C-h C-o'    `describe-option-of-type'
+   - `C-h M-c'    `describe-copying'     (replaces `C-h C-c')
+   - `C-h M-f'    `describe-file'
+   - `C-h M-k'    `describe-keymap'
+   - `C-h M-l'    `find-function-on-key'
 
 #+BEGIN_SRC emacs-lisp :name help-fns
 (use-package help-fns+
   :load-path "emacswikilibs/help-fns-plus/")
+#+END_SRC
+
+**** [[https://github.com/Wilfred/helpful][Helpful]]
+
+A better Emacs *help* buffer
+
+#+BEGIN_SRC emacs-lisp :name helpful
+(use-package helpful)
 #+END_SRC
 
 *** hl-todo
