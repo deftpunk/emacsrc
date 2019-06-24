@@ -2049,6 +2049,14 @@ Because work.
     (add-hook 'python-mode-hook 'deftmacs:python-mode)
 #+end_src
 
+**** [[https://github.com/paradoxxxzero/jinja2-mode][jinja2-mode]]
+
+A major mode for jinja2 templates that we use with Python.
+
+#+begin_src emacs-lisp :name jinja2-mode
+(use-package jinja2-mode)
+#+end_src
+
 **** [[https://github.com/jorgenschaefer/pyvenv][pyvenv]]
 
 I use pyvenv to manage miniconda environments.
@@ -2118,15 +2126,6 @@ Comma (or other delimiter) separated files.
 #+BEGIN_SRC emacs-lisp :name groovy
   (use-package groovy-mode)
 #+END_SRC
-
-*** jinja2
-
-[[https://github.com/paradoxxxzero/jinja2-mode][jinja2-mode]] - A major mode for jinja2 templates.
-
-#+begin_src emacs-lisp :name jinja2-mode
-  (use-package jinja2-mode
-    :ensure t)
-#+end_src
 
 *** SQL Mode
 
