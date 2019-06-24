@@ -2128,21 +2128,13 @@ Comma (or other delimiter) separated files.
     :ensure t)
 #+end_src
 
-*** Salt mode
-
-[[https://github.com/glynnforrest/salt-mode][salt-mode]] - Mode for editing Salt states
-
-#+begin_src emacs-lisp :name salt-mode
-  (use-package salt-mode)
-#+end_src
-
 *** SQL Mode
 
 The interactive SQL mode is based on ComintMode. The following interpreters are supported:
 
-    psql by PostgreSQL
-    mysql by MySQL
-    sqlite or sqlite3 for SQLite
+    - psql by PostgreSQL
+    - mysql by MySQL
+    - sqlite or sqlite3 for SQLite
 
     #+begin_src emacs-lisp :name sql-mode
       (add-to-list 'same-window-buffer-names "*SQL*")
