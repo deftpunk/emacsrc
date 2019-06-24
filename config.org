@@ -880,22 +880,20 @@ Adds a neat way to look at just the Commentary section - http://irreal.org/blog/
 
 The following bindings are made here:
 
-#+BEGIN_VERSE
-   `C-h u'      `manual-entry'
-   `C-h C-a'    `apropos'
-   `C-h C-l'    `locate-library'
-   `C-h RET'    `help-on-click/key'
-   `C-h M-a'    `apropos-documentation'
-   `C-h M-o'    `pop-to-help-toggle'
-   `C-h C-M-a'  `tags-apropos'
-   [mouse-1]    `mouse-help-on-click' (non-mode-line)
-   [mouse-1]    `mouse-help-on-mode-line-click' (mode-line)
-#+END_VERSE
+   - `C-h u'      `manual-entry'
+   - `C-h C-a'    `apropos'
+   - `C-h C-l'    `locate-library'
+   - `C-h RET'    `help-on-click/key'
+   - `C-h M-a'    `apropos-documentation'
+   - `C-h M-o'    `pop-to-help-toggle'
+   - `C-h C-M-a'  `tags-apropos'
+   - [mouse-1]    `mouse-help-on-click' (non-mode-line)
+   - [mouse-1]    `mouse-help-on-mode-line-click' (mode-line)
 
-#+begin_src emacs-lisp :name help-plus
-  (use-package help+
+     #+BEGIN_SRC emacs-lisp :name help-plus
+   (use-package help+
     :load-path "emacswikilibs/help-plus/")
-#+end_src
+     #+END_SRC
 
 **** help-fns
 
@@ -964,16 +962,15 @@ modify them in the *Process Environment* buffer.  =M-x list-environment=
   (use-package neotree)
 #+END_SRC
 
-*** Persistent Scratch
-[[https://github.com/Fanael/persistent-scratch][
-persistent-scratch]] is an Emacs package that preserves the state of scratch buffers across
+*** [[https://github.com/Fanael/persistent-scratch][persistent-scratch]]
+
+Is an Emacs package that preserves the state of scratch buffers across
 Emacs sessions by saving the state to and restoring it from a file.
 
 #+begin_src emacs-lisp :name persistent-scratch
 (use-package persistent-scratch
   :commands (persistent-scratch-setup-default)
   :init
-  ;;(setq initial-major-mode 'emacs-lisp-mode)
   (setq persistent-scratch-save-file (expand-file-name "persistent-scratch" flex-etc-dir))
   :config
   (persistent-scratch-setup-default))
@@ -1032,16 +1029,6 @@ Key -- Command
                                                             "elpa")))
     )
 #+end_src
-
-    :defer t
-**** counsel-projectile
-
-[[https://github.com/ericdanan/counsel-projectile][counsel-projectile]]
-
-#+BEGIN_SRC emacs-lisp :name counsel-projectile
-  (use-package counsel-projectile
-    )
-#+END_SRC
 
 *** Quickrun
 
@@ -1108,9 +1095,9 @@ in the [[https://github.com/Fuco1/smartparens/wiki][wiki]] and a [[https://www.r
                  :post-handlers '(("| " "SPC"))))
 #+END_SRC
 
-*** Super Save
+*** [[https://github.com/bbatsov/super-save][super-save]]
 
-[[https://github.com/bbatsov/super-save][super-save]] - An auto-saving library.
+An auto-saving library.
 https://emacsredux.com/blog/2018/09/29/super-save-0-dot-3/
 
 #+BEGIN_SRC emacs-lisp :name super-save
@@ -2062,9 +2049,9 @@ Because work.
     (add-hook 'python-mode-hook 'deftmacs:python-mode)
 #+end_src
 
-**** pyvenv
+**** [[https://github.com/jorgenschaefer/pyvenv][pyvenv]]
 
-Using [[https://github.com/jorgenschaefer/pyvenv][pyvenv]] to manage conda environments.
+I use pyvenv to manage miniconda environments.
 
 #+begin_src emacs-lisp :name pyenv
   (use-package pyvenv
@@ -2165,6 +2152,14 @@ The interactive SQL mode is based on ComintMode. The following interpreters are 
                   (toggle-truncate-lines t)))
     #+end_src
 
+*** [[https://github.com/m00natic/vlfi][VLF]]
+
+View Large Files in Emacs
+
+#+BEGIN_SRC emacs-lisp :name vlfi
+(use-package vfl)
+#+END_SRC
+
 *** Yaml & Json
 
 Json mode
@@ -2236,7 +2231,6 @@ Editing Docker files
   (use-package dockerfile-mode
     :config (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
 #+END_SRC
-
 
 *** [[https://github.com/emacs-pe/docker-tramp.el][docker-tramp]]
 
