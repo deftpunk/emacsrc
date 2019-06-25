@@ -13,6 +13,10 @@ thanks to Henrik - henrik@lissner.net
 (defconst IS-MAC   (eq system-type 'darwin))
 (defconst IS-LINUX (eq system-type 'gnu/linux))
 
+;; Some timezone stuff for logview.el
+(setenv "TZ" "America/Denver")
+(setq datetime-timezone "America/Denver")
+
 ;; clipboard
 (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING)
       save-interprogram-paste-before-kill t
@@ -2127,6 +2131,14 @@ Comma (or other delimiter) separated files.
   (use-package groovy-mode)
 #+END_SRC
 
+*** Logview
+
+Emacs mode for viewing log files.
+
+#+BEGIN_SRC emacs-lisp :name logview
+(use-package logview)
+#+END_SRC
+
 *** SQL Mode
 
 The interactive SQL mode is based on ComintMode. The following interpreters are supported:
@@ -2148,7 +2160,7 @@ The interactive SQL mode is based on ComintMode. The following interpreters are 
 View Large Files in Emacs
 
 #+BEGIN_SRC emacs-lisp :name vlfi
-(use-package vfl)
+(use-package vlf)
 #+END_SRC
 
 *** Yaml & Json
