@@ -55,6 +55,12 @@
 
 (define-abbrev-table 'cider-browse-ns-mode-abbrev-table '())
 
+(define-abbrev-table 'cider-browse-spec-example-mode-abbrev-table '())
+
+(define-abbrev-table 'cider-browse-spec-mode-abbrev-table '())
+
+(define-abbrev-table 'cider-browse-spec-view-mode-abbrev-table '())
+
 (define-abbrev-table 'cider-connections-buffer-mode-abbrev-table '())
 
 (define-abbrev-table 'cider-docview-mode-abbrev-table '())
@@ -120,6 +126,8 @@
 (define-abbrev-table 'edit-abbrevs-mode-abbrev-table '())
 
 (define-abbrev-table 'elisp-byte-code-mode-abbrev-table '())
+
+(define-abbrev-table 'elisp-refs-mode-abbrev-table '())
 
 (define-abbrev-table 'emacs-lisp-byte-code-mode-abbrev-table '())
 
@@ -284,6 +292,7 @@
     ("thne" "then" nil 1)
     ("thta" "that" nil 2)
     ("thtat" "that" nil 1)
+    ("timeazone" "timezone" nil 1)
     ("togehter" "together" nil 1)
     ("trbouble" "trouble" nil 1)
     ("trbouleshooting" "Troubleshooting" nil 1)
@@ -332,6 +341,8 @@
 
 (define-abbrev-table 'help-mode-abbrev-table '())
 
+(define-abbrev-table 'helpful-mode-abbrev-table '())
+
 (define-abbrev-table 'html-mode-abbrev-table '())
 
 (define-abbrev-table 'ibuffer-mode-abbrev-table '())
@@ -369,6 +380,10 @@
 (define-abbrev-table 'lisp-mode-abbrev-table '())
 
 (define-abbrev-table 'log-edit-mode-abbrev-table '())
+
+(define-abbrev-table 'logview-filter-edit-mode-abbrev-table '())
+
+(define-abbrev-table 'logview-mode-abbrev-table '())
 
 (define-abbrev-table 'magit-branch-manager-mode-abbrev-table '())
 
@@ -478,17 +493,13 @@
     ("sysx" "import sys; sys.exit(-1)" nil 1)
    ))
 
-(define-abbrev-table 'python-mode-skeleton-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'python-mode-skeleton-abbrev-table '())
 
 (define-abbrev-table 'reb-lisp-mode-abbrev-table '())
 
 (define-abbrev-table 'reb-mode-abbrev-table '())
 
-(define-abbrev-table 'rst-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'rst-mode-abbrev-table '())
 
 (define-abbrev-table 'rst-toc-mode-abbrev-table '())
 
@@ -503,6 +514,8 @@
 (define-abbrev-table 'salt-mode-abbrev-table '())
 
 (define-abbrev-table 'select-tags-table-mode-abbrev-table '())
+
+(define-abbrev-table 'sesman-browser-mode-abbrev-table '())
 
 (define-abbrev-table 'sgml-mode-abbrev-table '())
 
