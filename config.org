@@ -980,12 +980,6 @@ modify them in the *Process Environment* buffer.  =M-x list-environment=
   :commands (move-text-up move-text-down))
 #+END_SRC
 
-*** neotree
-
-#+BEGIN_SRC emacs-lisp :name neotree
-  (use-package neotree)
-#+END_SRC
-
 *** [[https://github.com/Fanael/persistent-scratch][persistent-scratch]]
 
 Is an Emacs package that preserves the state of scratch buffers across
@@ -2038,40 +2032,63 @@ Because work.
 **** Initial Configuration
 
 #+begin_src emacs-lisp :name python
-  (require 'smartparens-python)
+(require 'smartparens-python)
 
-  (defun deftmacs:python-mode ()
-    (interactive)
-    ;; (add-to-list (make-local-variable 'company-backends 'company-jedi))
-    ;; I prefer superword-mode for python
-    (superword-mode)
-    ;; turn on builtin semantic stuff
-    (semantic-mode)
-    ;; TODO: re-enable when I get all the diminish stuff figured out.
-    ;; (diminish 'superword-mode)
+(defun deftmacs:python-mode ()
+  (interactive)
+  ;; (add-to-list (make-local-variable 'company-backends 'company-jedi))
+  ;; I prefer superword-mode for python
+  (superword-mode)
+  ;; turn on builtin semantic stuff
+  (semantic-mode)
+  ;; TODO: re-enable when I get all the diminish stuff figured out.
+  ;; (diminish 'superword-mode)
 
-    ;; Jedi for autocomplete
-    ;; Thu Aug 10 09:25:28 2017 - commented jedi:setup out and now
-    ;; Python autocomplete works as expected
-    ;; (jedi:setup)
-    (setq jedi:complete-on-dot t)
-    (setq jedi:get-in-function-call-delay 500)
-    (setq jedi:tooltip-method '(popup))
+  ;; Jedi for autocomplete
+  ;; Thu Aug 10 09:25:28 2017 - commented jedi:setup out and now
+  ;; Python autocomplete works as expected
+  ;; (jedi:setup)
+  (setq jedi:complete-on-dot t)
+  (setq jedi:get-in-function-call-delay 500)
+  (setq jedi:tooltip-method '(popup))
 
-    ;; Turn off flyspell-mode - it interferes with jedi popup timing.
-    ;; NOTE: Also make sure NOT to enable flyspell-prog-mode as this will interfere as well.
-    (flyspell-mode 0)
-    (flyspell-prog-mode 0)
+  ;; Turn off flyspell-mode - it interferes with jedi popup timing.
+  ;; NOTE: Also make sure NOT to enable flyspell-prog-mode as this will interfere as well.
+  (flyspell-mode 0)
+  (flyspell-prog-mode 0)
 
-    ;; flycheck
-    (flycheck-mode 1)
-    (setq flycheck-flake8rc "~/.flake8"
-          flycheck-flake8-maximum-line-length 105
-          flycheck-checker 'python-flake8)
-    )
+  ;; flycheck
+  (flycheck-mode 1)
+  (setq flycheck-flake8rc "~/.flake8"
+        flycheck-flake8-maximum-line-length 105
+        flycheck-checker 'python-flake8)
+  )
 
-    (add-hook 'python-mode-hook 'deftmacs:python-mode)
+(use-package python
+  :ensure nil
+  :mode ("\\.py$" . python-mode)
+  :config
+  (setq python-indent-offset 4
+        )
+  (add-hook 'python-mode 'deftmacs:python-mode))
 #+end_src
+
+**** elpy
+
+[[https://github.com/jorgenschaefer/elpy][elpy]] - Emacs Python Development Environment
+
+Read the Docs: https://elpy.readthedocs.io/en/latest/index.html
+
+#+BEGIN_SRC emacs-lisp :name elpy
+(use-package elpy
+  :defer t
+  :commands (elpy-enable)
+  :init
+  (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
+  (advice-add 'python-mode :before 'elpy-enable)
+  :custom
+  (elpy-rpc-backend "jedi"))
+#+END_SRC
 
 **** [[https://github.com/paradoxxxzero/jinja2-mode][jinja2-mode]]
 
@@ -2920,14 +2937,18 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
                                    (split-window-below)
                                    (windmove-down)))               ; was unused
 
-     ;;;
-     ;;; Evil Insert state map
-     ;;;
+;;;
+;;; Evil Insert state map
+;;;
+
+;; Make some changes that are more inline with "readline" applications
+;; everywhere else.
 (general-define-key
  :states 'insert
  "C-a" 'crux-move-beginning-of-line ; replaces evil-paste-last-insertion
+ "C-d" 'delete-char
  "C-e" 'move-end-of-line            ; replaces evil-copy-from-below
- "C-h" 'evil-shift-right-line       ; also bound to C-t
+ "C-h" 'backward-delete-char
  "C-k" 'kill-line                   ; I don't care about inserting digraphs in insert mode.
  "C-l" 'recenter-top-bottom         ; I find this handy in insert mode
  )
@@ -3010,9 +3031,6 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
 
 * Notes
 ** New plugins to Investigate
-*** helpful
-https://github.com/Wilfred/helpful
-
 *** pcre2el
 ;; pcre2el
 ;; https://github.com/joddie/pcre2el/tree/0b5b2a2c173aab3fd14aac6cf5e90ad3bf58fa7d
@@ -3133,8 +3151,4 @@ The default =j <char>= binding needs to be removed
 
  xrdb -load ~/.Xdefaults
 
- Restart all xterm windows. The Alt key should work now.qq
-
-
-
-
+ Restart all xterm windows. The Alt key should work now.
