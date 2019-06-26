@@ -247,6 +247,7 @@ ability to invoke the debugger in debug mode."
     (setq gc-cons-threshold 16777216
           gc-cons-percentage 0.1
           file-name-handler-alist flex--file-name-handler-alist)
+    (delete-dups auto-mode-alist) ; cleanup auto-mode-alist if necessary
     t)
 
   (add-hook! '(emacs-startup-hook flex-reload-hook)
