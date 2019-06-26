@@ -563,7 +563,10 @@
 
 (define-abbrev-table 'term-mode-abbrev-table '())
 
-(define-abbrev-table 'text-mode-abbrev-table '())
+(define-abbrev-table 'text-mode-abbrev-table
+  '(
+    ("formating" "formatting" nil 0)
+   ))
 
 (define-abbrev-table 'url-cookie-mode-abbrev-table '())
 
