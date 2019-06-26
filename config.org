@@ -627,8 +627,10 @@ Miscelaneous builtin modes & etc. related to the editor.
       ediff-use-long-help-message 1
       ediff-split-window-function #'split-window-horizontally
       ediff-window-setup-function #'ediff-setup-windows-plain)
-                                        ; Run winner undo afterwards in an attempt to get back to some "sane" window layout.
-(add-hook 'ediff-after-quit-hook-internal #'winner-undo)
+
+;; Wed Jun 26 17:36:51 2019 - ediff seems to be doing this correct now??
+;; Run winner undo afterwards in an attempt to get back to some "sane" window layout.
+;; (add-hook 'ediff-after-quit-hook-internal #'winner-undo)
 
 ;; recentf
 ;; Keep track of recently opened files
@@ -2061,34 +2063,18 @@ Because work.
   (flycheck-mode 1)
   (setq flycheck-flake8rc "~/.flake8"
         flycheck-flake8-maximum-line-length 105
-        flycheck-checker 'python-flake8)
-  )
+        flycheck-checker 'python-flake8))
 
 (use-package python
   :ensure nil
   :mode ("\\.py$" . python-mode)
   :config
   (setq python-indent-offset 4
-        )
-  (add-hook 'python-mode 'deftmacs:python-mode))
+        python-shell-interpreter "ipython"
+        python-shell-interpreter-args "-i --simple-prompt"))
+
+  (add-hook 'python-mode 'deftmacs:python-mode)
 #+end_src
-
-**** elpy
-
-[[https://github.com/jorgenschaefer/elpy][elpy]] - Emacs Python Development Environment
-
-Read the Docs: https://elpy.readthedocs.io/en/latest/index.html
-
-#+BEGIN_SRC emacs-lisp :name elpy
-(use-package elpy
-  :defer t
-  :commands (elpy-enable)
-  :init
-  (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
-  (advice-add 'python-mode :before 'elpy-enable)
-  :custom
-  (elpy-rpc-backend "jedi"))
-#+END_SRC
 
 **** [[https://github.com/paradoxxxzero/jinja2-mode][jinja2-mode]]
 
@@ -2268,8 +2254,9 @@ You can also enter dired or open a file inside a container or volume.
 Editing Docker files
 
 #+BEGIN_SRC emacs-lisp
-  (use-package dockerfile-mode
-    :config (add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode)))
+(use-package dockerfile-mode
+  :init
+  (push '("Dockerfile\\'" . dockerfile-mode) auto-mode-alist))
 #+END_SRC
 
 *** [[https://github.com/emacs-pe/docker-tramp.el][docker-tramp]]

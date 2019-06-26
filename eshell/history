@@ -20,7 +20,6 @@ l
 ls
 conda create -n some-test python=3.7
 yeah
-#
 alias ff 'helm-find-file $1'
 alias l 'ls -alh $1'
 l
@@ -30,3 +29,15 @@ l
 docker-machine env box
 docker-machine ls
 docker-machine env
+cd ../WorkStuff/dev-autotest/
+cd dev-autotest-content/
+hg pull
+hg update
+cd ../..
+hg pull
+hg pull dev-autotest-content
+w valence
+w
+cd ../../valence/
+cd WorkStuff/erick-dev-autotest/erick-dev-autotest-content/
+hg status
