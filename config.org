@@ -224,31 +224,43 @@ A really nice and performant modeline broken out of [[https://github.com/hlissne
 
 *** Themes
 
-#+begin_src emacs-lisp :name themes
-;; doom themes
-;; Make me look really pretty
-;; https://github.com/hlissner/emacs-doom-themes
-;; (use-package doom-themes
-;;   :init
-;;   (setq doom-themes-enable-bold t
-;;         doom-themes-enable-italic t)
-;;   :config
-;;   ;; Enable flashing mode-line on errors
-;;   (doom-themes-visual-bell-config)
+**** Doom themes
 
-;;   ;; or for treemacs users
-;;   (doom-themes-neotree-config)
+Doom themes - Make me look really pretty
+https://github.com/hlissner/emacs-doom-themes
 
-;;   ;; Corrects (and improves) org-mode's native fontification.
-;;   (doom-themes-org-config))
+#+begin_src emacs-lisp :name doom-themes
+(use-package doom-themes
+  :init
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t)
+  :config
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+
+  ;; or for treemacs users
+  ;; (doom-themes-neotree-config)
+
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
 ;; (load-theme 'doom-molokai t)
+#+end_src
+
+**** monokai-theme
 
 ;; If I get tired of the doom-themes, kaolin-ocean is a possibility
 ;; https://github.com/ogdenwebb/emacs-kaolin-themes
 
+#+begin_src emacs-lisp :name monokai-theme
 (use-package monokai-theme)
 (load-theme 'monokai t)
 #+end_src
+
+**** intellij theme
+
+#+BEGIN_SRC emacs-lisp :name intellij-theme
+;; (use-package intellij-theme)
+#+END_SRC
 
 ** Highlighting
 
