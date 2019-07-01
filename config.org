@@ -46,16 +46,16 @@ Some MacOSX specific configuration
 
 (cond (IS-MAC
        (setq
-             ;; sane trackpad/mouse scroll settings
-             mac-redisplay-dont-reset-vscroll t
-             mac-mouse-wheel-smooth-scroll nil
-             mouse-wheel-scroll-amount '(5 ((shift) . 2))  ; one line at a time
-             mouse-wheel-progressive-speed nil             ; don't accelerate scrolling
-             ;; Curse Lion and its sudden but inevitable fullscreen mode!
-             ;; NOTE Meaningless to railwaycat's emacs-mac build
-             ns-use-native-fullscreen nil
-             ;; Don't open files from the workspace in a new frame
-             ns-pop-up-frames nil)
+        ;; sane trackpad/mouse scroll settings
+        mac-redisplay-dont-reset-vscroll t
+        mac-mouse-wheel-smooth-scroll nil
+        mouse-wheel-scroll-amount '(5 ((shift) . 2))  ; one line at a time
+        mouse-wheel-progressive-speed nil             ; don't accelerate scrolling
+        ;; Curse Lion and its sudden but inevitable fullscreen mode!
+        ;; NOTE Meaningless to railwaycat's emacs-mac build
+        ns-use-native-fullscreen nil
+        ;; Don't open files from the workspace in a new frame
+        ns-pop-up-frames nil)
 
        (cond ((display-graphic-p)
               ;; A known problem with GUI Emacs on MacOS: it runs in an isolated
@@ -73,7 +73,7 @@ Some MacOSX specific configuration
                 :commands (osx-clipboard-mode)
                 :init
                 (osx-clipboard-mode +1)))))
-       )
+      )
 #+end_src
 
 * Libraries
@@ -274,6 +274,18 @@ on top of your cursor so you know where it is.
   (cl-lib-highlight-initialize))
 #+end_src
 
+*** highlight defined
+
+https://github.com/Fanael/highlight-defined
+Highlights defined Emacs Lisp symbols in source code.
+Currently it recognizes Lisp function, built-in function, macro, face and variable names.
+
+#+BEGIN_SRC emacs-lisp :name highlight-defined
+(use-package highlight-defined
+  :config
+  (add-hook 'emacs-lisp-mode-hook 'highlight-defined-mode))
+#+END_SRC
+
 *** highlight escape sequences
 
 [[https://github.com/dgutov/highlight-escape-sequences/blob/master/highlight-escape-sequences.el][highlight-escape-sequences]] highlight escape sequences with the builtin face.
@@ -312,7 +324,6 @@ on top of your cursor so you know where it is.
 #+end_src
 
 *** highlight symbols
-
 
 [[https://github.com/gennad/auto-highlight-symbol][highlight-symbol]] Highlight the symbol under point.
 
@@ -776,6 +787,20 @@ Turning on counsel-mode to see remaps of Emacs commands
   (setq ivy-rich-path-style 'abbrev
         ivy-virtual-abbreviate 'full)
   :config (ivy-rich-mode 1))
+#+END_SRC
+
+**** counsel-etags
+
+Fast, energy-saving, and powerful code navigation solution.  Uses universal ctags.
+
+#+BEGIN_SRC emacs-lisp :name counsel-etags
+(use-package counsel-etags
+  :init
+  ;; Don't ask before rereading the TAGS files if they have changed
+  (setq tags-revert-without-query t)
+  ;; Don't warn when TAGS files are large
+  (setq large-file-warning-threshold nil)
+  )
 #+END_SRC
 
 **** [[https://github.com/ericdanan/counsel-projectile][counsel-projectile]]
