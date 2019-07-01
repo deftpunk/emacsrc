@@ -1134,6 +1134,40 @@ https://emacsredux.com/blog/2018/09/29/super-save-0-dot-3/
   (super-save-mode +1))
 #+END_SRC
 
+*** Treemacs
+
+#+BEGIN_SRC emacs-lisp :name treemacs
+(use-package treemacs)
+#+END_SRC
+
+**** treemacs-evil
+
+#+BEGIN_SRC emacs-lisp :name treemacs-evil
+(use-package treemacs-evil
+  :after treemacs evil)
+#+END_SRC
+
+**** treemacs-icons-dired
+
+#+BEGIN_SRC emacs-lisp :name treemacs-icons-dired
+(use-package treemacs-icons-dired
+  :after treemacs dired)
+#+END_SRC
+
+**** treemacs-magit
+
+#+BEGIN_SRC emacs-lisp :name treemacs-magit
+(use-package treemacs-magit
+  :after treemacs magit)
+#+END_SRC
+
+**** treemacs-projectile
+
+#+BEGIN_SRC emacs-lisp :name treemacs-projectile
+(use-package treemacs-projectile
+  :after treemacs projectile)
+#+END_SRC
+
 *** [[https://www.emacswiki.org/emacs/UndoTree][Undo Tree]]
 
 Make undo something more like the undo/redo you get in other
