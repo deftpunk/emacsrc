@@ -2561,8 +2561,8 @@ Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
 *** hydra-files-projectile
 
 #+begin_src emacs-lisp :name hydra-files-projectile
-  (defhydra hydra-files-projectile (:color blue
-                                    :hint nil)
+(defhydra hydra-files-projectile (:color blue
+                                         :hint nil)
   "
     ,----------------------.
    | Files, Projects, etc. |   CURRENT PROJECT: %(if (fboundp 'projectile-project-root) (projectile-project-root) \"NO Project\")
@@ -2592,7 +2592,7 @@ Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
          (let ((messages-buffer (get-buffer-create "*Messages*")))
            (switch-to-buffer messages-buffer))))
   ("n" make-frame)
-  ("p" projectile-switch-project)
+  ("p" counsel-projectile-switch-project)
   ("s" eme-goto-scratch)
 
   ("<ESC" nil "Quit" :exit t))
@@ -3026,12 +3026,13 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
   "g" 'hydra-version-control/body
   "i" 'helm-mini
   "k" 'flex//kill-current-buffer
+  "p" 'counsel-projectile-switch-project
   "q" 'save-buffers-kill-terminal
   "r" 'counsel-rg
   "s" 'swiper
   "w" 'save-buffer
   "y" 'helm-show-kill-ring
-  )
+ )
 
     ;;;
     ;;; Local Leader
