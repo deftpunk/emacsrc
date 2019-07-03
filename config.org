@@ -277,12 +277,6 @@ A better representation of the classic Monokai theme from Sublime in Emacs.
 (load-theme 'monokai t)
 #+end_src
 
-**** intellij theme
-
-#+BEGIN_SRC emacs-lisp :name intellij-theme
-;; (use-package intellij-theme)
-#+END_SRC
-
 ** Highlighting
 
 *** Beacon
