@@ -211,6 +211,15 @@ Make all of the icons look pretty. A utility package to collect various Icon Fon
 (use-package all-the-icons)
 #+end_src
 
+*** diminish
+
+https://github.com/myrjola/diminish.el
+Implement hiding or abbreviation of mode line displays.
+
+#+BEGIN_SRC emacs-lisp :name diminish
+(use-package diminish)
+#+END_SRC
+
 *** [[https://github.com/seagle0128/doom-modeline][doom modeline]]
 
 A really nice and performant modeline broken out of [[https://github.com/hlissner/doom-emacs][doom-emacs]] by its author.
@@ -596,6 +605,19 @@ https://masteringemacs.org/article/complete-guide-mastering-eshell
       ;; Do an ls after cd
       eshell-list-files-after-cd t
       )
+
+;; Use ivy for eshell completion - from https://github.com/dieggsy/esh-autosuggest.
+(setq ivy-do-completion-in-region t) ; this is the default
+
+(defun setup-eshell-ivy-completion ()
+  (define-key eshell-mode-map [remap eshell-pcomplete] 'completion-at-point)
+  ;; only if you want to use the minibuffer for completions instead of the
+  ;; in-buffer interface
+  (setq-local ivy-display-functions-alist
+              (remq (assoc 'ivy-completion-in-region ivy-display-functions-alist)
+                    ivy-display-functions-alist)))
+
+(add-hook 'eshell-mode-hook #'setup-eshell-ivy-completion)
 #+END_SRC
 
 ***** [[https://github.com/xuchunyang/eshell-z][eshell-z]]
@@ -3071,8 +3093,10 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
 
 (my-leader-def 'normal 'override
   "c" 'hydra-cee/body
+  "e" 'deftpunk/hydra-major-mode-hack
   "f" 'hydra-files-projectile/body
   "g" 'hydra-version-control/body
+  "h" 'help
   "i" 'helm-mini
   "k" 'flex//kill-current-buffer
   "p" 'counsel-projectile-switch-project
