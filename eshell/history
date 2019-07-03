@@ -41,3 +41,46 @@ w
 cd ../../valence/
 cd WorkStuff/erick-dev-autotest/erick-dev-autotest-content/
 hg status
+l
+ls -al
+cd ~/WorkStuff/erick-dev-autotest/erick-dev-autotest-content/
+hg pull
+hg pull dev-autotest-content
+hg heads
+hg merge
+cd ~/WorkStuff/erick-dev-autotest/erick-dev-autotest-content/
+hg status
+hg commit -m "merging in latest dev-autotest-content"
+hg push
+cd ~/WorkStuff/erick-dev-autotest/erick-dev-autotest-content/
+z os-kernel
+cd ../../oskernel-staging/oskernel-staging-autotest-content/
+(counsel-projectile-find-file)
+cp /Volumes/WorkStuff/oskernel-staging/oskernel-staging-autotest-content/tests/stress/suites/TsStressLite.yaml ../../erick-dev-autotest/erick-dev-autotest-content/tests/stress/suites/PlatformStressLite.yaml
+cp /Volumes/WorkStuff/oskernel-staging/oskernel-staging-autotest-content/tests/stress/suites/TsStressLite.yaml ../../erick-dev-autotest/erick-dev-autotest-content/tests/stress/suites/PlatformStressLite.yaml
+cp /Volumes/WorkStuff/oskernel-staging/oskernel-staging-autotest-content/tests/stress/suites/TsLiteStress.yaml ../../erick-dev-autotest/erick-dev-autotest-content/tests/stress/suites/PlatformStressLite.yaml
+l
+ls
+ls -al
+cd /Volumes/WorkStuff/oskernel-staging/oskernel-staging-autotest-content/tests/stress/
+(find-file "StressLiteJenkins")
+cp StressLiteJenkins /Volumes/WorkStuff/erick-dev-autotest/erick-dev-autotest-content/tests/stress/PlatformStressLiteJenkins
+l
+find . -name "*.yaml" -print
+Welcome to the Emacs shell
+(counsel-projectile-find-file)
+cd ../..
+cd ..
+cd erick-dev-autoplatform/
+l
+ls
+cd cicd
+cd ..
+l
+ls
+./test-pernodeapi-witness.sh
+./test-pernodeapi-witness.sh
+./test-pernodeapi-witness.sh
+./test-pernodeapi-witness.sh
+./test-pernodeapi-witness.sh
+./test-pernodeapi-witness.sh
