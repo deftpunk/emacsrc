@@ -246,13 +246,25 @@ https://github.com/hlissner/emacs-doom-themes
 ;; (load-theme 'doom-molokai t)
 #+end_src
 
+**** kaolin themes
+
+https://github.com/ogdenwebb/emacs-kaolin-themes
+Kaolin is a set of eye pleasing themes for GNU Emacs with support for a large number of modes and
+external packages.
+
+#+BEGIN_SRC emacs-lisp :name kaolin-themes
+(use-package kaolin-themes)
+#+END_SRC
+
 **** monokai-theme
 
-;; If I get tired of the doom-themes, kaolin-ocean is a possibility
-;; https://github.com/ogdenwebb/emacs-kaolin-themes
+https://github.com/oneKelvinSmith/monokai-emacs
+A better representation of the classic Monokai theme from Sublime in Emacs.
 
 #+begin_src emacs-lisp :name monokai-theme
-(use-package monokai-theme)
+(use-package monokai-theme
+  :init
+  (setq monokai-background "#1b1d1e"))
 (load-theme 'monokai t)
 #+end_src
 
