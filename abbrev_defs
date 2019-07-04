@@ -215,6 +215,7 @@
     ("ffloat" "float" nil 1)
     ("fial" "fail" nil 1)
     ("fialure" "failure" nil 1)
+    ("fixign" "fixing" nil 1)
     ("follwoing" "following" nil 1)
     ("fro" "for" nil 4)
     ("funcion" "function" nil 1)
@@ -267,6 +268,7 @@
     ("redeploy" "re-deploy" nil 1)
     ("redploy" "redeploy" nil 1)
     ("refressh" "refresh" nil 1)
+    ("remving" "removing" nil 1)
     ("resutl" "result" nil 1)
     ("retrun" "return" nil 7)
     ("rsults" "results" nil 1)
@@ -493,13 +495,17 @@
     ("sysx" "import sys; sys.exit(-1)" nil 1)
    ))
 
-(define-abbrev-table 'python-mode-skeleton-abbrev-table '())
+(define-abbrev-table 'python-mode-skeleton-abbrev-table
+  '(
+   ))
 
 (define-abbrev-table 'reb-lisp-mode-abbrev-table '())
 
 (define-abbrev-table 'reb-mode-abbrev-table '())
 
-(define-abbrev-table 'rst-mode-abbrev-table '())
+(define-abbrev-table 'rst-mode-abbrev-table
+  '(
+   ))
 
 (define-abbrev-table 'rst-toc-mode-abbrev-table '())
 
@@ -567,6 +573,8 @@
   '(
     ("formating" "formatting" nil 0)
    ))
+
+(define-abbrev-table 'treemacs-mode-abbrev-table '())
 
 (define-abbrev-table 'url-cookie-mode-abbrev-table '())
 
