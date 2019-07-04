@@ -67,7 +67,7 @@ Some MacOSX specific configuration
                 :commands (exec-path-from-shell-initialize exec-path-from-shell-variables)
                 :init
                 (setq exec-path-from-shell-check-startup-files nil)
-                (setq exec-path-from-shell-variables '("PATH" "GOPATH" "GOBIN" "GOROOT" "PYTHONPATH"))
+                (setq exec-path-from-shell-variables '("PATH" "GOPATH" "GOBIN" "GOROOT" "JAVA_HOME" "PYTHONPATH"))
                 (exec-path-from-shell-initialize))
               (use-package osx-clipboard
                 :commands (osx-clipboard-mode)
@@ -220,8 +220,8 @@ Implement hiding or abbreviation of mode line displays.
 (use-package diminish)
 #+END_SRC
 
-*** [[https://github.com/seagle0128/doom-modeline][doom modeline]]
-
+*** doom modeline
+https://github.com/seagle0128/doom-modeline
 A really nice and performant modeline broken out of [[https://github.com/hlissner/doom-emacs][doom-emacs]] by its author.
 
 #+begin_src emacs-lisp :name doom_modeline
@@ -2172,7 +2172,13 @@ Because work.
         python-shell-interpreter "ipython"
         python-shell-interpreter-args "-i --simple-prompt"))
 
-  (add-hook 'python-mode 'deftmacs:python-mode)
+(add-hook 'python-mode 'deftmacs:python-mode)
+
+;; This "should" fix tab completion in iython.
+(defun deftmacs:inferior-python-mode ()
+  (interactive)
+  (local-set-key [tab] 'python-shell-completion-complete-or-indent))
+(add-hook 'inferior-python-mode 'deftmacs:inferior-python-mode)
 #+end_src
 
 **** [[https://github.com/paradoxxxzero/jinja2-mode][jinja2-mode]]
@@ -3048,6 +3054,7 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
  "Q" "@q"
  "U" 'undo-tree-redo
  "Y" "yg_"
+ "gd" 'counsel-etags-find-tag-at-point
  )
 
 ;; Some easy window moving keys
