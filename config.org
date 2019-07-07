@@ -4,7 +4,7 @@
 #+OPTIONS: toc:4 :num:nil ^:nil
 * OS
 
-This is a direct copy of the core/core-os.el file in doom-emacs, many
+This is a near direct copy of the core/core-os.el file in doom-emacs, many
 thanks to Henrik - henrik@lissner.net
 
 ** General Configuration
@@ -146,6 +146,13 @@ Some basic UI configuration values and variables.
  visible-bell nil)
 
 (fset #'yes-or-no-p #'y-or-n-p) ; y/n instead of yes/no
+
+;; I use Roboto Mono and also use Symbola as a fallback to display unicode characters.
+;; https://github.com/ryanoasis/nerd-fonts
+;; http://www.fontspace.com/unicode-fonts-for-ancient-scripts/symbola
+(set-frame-font "RobotoMono Nerd Font 13")
+(when (member "Symbola" (font-family-list))
+  (set-fontset-font t 'unicode "Symbola" nil 'prepend))
 #+end_src
 
 ** UI related builtin modes
@@ -164,7 +171,7 @@ Configure some builtin modes related to UI
       show-paren-when-point-inside-paren t)
 (add-hook 'flex-init-ui-hook #'show-paren-mode)
 
-;;; More reliable inter-window border
+;; More reliable inter-window border
 ;; The native border "consumes" a pixel of the fringe on righter-most splits,
 ;; `window-divider' does not. Available since Emacs 25.1.
 (setq-default window-divider-default-places t
@@ -187,13 +194,6 @@ Configure some builtin modes related to UI
 (add-hook 'flex-post-init-hook #'blink-cursor-mode)
 ;; standardize default fringe width
 (if (fboundp 'fringe-mode) (fringe-mode flex-fringe-size))
-
-;; I use Roboto Mono and also use Symbola as a fallback to display unicode characters.
-;; https://github.com/ryanoasis/nerd-fonts
-;; http://www.fontspace.com/unicode-fonts-for-ancient-scripts/symbola
-(set-frame-font "RobotoMono Nerd Font 13")
-(when (member "Symbola" (font-family-list))
-	      (set-fontset-font t 'unicode "Symbola" nil 'prepend))
 
 ;; Highlight the current line.
 (global-hl-line-mode 1)
@@ -918,9 +918,12 @@ Browse Dash docsets inside emacs.
 
 #+BEGIN_SRC emacs-lisp :name helm-dash
 (use-package helm-dash
+  :commands (helm-dash helm-dash-at-point)
   :init
-  (setq helm-dash-common-docsets '("Python 2" "Python 3")
-        helm-dash-browser-func 'eww-browse-url))
+  (setq helm-dash-docsets-path (expand-file-name "dash-docsets" flex-emacs-dir))
+  :config
+  (setq helm-dash-common-docsets '("Python_2" "Python_3")))
+        ;; helm-dash-browser-func 'eww-browse-url))
 #+END_SRC
 
 **** helm-tramp

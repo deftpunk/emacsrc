@@ -1,11 +1,13 @@
 ;;; core.el -*- lexical-binding: t; -*-
 
+;;;
+;;; Variables for later
+;;;
+
 (defvar flex-debug-mode (or (getenv "DEBUG") init-file-debug)
   "If non-nil, all doom functions will be verbose. Set DEBUG=1 in the command
 line or use --debug-init to enable this.")
 
-;;; Variables to be used later.
-;; (defvar flex-emacs-dir (file-truename user-emacs-directory)
 (defvar flex-emacs-dir (file-truename "~/.emacs.d/")
   "The path to this emacs.d directory.")
 

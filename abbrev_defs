@@ -179,6 +179,7 @@
     ("addign" "adding" nil 1)
     ("addtion" "addition" nil 1)
     ("adimn" "admin" nil 1)
+    ("ading" "adding" nil 1)
     ("adn" "and" nil 1)
     ("associatins" "associations" nil 1)
     ("avaoid" "avoid" nil 1)
