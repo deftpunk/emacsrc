@@ -84,3 +84,27 @@ ls
 ./test-pernodeapi-witness.sh
 ./test-pernodeapi-witness.sh
 ./test-pernodeapi-witness.sh
+l
+ls
+ls -al
+ff core-packaging.el
+cd tmp/emacsrc/
+cd elpa/
+l helm-dash-20190527.1118/
+cd helm-dash-20190527.1118/
+ls
+cd ~/Library/Application\ Support/Dash/DocSets/
+l
+ls
+cd Python_3/
+l
+ls
+ls -al
+cd Python\ 3.docset/
+ls
+ls -al
+cd Contents/
+ls
+l
+ls
+mkdir dash-docsets
