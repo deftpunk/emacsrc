@@ -17,11 +17,15 @@ url/
 etc/
 transient/
 dash-docsets/
+.cache/
+
 
 # We can't get these through melpa so I git clone them.  I don't like submodules.
 emacswikilibs/
+repos-not-in-melpa/
 
 # The generated elisp config file
 config.el
 
 projectile-bookmarks.eld
+logview-cache.extmap
