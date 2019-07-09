@@ -104,8 +104,8 @@ Some basic UI configuration values and variables.
 
 ;; Frame transparency for Mac
 (when IS-MAC
-  (set-frame-parameter (selected-frame) 'alpha '(95 95))
-  (add-to-list 'default-frame-alist '(alpha 95 95)))
+  (set-frame-parameter (selected-frame) 'alpha '(97 97))
+  (add-to-list 'default-frame-alist '(alpha 97 97)))
 
 (setq-default
  bidi-display-reordering nil ; disable bidirectional text for tiny performance boost
