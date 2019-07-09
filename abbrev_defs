@@ -311,6 +311,7 @@
     ("wehn" "when" nil 1)
     ("weill" "will" nil 1)
     ("whilre" "while" nil 1)
+    ("widnow" "window" nil 1)
     ("witeness" "witness" nil 1)
     ("workign" "working" nil 1)
     ("wyh" "why" nil 1)
@@ -502,9 +503,7 @@
     ("sysx" "import sys; sys.exit(-1)" nil 1)
    ))
 
-(define-abbrev-table 'python-mode-skeleton-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'python-mode-skeleton-abbrev-table '())
 
 (define-abbrev-table 'reb-lisp-mode-abbrev-table '())
 

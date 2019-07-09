@@ -1440,8 +1440,10 @@ done in the =Keybindings= section at the end of this file.
 
 ** Evil Collection
 
-[[https://github.com/emacs-evil/evil-collection][evil-collection]] - A community derived collection of evil-mode bindings for modes/parts of
-Emacs that evil does not cover by default.
+https://github.com/emacs-evil/evil-collection
+
+A community derived collection of evil-mode bindings for modes/parts of Emacs that evil does not cover by
+default.
 
 #+BEGIN_SRC emacs-lisp :name evil-collection
 (use-package evil-collection
@@ -1475,6 +1477,22 @@ Emacs that evil does not cover by default.
 (use-package evil-magit)
 #+END_SRC
 
+** Evil markdown mode
+
+https://github.com/Somelauw/evil-markdown
+
+Integrates evil and markdown-mode - some features:
+
+- Bindings for navigation between heading
+- Bindings for promotion / demotion of heading
+- markdown-element text objects
+
+#+BEGIN_SRC emacs-lisp :name evil-markdown
+(use-package evil-markdown
+  :load-path "repos-not-in-melpa/evil-markdown/"
+  :after evil markdown-mode)
+#+END_SRC
+
 ** Evil Numbers
 
 http://github.com/cofi/evil-numbers
@@ -1489,6 +1507,23 @@ Increment/Decrement numbers in normal & visual modes.
 
     (define-key evil-normal-state-map (kbd "C-c -") 'evil-numbers/dec-at-pt)
     (define-key evil-visual-state-map (kbd "C-c -") 'evil-numbers/dec-at-pt))
+#+END_SRC
+
+** Evil Org
+
+https://github.com/Somelauw/evil-org-mode
+
+The integration of Evil and Org mode - a more complicated config example:
+https://github.com/Somelauw/evil-org-mode/blob/master/doc/example_config.el
+
+#+BEGIN_SRC emacs-lisp :name evil-org-mode
+(use-package evil-org
+  :after org
+  :config
+  (add-hook 'org-mode-hook 'evil-org-mode)
+  (add-hook 'evil-org-mode-hook
+            (lambda ()
+              (evil-org-set-key-theme))))
 #+END_SRC
 
 ** Evil Surround
@@ -2490,6 +2525,7 @@ commands are available:
   (add-hook 'markdown-mode #'flex-emacs:mardown))
 #+end_src
 
+
 *** Pandoc
 
 [[http://joostkremers.github.io/pandoc-mode/][Pandoc]] - Convert text written in one markup language into another markup language.
@@ -3163,6 +3199,7 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
 (general-create-definer my-local-leader-def
   :prefix "SPC SPC")
 (my-local-leader-def 'normal 'override
+  "l" 'avy-goto-char-in-line
   "s" 'avy-goto-char-2)
 
      ;;;
