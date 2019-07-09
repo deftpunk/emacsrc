@@ -1271,7 +1271,34 @@ https://www.reddit.com/r/emacs/comments/9zxnvm/undotreevisualize_super_slow/
     :bind ([remap fill-paragraph] . unfill-toggle))
 #+END_SRC
 
-*** vimish folds
+*** Folding
+
+This is such a pain in Emacs.  There are half a dozen different folding plugins and each occupies a certain niche.
+
+e.g.
+- vimish folds works good for fold markers or regions.
+  - doesn't fold *.json
+  - have to select regions, vimish-fold, then vimish-fold-unfold/refold = awkward.
+- origami is the only one that I could get to work on folding *.json files.
+- yafolding works on *.json files but is really, really slow.
+
+I also wish there was a [[" https://github.com/thalesmello/tabfold][tabfold]] equivalent in Emacs, it is extremely convenient.  I can kind of emulate
+something with vimish but the sequence is awkward.
+
+**** origami
+
+https://github.com/gregsexton/origami.el
+
+A text folding minor mode for Emacs. The actual buffer contents are never changed in any way. This works
+by using overlays to affect how the buffer is presented. This also means that all of your usual editing
+commands should work with folded regions. For example killing and yanking folded text works as you would
+expect.
+
+#+BEGIN_SRC emacs-lisp :name origami
+(use-package origami)
+#+END_SRC
+
+**** vimish folds
 
 https://github.com/mrkkrp/vimish-fold Vim-like text folding for Emacs.
 
@@ -2443,7 +2470,9 @@ commands are available:
     :defer t)
 #+end_src
 
-** Markdown mode
+** Markdown
+
+*** Markdown mode
 
 [[http://jblevins.org/projects/markdown-mode/][Markdown Mode]] - Major mode for editing [[http://daringfireball.net/projects/markdown/][Markdown]] formatted text.
 
@@ -2461,6 +2490,8 @@ commands are available:
   (add-hook 'markdown-mode #'flex-emacs:mardown))
 #+end_src
 
+*** Pandoc
+
 [[http://joostkremers.github.io/pandoc-mode/][Pandoc]] - Convert text written in one markup language into another markup language.
 
 It is possible to create different output profiles for a single input file, so that you
@@ -2470,6 +2501,8 @@ reading, PDF for offline reading and Texinfo for reading in Emacs
 #+begin_src emacs-lisp :name Pandoc
   (use-package pandoc-mode)
 #+end_src
+
+*** vmd-mode
 
 [[https://github.com/blak3mill3r/vmd-mode][vmd-mode]] - Fast Github-flavored Markdown previews synchronized with changes to an
            emacs buffer (no need to save).
