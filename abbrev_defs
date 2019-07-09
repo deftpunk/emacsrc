@@ -165,6 +165,8 @@
 
 (define-abbrev-table 'gfm-mode-abbrev-table '())
 
+(define-abbrev-table 'gfm-view-mode-abbrev-table '())
+
 (define-abbrev-table 'git-commit-elisp-text-mode-abbrev-table '())
 
 (define-abbrev-table 'git-commit-mode-abbrev-table '())
@@ -216,6 +218,7 @@
     ("ffloat" "float" nil 1)
     ("fial" "fail" nil 1)
     ("fialure" "failure" nil 1)
+    ("fiels" "files" nil 1)
     ("fixign" "fixing" nil 1)
     ("follwoing" "following" nil 1)
     ("fro" "for" nil 4)
@@ -285,6 +288,7 @@
     ("soem" "some" nil 1)
     ("soemtimes" "sometimes" nil 1)
     ("somethign" "something" nil 1)
+    ("somthing" "something" nil 1)
     ("stewardshiip" "stewardship" nil 1)
     ("stupd" "stupid" nil 1)
     ("taht" "that" nil 3)
@@ -442,6 +446,8 @@
 
 (define-abbrev-table 'markdown-mode-abbrev-table '())
 
+(define-abbrev-table 'markdown-view-mode-abbrev-table '())
+
 (define-abbrev-table 'message-mode-abbrev-table '())
 
 (define-abbrev-table 'messages-buffer-mode-abbrev-table '())
@@ -504,9 +510,7 @@
 
 (define-abbrev-table 'reb-mode-abbrev-table '())
 
-(define-abbrev-table 'rst-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'rst-mode-abbrev-table '())
 
 (define-abbrev-table 'rst-toc-mode-abbrev-table '())
 
