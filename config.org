@@ -3135,7 +3135,8 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
      ;;;
      ;;; 'jk' binding
      ;;;
-(key-chord-define-global "jk" 'hydra-jk/body)
+(key-chord-define-global "jk" 'helm-M-x)
+;; (key-chord-define-global "jk" 'hydra-jk/body)
 
 ;; Moved to here so that all of the bindings are picked up.
 (which-key-mode t)
