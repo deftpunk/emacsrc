@@ -2192,6 +2192,28 @@ A major mode for jinja2 templates that we use with Python.
 (use-package jinja2-mode)
 #+end_src
 
+**** [[https://github.com/Wilfred/pip-requirements.el][pip-requirements]]
+
+Major mode for editing requirements files.
+
+#+BEGIN_SRC emacs-lisp :name
+(use-package pip-requirements
+  :defer t)
+#+END_SRC
+
+**** py-isort
+
+https://github.com/paetzke/py-isort.el - integrates isort into Emacs.
+
+#+BEGIN_SRC emacs-lisp :name py-isort
+(use-package py-isort
+  :config
+  ;; max length of an import line
+  ;; format mulit-line imports to a grid format.
+  (setq py-isort-options '("--lines=105"
+                           "--multi-line=0")))
+#+END_SRC
+
 **** [[https://github.com/jorgenschaefer/pyvenv][pyvenv]]
 
 I use pyvenv to manage miniconda environments.
@@ -2204,15 +2226,6 @@ I use pyvenv to manage miniconda environments.
     (pyvenv-mode 1)
     (pyvenv-tracking-mode 1))
 #+end_src
-
-**** [[https://github.com/Wilfred/pip-requirements.el][pip-requirements]]
-
-Major mode for editing requirements files.
-
-#+BEGIN_SRC emacs-lisp :name
-(use-package pip-requirements
-  :defer t)
-#+END_SRC
 
 *** Rust
 
