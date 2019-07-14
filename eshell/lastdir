@@ -1,5 +1,4 @@
 /Volumes/WorkStuff/linux_test_project/tests
-/Volumes/WorkStuff/linux_test_project/tests
 /Users/ebodine/tmp/emacsrc/core/autoload
 /Volumes/WorkStuff/engine-lite/engine-lite/cicd_scripts/python_scripts
 /Users/ebodine
@@ -22,11 +21,12 @@
 /Volumes/WorkStuff/testing/api-testing
 /Users/ebodine/tmp/emacsrc/core
 ~
-/Users/ebodine/tmp/emacsrc
 /Users/ebodine/tmp/emacsrc/elpa
 /Users/ebodine/tmp/emacsrc/elpa/helm-dash-20190527.1118
 /Users/ebodine/Library/Application Support/Dash/DocSets
 /Users/ebodine/Library/Application Support/Dash/DocSets/Python_3
 /Users/ebodine/Library/Application Support/Dash/DocSets/Python_3/Python 3.docset
 /Users/ebodine/Library/Application Support/Dash/DocSets/Python_3/Python 3.docset/Contents
+/Volumes/WorkStuff/evilspock-repos/testing
 /Users/ebodine/tmp/emacsrc
+/Users/ebodine/tmp/emacsrc/repos-not-in-melpa

@@ -108,3 +108,6 @@ ls
 l
 ls
 mkdir dash-docsets
+l
+cd ~/tmp/emacsrc/
+cd repos-not-in-melpa/

@@ -1590,36 +1590,37 @@ TODO: Change the size or the screenshot before pasting it in.
 ** Initial configuration
 
 #+begin_src emacs-lisp :name Org mode
-  (use-package org-plus-contrib
-    :defer t
-    :mode (("\\.org$" . org-mode))
-    :init
-    (setq org-startup-indented t
-          org-src-preserve-indentation t  ;; especially useful for Python in src code blocks
-          org-startup-folded "showall"
-          org-ellipsis "⤵"              ;; Make the outline fold more compact.
-          )
+(use-package org-plus-contrib
+  :defer t
+  :mode (("\\.org$" . org-mode))
+  :init
+  (setq org-startup-indented t
+        org-src-preserve-indentation t  ;; especially useful for Python in src code blocks
+        org-startup-folded "showall"
+        org-ellipsis "⤵"              ;; Make the outline fold more compact.
+        )
 
-    ;; Modifications to Org mode Speed Keys - from Sacha Chau
-    ;; To list all of the Speed Keys, go to the begining of a header and press ?
-    (defun my/org-use-speed-commands-for-headings-and-lists ()
-      "Activate speed commands on list items too."
-      (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
-          (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
-    (setq org-use-speed-commands 'my/org-use-speed-commands-for-headings-and-lists)
+  ;; Modifications to Org mode Speed Keys - from Sacha Chau
+  ;; To list all of the Speed Keys, go to the begining of a header and press ?
+  (defun my/org-use-speed-commands-for-headings-and-lists ()
+    "Activate speed commands on list items too."
+    (or (and (looking-at org-outline-regexp) (looking-back "^\**"))
+        (save-excursion (and (looking-at (org-item-re)) (looking-back "^[ \t]*")))))
+  (setq org-use-speed-commands 'my/org-use-speed-commands-for-headings-and-lists)
 
-    :config
-    (org-load-modules-maybe t)
-    ;; Some general configuration.
-    (add-hook 'org-mode-hook (lambda ()
-                               (visual-line-mode 1)  ;; soft wrap
-                               (setq fill-column 120))))
+  :config
+  (org-load-modules-maybe t)
+  ;; Some general configuration.
+  (add-hook 'org-mode-hook (lambda ()
+                             (visual-line-mode 1)  ;; soft wrap
+                             (setq fill-column 120))))
 
-  ;; Tracking TODO state changes
-  ;; The ! exclamation will add a timestamp
-  ;; The @ ampersand will ask for a note with time-stamp
-  (setq org-todo-keywords
-        '((sequence "TODO(t!)" "WORKING(w!)" "DONE(d!)" "CANCELLED(c@!)" )))
+;; Tracking TODO state changes
+;; The ! exclamation will add a timestamp
+;; The @ ampersand will ask for a note with time-stamp
+(setq org-todo-keywords
+      '((sequence "TODO(t!)" "WORKING(w!)" "DONE(d!)" "CANCELLED(c@!)" )))
+
 #+end_src
 
 ** Tags
@@ -3210,6 +3211,16 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
 
 ;; Moved to here so that all of the bindings are picked up.
 (which-key-mode t)
+
+;; Change some of the org-mode mappings that interfere with my evil mode bindings.
+(general-define-key
+ :states 'normal
+ :keymaps 'org-mode-map
+ "C-j" 'nil                ; don't want anything messing with our leader key
+ "C-k" 'nil
+ )
+
+
 #+END_SRC
 
 * Notes

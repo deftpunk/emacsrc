@@ -246,6 +246,7 @@
     ("loook" "Look" nil 1)
     ("lsit" "list" nil 1)
     ("ltos" "lots" nil 1)
+    ("mappigns" "mappings" nil 1)
     ("mde" "mode" nil 1)
     ("mdoe" "mode" nil 1)
     ("miliseconds" "milliseconds" nil 2)
