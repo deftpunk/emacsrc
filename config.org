@@ -3143,8 +3143,13 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
  "gd" 'counsel-etags-find-tag-at-point
  )
 
+(general-define-key
+ :states 'normal
+ "]b" 'previous-buffer
+ "[b" 'next-buffer)
+
 ;; Some easy window moving keys
-;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order to
+;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order toxtxt
 ;; get this to work(?)
 (global-unset-key  (kbd "C-j"))
 (global-unset-key  (kbd "C-k"))
@@ -3212,15 +3217,13 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
 ;; Moved to here so that all of the bindings are picked up.
 (which-key-mode t)
 
-;; Change some of the org-mode mappings that interfere with my evil mode bindings.
+;; Change some of the org-mode mappings that interfere with my evil mode window bindings.
 (general-define-key
  :states 'normal
  :keymaps 'org-mode-map
- "C-j" 'nil                ; don't want anything messing with our leader key
+ "C-j" 'nil
  "C-k" 'nil
  )
-
-
 #+END_SRC
 
 * Notes
@@ -3252,8 +3255,6 @@ https://github.com/caisah/emacs.dz
 scroll-other-window-down will actually scroll the window up ... Emacs
 scroll-other-window scrolls down
 
-*** Org mode + Evil rebinds C-j & C-k
- move these to s-j & s-k -> Super key bindings
 *** shell-pop vs. multi-term vs. multi-run
     which one, which one to run a terminal in Emacs
 *** make following links work in Orgmode
