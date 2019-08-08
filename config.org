@@ -2272,7 +2272,10 @@ fill-paragraph function when editing such a docstring that will wrap things acco
 convention.
 
 #+begin_src emacs-lisp :name python-docsting
-(use-package python-docstring)
+(use-package python-docstring
+  :config
+  (python-docstring-install)
+  :diminish python-docstring-mode)
 #+end_src
 
 **** py-isort
