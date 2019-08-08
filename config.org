@@ -2264,6 +2264,17 @@ Major mode for editing requirements files.
   :defer t)
 #+END_SRC
 
+**** python-docstring
+
+[[https://github.com/glyph/python-docstring-mode][python-docstring-mode]]  Is a minor-mode for editing Python docstrings. It provides syntax
+highlighting for docstrings in both reStructuredText and Epydoc formats, as well as an override for the
+fill-paragraph function when editing such a docstring that will wrap things according to Python community
+convention.
+
+#+begin_src emacs-lisp :name python-docsting
+(use-package python-docstring)
+#+end_src
+
 **** py-isort
 
 https://github.com/paetzke/py-isort.el - integrates isort into Emacs.
