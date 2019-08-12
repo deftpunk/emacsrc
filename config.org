@@ -1541,7 +1541,15 @@ https://github.com/emacs-evil/evil-surround
 
 The manual: [[http://orgmode.org/manual/index.html][Org Manual]]
 
+[[https://orgmode.org/manual/Emphasis-and-monospace.html][Emphasis]]
+You can make words *bold*, /italic/, _underlined_, =verbatim= and ~code~, and, if you must,
+‘+strike-through+’. Text in the code and verbatim string is not processed for Org mode specific syntax,
+it is exported verbatim.
+
 [[http://orgmode.org/manual/Easy-templates.html#Easy-templates][Easy templates:]]
+
+TODO: Easy templates have been superseded by Org-Selectors (C-c C-,) - need to figure out what I want to
+do here as I kind of like the easy template flow.
 
 <s <TAB> expands/completes the 'src' block
 <e <TAB> -> example block
@@ -2224,6 +2232,12 @@ Because work.
   (flyspell-mode 0)
   (flyspell-prog-mode 0)
 
+  ;; Configure ipython
+  (if executable-find "ipython"
+    (setq python-shell-interpreter "ipython"
+          python-shell-interpreter-args "-i --simple-prompt")
+    (message "Unable to find ipython"))
+
   ;; flycheck
   (flycheck-mode 1)
   (setq flycheck-flake8rc "~/.flake8"
@@ -2234,9 +2248,7 @@ Because work.
   :ensure nil
   :mode ("\\.py$" . python-mode)
   :config
-  (setq python-indent-offset 4
-        python-shell-interpreter "ipython"
-        python-shell-interpreter-args "-i --simple-prompt"))
+  (setq python-indent-offset 4))
 
 (add-hook 'python-mode 'deftmacs:python-mode)
 
@@ -2245,6 +2257,20 @@ Because work.
   (interactive)
   (local-set-key [tab] 'python-shell-completion-complete-or-indent))
 (add-hook 'inferior-python-mode 'deftmacs:inferior-python-mode)
+#+end_src
+
+**** auto-virtualenv
+
+#+begin_src emacs-lisp :name auto-virtualenv
+(defun wcx-restart-python ()
+  (pyvenv-restart-python))
+
+(use-package auto-virtualenv
+  :ensure t
+  :config
+  (add-hook 'python-mode-hook 'auto-virtualenv-set-virtualenv)
+  (add-hook 'projectile-after-switch-project-hook 'auto-virtualenv-set-virtualenv)
+  (add-hook 'pyvenv-post-activate-hooks 'wcx-restart-python))
 #+end_src
 
 **** [[https://github.com/paradoxxxzero/jinja2-mode][jinja2-mode]]
