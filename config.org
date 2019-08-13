@@ -2975,9 +2975,19 @@ Resize windows dynamically
  hydra for Org mode
 
 #+begin_src emacs-lisp :name hydra-orgmode
- (defhydra hydra-orgmode-mode (:color blue
-                               :hint nil)
-   "
+(defun deftpunk//headings-then-scroll ()
+  "Like evil-scroll-line-to-top but without the COUNT that causes an error."
+  (interactive)
+  (helm-org-in-buffer-headings)
+  (evil-save-column
+    (let ((line (line-number-at-pos (point))))
+      (goto-char (point-min))
+      (forward-line (1- line)))
+    (recenter 0)))
+
+(defhydra hydra-orgmode-mode (:color blue
+                                     :hint nil)
+  "
                                                                          .-----------.
                                                                          |  Org Mode |
    ,---------------------------------------------------------------------'-----------'
@@ -2986,11 +2996,12 @@ Resize windows dynamically
    [_s_] Mark subtree
    [_o_] Ace link
  "
-   ("e" org-mark-element)
-   ("h" helm-org-in-buffer-headings)
-   ("s" org-mark-subtree)
-   ("o" ace-link-org)
-   ("<ESC>" nil "Quit" :exit t))
+  ("e" org-mark-element)
+  ("h" deftpunk//headings-then-scroll)
+  ;; ("h" helm-org-in-buffer-headings)
+  ("s" org-mark-subtree)
+  ("o" ace-link-org)
+  ("<ESC>" nil "Quit" :exit t))
 #+end_src
 
 *** hydra-python-mode
