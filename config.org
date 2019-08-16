@@ -1202,6 +1202,19 @@ https://emacsredux.com/blog/2018/09/29/super-save-0-dot-3/
   (super-save-mode +1))
 #+END_SRC
 
+*** Tramp
+
+Most of this is trying to make Tramp work faster.
+
+#+begin_src emacs-lisp :name tramp
+(setq remote-file-name-inhibit-cache nil)
+(setq vc-ignore-dir-regexp
+      (format "%s\\|%s"
+              vc-ignore-dir-regexp
+              tramp-file-name-regexp))
+(setq tramp-verbose 1)
+#+end_src
+
 *** Treemacs
 
 #+BEGIN_SRC emacs-lisp :name treemacs
@@ -1656,7 +1669,7 @@ UTF-8 bullets for org-mode bullets.  You can go crazy with these.
 
 #+BEGIN_SRC emacs-lisp :name org-capture
 
-(setq org-modules (quote (org-protocol)))
+(setq org-modules (quote (org-protocol org-tempo)))
 
  (setq org-capture-templates
          (quote (("t" "todo" entry (file "~/tmp/Notes/general.org")
@@ -1668,7 +1681,9 @@ UTF-8 bullets for org-mode bullets.  You can go crazy with these.
 [[https://github.com/abo-abo/org-download][org-download]] - Drag/drop/download images into Org
 
 #+begin_src emacs-lisp :name org-download
-  (use-package org-download)
+(use-package org-download
+  :config
+  (setq org-download-screenshot-method "screencapture -i %s"))
 #+end_src
 
 * Version Control
@@ -1932,6 +1947,20 @@ Magit for Hg - make Mercurial just a little more palatable - [[https://ananthaku
 
   (use-package helm-flycheck
     :defer t)
+#+end_src
+
+*** smart-dash
+
+https://bitbucket.org/malsyned/smart-dash/src/default/
+
+Smart Dash Mode is a simple Emacs minor mode which causes the dash key to insert an underscore within C
+identifiers and a dash otherwise. This allows you to type all_lowercase_c_identifiers as comfortably as
+you would lisp-style-identifiers.
+
+#+begin_src emacs-lisp :name samrt-dash
+(use-package smart-dash
+  :config
+  (add-hook 'python-mode-hook 'smart-dash-mode))
 #+end_src
 
 *** sr-speedbar
@@ -2770,7 +2799,7 @@ Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
 
   _a_ Ag                                             _m_ Go to *Messages*     _s_ Go to *scratch*
 
-  _c_ Clear Projectile Cache
+  _c_ Clear Projectile Cache                                                  _t_ Helm Tramp
                                                      _p_ Switch Projects
                                 _k_ Kill Buffer
   _f_ Find File
@@ -2791,6 +2820,7 @@ Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
   ("n" make-frame)
   ("p" counsel-projectile-switch-project)
   ("s" eme-goto-scratch)
+  ("t" helm-tramp)
 
   ("<ESC" nil "Quit" :exit t))
 #+end_src
@@ -2985,8 +3015,7 @@ Resize windows dynamically
       (forward-line (1- line)))
     (recenter 0)))
 
-(defhydra hydra-orgmode-mode (:color blue
-                                     :hint nil)
+(defhydra hydra-orgmode-mode (:color blue :hint nil)
   "
                                                                          .-----------.
                                                                          |  Org Mode |
