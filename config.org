@@ -668,9 +668,10 @@ Open a terminal in the current window.
 Open a terminal in another window.
 
 /vterm-copy-mode/
-When you enable vterm-copy-mode, the terminal buffer behaves like a normal read-only text buffer: you can search, copy text, etc. The default keybinding is C-c C-t.
+When you enable vterm-copy-mode, the terminal buffer behaves like a normal read-only text buffer: you can
+search, copy text, etc. The default keybinding is C-c C-t.
 
-Need to investigate:
+TODO: Other vterm packages to investigate:
 [[https://github.com/jixiuf/vterm-toggle][vterm-toggle]]
 [[https://github.com/suonlight/multi-libvterm][multi-libvterm]] - a multi-term with vterm
 
