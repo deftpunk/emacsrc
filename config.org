@@ -647,6 +647,38 @@ examples:
             (require 'eshell-z)))
 #+END_SRC
 
+**** vterm
+
+https://github.com/akermu/emacs-libvterm - bridge to libvterm to create a terminal in Emacs.
+
+So far this is much better than ansi-term
+
+Install instructions:
+1. g clone https://github.com/akermu/emacs-libvterm/
+2. cd emacs-libvterm
+3. mkdir build
+4. cmake ..
+5. make
+
+Usage:
+/vterm/
+Open a terminal in the current window.
+
+/vterm-other-window/
+Open a terminal in another window.
+
+/vterm-copy-mode/
+When you enable vterm-copy-mode, the terminal buffer behaves like a normal read-only text buffer: you can search, copy text, etc. The default keybinding is C-c C-t.
+
+Need to investigate:
+[[https://github.com/jixiuf/vterm-toggle][vterm-toggle]]
+[[https://github.com/suonlight/multi-libvterm][multi-libvterm]] - a multi-term with vterm
+
+#+begin_src emacs-lisp :name vterm
+(add-to-list 'load-path "~/tmp/emacs-libvterm")
+(require 'vterm)
+#+end_src
+
 ** Builtin Emacs Editor Modes
 
 Miscelaneous builtin modes & etc. related to the editor.
