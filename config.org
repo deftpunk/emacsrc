@@ -934,16 +934,17 @@ Browse Dash docsets inside emacs.
 (use-package helm-tramp
   :init (setq tramp-default-method "ssh")
   :config
-  ;; Speed up tramp by turning some things off.
+  ;; Speed up tramp & helm-tramp by turning some things off.
+  ;; We turn some other Tramp specific things off in the Tramp section.
   (add-hook 'helm-tramp-pre-command-hook '(lambda ()
                                             (global-aggressive-indent-mode 0)
                                             (projectile-mode 0)))
   (add-hook 'helm-tramp-quit-hook '(lambda ()
                                      (global-aggressive-indent-mode 1)
-                                     (projectile-mode 1)))
-  ;; Don't make backup files or lockfiles remotely.
-  (setq make-backup-files nil)
-  (setq create-lockfiles nil))
+                                     (projectile-mode 1))))
+
+;; Besides ~/.ssh/config, you can add connections manually.
+;; (setq helm-tramp-custom-connections '(/ssh:domain|sudo:user@localhost:/))
 #+END_SRC
 
 *** Help Mode Helpers
@@ -1213,6 +1214,14 @@ Most of this is trying to make Tramp work faster.
               vc-ignore-dir-regexp
               tramp-file-name-regexp))
 (setq tramp-verbose 1)
+
+;; Make sure that remote servers start bash and not another shell that will
+;; confuse the heck out of Tramp, e.g. zsh or fish
+(eval-after-load 'tramp '(setenv "SHELL" "/bin/bash"))
+
+;; Don't make backup files or lockfiles remotely.
+(setq make-backup-files nil)
+(setq create-lockfiles nil)
 #+end_src
 
 *** Treemacs
