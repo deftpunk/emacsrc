@@ -111,3 +111,14 @@ mkdir dash-docsets
 l
 cd ~/tmp/emacsrc/
 cd repos-not-in-melpa/
+l
+ls
+cd ..
+cd ..
+history
+l
+ls
+cd elpa/
+rm -rf tao-theme-20190204.1104/
+l
+cd ../../..

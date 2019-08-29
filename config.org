@@ -517,73 +517,73 @@ Mastering Emacs has a good article on its configuration and usage - [[https://ma
     Found a fix for the term+zsh problem - https://www.reddit.com/r/emacs/comments/5p3njk/help_terminal_zsh_control_characters_in_prompt/
 
 #+BEGIN_SRC emacs-lisp :name terminals
-  (use-package ansi-color
-    :commands ansi-color-for-comint-mode-on
-    :init
-    (progn
-      (setq comint-scroll-to-bottom-on-input t
-            comint-scroll-to-bottom-on-output t
-            comint-scroll-show-maximum-output t
-            comint-completion-autolist t
-            comint-input-ignoredups t
-            comint-completion-addsuffix t
-            comint-promp-read-only nil
-            comint-completion-recexact nil
-            comint-buffer-maximum-size 100000
-            comint-input-ring-size 5000
-            term-default-bg-color "#080808"
-            term-default-fg-color "#00ff00"
-            comint-get-old-input (lambda () "")))
-    :config
-    (progn
-      (add-hook 'term-mode-hook
-            #'(lambda ()
-            (yas-minor-mode -1)  ; interferes w/ Tab
-            ;(autopair-mode -1)   ; interferes w/ Return
-            (setq term-mode-buffer-maximum-size 10000
-              show-trailing-whitespace nil)))
+(use-package ansi-color
+  :commands ansi-color-for-comint-mode-on
+  :init
+  (progn
+    (setq comint-scroll-to-bottom-on-input t
+          comint-scroll-to-bottom-on-output t
+          comint-scroll-show-maximum-output t
+          comint-completion-autolist t
+          comint-input-ignoredups t
+          comint-completion-addsuffix t
+          comint-promp-read-only nil
+          comint-completion-recexact nil
+          comint-buffer-maximum-size 100000
+          comint-input-ring-size 5000
+          term-default-bg-color "#080808"
+          term-default-fg-color "#00ff00"
+          comint-get-old-input (lambda () "")))
+  :config
+  (progn
+    (add-hook 'term-mode-hook
+              #'(lambda ()
+                  (yas-minor-mode -1)  ; interferes w/ Tab
+                                        ;(autopair-mode -1)   ; interferes w/ Return
+                  (setq term-mode-buffer-maximum-size 10000
+                        show-trailing-whitespace nil)))
 
-      (use-package multi-term
-        :ensure multi-term
-        :init
-        (progn
-      (add-hook 'term-mode-hook
-            (lambda ()
-              (yas-minor-mode -1)
-              ;(autopair-mode -1)
-              (setq term-buffer-maximum-size 10000
-                show-trailing-whitespace nil)))
-      (setq multi-term-program "/bin/bash"
-            multi-term-switch-after-close nil
-            term-bind-key-alist '(("C-c C-c" . term-interrupt-subjob)
-                      ("M-p" . previous-line)
-                      ("M-n" . next-line)
-                      ("C-s" . isearch-forward)
-                      ("C-r" . term-send-reverse-search-history)
-                      ("C-m" . term-send-raw)
-                      ("M-f" . term-send-forward-word)
-                      ("M-b" . term-send-backward-word)
-                      ("M-o" . term-send-backspace)
-                      ([backspace] . term-send-backspace)
-                      ("<RETURN>" . term-send-raw)
-                      ([del] . term-send-del)
-                      ("C-d" . term-send-eof)
-                      ([home] . term-send-home)
-                      ("C-a" . term-send-home)
-                      ([end] . term-send-end)
-                      ("C-e" . term-send-end)
-                      ("M-h" . windmove-left)
-                      ("M-j" . windmove-down)
-                      ("M-k" . windmove-up)
-                      ("M-l" . windmove-right)
-                      ("M-x" . execute-extended-command)
-                      ("C-p" . term-send-up)
-                      ("C-n" . term-send-down)
-                      ("M-M" . term-send-forward-kill-word)
-                      ("C-w" . term-send-backward-kill-word)
-                      ("M-r" . term-send-reverse-search-history)
-                      ("M-," . term-send-input)
-                      ("M-." . comint-dynamic-complete)))))))
+    (use-package multi-term
+      :ensure multi-term
+      :init
+      (progn
+        (add-hook 'term-mode-hook
+                  (lambda ()
+                    (yas-minor-mode -1)
+                                        ;(autopair-mode -1)
+                    (setq term-buffer-maximum-size 10000
+                          show-trailing-whitespace nil)))
+        (setq multi-term-program "/bin/bash"
+              multi-term-switch-after-close nil
+              term-bind-key-alist '(("C-c C-c" . term-interrupt-subjob)
+                                    ("M-p" . previous-line)
+                                    ("M-n" . next-line)
+                                    ("C-s" . isearch-forward)
+                                    ("C-r" . term-send-reverse-search-history)
+                                    ("C-m" . term-send-raw)
+                                    ("M-f" . term-send-forward-word)
+                                    ("M-b" . term-send-backward-word)
+                                    ("M-o" . term-send-backspace)
+                                    ([backspace] . term-send-backspace)
+                                    ("<RETURN>" . term-send-raw)
+                                    ([del] . term-send-del)
+                                    ("C-d" . term-send-eof)
+                                    ([home] . term-send-home)
+                                    ("C-a" . term-send-home)
+                                    ([end] . term-send-end)
+                                    ("C-e" . term-send-end)
+                                    ("M-h" . windmove-left)
+                                    ("M-j" . windmove-down)
+                                    ("M-k" . windmove-up)
+                                    ("M-l" . windmove-right)
+                                    ("M-x" . execute-extended-command)
+                                    ("C-p" . term-send-up)
+                                    ("C-n" . term-send-down)
+                                    ("M-M" . term-send-forward-kill-word)
+                                    ("C-w" . term-send-backward-kill-word)
+                                    ("M-r" . term-send-reverse-search-history)
+                                    ("M-," . term-send-input)
+                                    ("M-." . comint-dynamic-complete)))))))
 #+END_SRC
 
 **** Eshell
@@ -596,6 +596,8 @@ https://masteringemacs.org/article/complete-guide-mastering-eshell
 (setq eshell-aliases-file (concat flex-local-dir "eshell/alias")
       ;; kill buffers created by visual programs when program exits.
       eshell-destroy-buffer-when-process-dies t
+      ;; increase the history size from 128
+      eshell-history-size 1000000
       ;; Do an ls after cd
       eshell-list-files-after-cd t
       )
@@ -888,6 +890,20 @@ Ivy UI for Projectile
         counsel-projectile-sort-directories t)
   :config
   '(counsel-projectile-find-file . file-newer-than-file-p))
+#+END_SRC
+
+*** Company
+
+Completion that IMHO is better than auto-complete.
+
+#+BEGIN_SRC emacs-lisp :name company-mode
+(use-package company
+  :hook ((elisp-mode-hook . (lambda ()
+                              (setq-local company-backends (company-capf :with company-dabbrev
+                                                                         :with company-yasnippet
+                                                                         :with company-files)))))
+  :config (setq company-dabbrev-downcase nil)
+  :init (global-company-mode))
 #+END_SRC
 
 *** easy-kill
@@ -1728,6 +1744,15 @@ UTF-8 bullets for org-mode bullets.  You can go crazy with these.
   (setq org-download-screenshot-method "screencapture -i %s"))
 #+end_src
 
+*** eimp.el
+
+Emacs Image Manipulation Package
+
+#+BEGIN_SRC emacs-lisp :name eimp
+(use-package eimp
+  :load-path "emacswikilibs/eimp/")
+#+END_SRC
+
 * Version Control
 
 ** browse-at-remote
@@ -1999,7 +2024,7 @@ Smart Dash Mode is a simple Emacs minor mode which causes the dash key to insert
 identifiers and a dash otherwise. This allows you to type all_lowercase_c_identifiers as comfortably as
 you would lisp-style-identifiers.
 
-#+begin_src emacs-lisp :name samrt-dash
+#+begin_src emacs-lisp :name smart-dash
 (use-package smart-dash
   :config
   (add-hook 'python-mode-hook 'smart-dash-mode))
@@ -2669,12 +2694,6 @@ Dependencies: Node.js & vmd
                                (auto-fill-mode 1)
                                (setq word-wrap 1)))
 #+end_src
-
-* Completion
-** Company
-
-Completion that IMHO is better than auto-complete.
-
 
 * Keybindings
 ** Configuration & Settings
