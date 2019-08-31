@@ -277,6 +277,12 @@ A better representation of the classic Monokai theme from Sublime in Emacs.
 (load-theme 'monokai t)
 #+end_src
 
+**** tao themes
+
+#+BEGIN_SRC emacs-lisp :name tao
+(use-package tao-theme)
+#+END_SRC
+
 ** Highlighting
 
 *** Beacon
@@ -898,6 +904,7 @@ Completion that IMHO is better than auto-complete.
 
 #+BEGIN_SRC emacs-lisp :name company-mode
 (use-package company
+  :commands global-company-mode
   :hook ((elisp-mode-hook . (lambda ()
                               (setq-local company-backends (company-capf :with company-dabbrev
                                                                          :with company-yasnippet
