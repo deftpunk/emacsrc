@@ -274,13 +274,14 @@ A better representation of the classic Monokai theme from Sublime in Emacs.
 (use-package monokai-theme
   :init
   (setq monokai-background "#1b1d1e"))
-(load-theme 'monokai t)
+;; (load-theme 'monokai t)
 #+end_src
 
 **** tao themes
 
 #+BEGIN_SRC emacs-lisp :name tao
 (use-package tao-theme)
+(load-theme 'tao-yang t)
 #+END_SRC
 
 ** Highlighting
