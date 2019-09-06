@@ -280,8 +280,8 @@ A better representation of the classic Monokai theme from Sublime in Emacs.
 **** tao themes
 
 #+BEGIN_SRC emacs-lisp :name tao
-(use-package tao-theme)
-(load-theme 'tao-yang t)
+;(use-package tao-theme)
+;(load-theme 'tao-yang t)
 #+END_SRC
 
 ** Highlighting
@@ -2022,6 +2022,14 @@ Magit for Hg - make Mercurial just a little more palatable - [[https://ananthaku
 
   (use-package helm-flycheck
     :defer t)
+
+(add-to-list 'display-buffer-alist
+             `(,(rx bos "*Flycheck errors*" eos)
+              (display-buffer-reuse-window
+               display-buffer-in-side-window)
+              (side            . bottom)
+              (reusable-frames . visible)
+              (window-height   . 0.33)))
 #+end_src
 
 *** smart-dash
