@@ -2122,16 +2122,26 @@ count_of_ = get_total("");
 
 *** Common Lisp
 
+**** Slime
+
+https://common-lisp.net/project/slime/
+https://common-lisp.net/project/slime/doc/html/
+
 #+begin_src emacs-lisp :name common-lisp
-  (use-package slime
-    :commands slime-setup
-    :init (setq inferior-lisp-program "/usr/local/bin/sbcl")
+(use-package slime
+  :commands slime-setup
+  :init (setq inferior-lisp-program "/usr/local/bin/sbcl")
+  :config
+  (use-package slime-company
+    :after slime
+    :ensure slime-company
     :config
-    (use-package slime-company
-      :after slime
-      :ensure slime-company
-      :config
-      (slime-setup '(slime-fancy slime-company))))
+    (slime-setup '(slime-fancy slime-company))))
+
+(defun deftpunk:slime-repl-mode-hook ()
+  (interactive)
+  (define-key slime-repl-mode-map "\C-k" nil))
+(add-hook 'slime-repl-mode-hook 'deftpunk:slime-repl-mode-hook)
 #+end_src
 
 *** Emacs Lisp
