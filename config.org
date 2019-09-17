@@ -24,13 +24,6 @@ thanks to Henrik - henrik@lissner.net
       ;; Use a shared clipboard
       select-enable-clipboard t
       select-enable-primary t)
-
-(after! evil
-  ;; stop copying each visual state move to the clipboard:
-  ;; https://bitbucket.org/lyro/evil/issue/336/osx-visual-state-copies-the-region-on
-  ;; Most of this code grokked from:
-  ;; http://stackoverflow.com/questions/15873346/elisp-rename-macro
-  (advice-add #'evil-visual-update-x-selection :override #'ignore))
 #+end_src
 
 ** MacOSX
@@ -389,11 +382,6 @@ highlighted until you press the next key.
   :defer t
   :config
   (volatile-highlights-mode 1))
-
-;; Support evil-mode
-(vhl/define-extension 'evil 'evil-paste-after 'evil-paste-before
-                      'evil-paste-pop 'evil-move)
-(vhl/install-extension 'evil)
 
 ;; Supporting undo-tree.
 (vhl/define-extension 'undo-tree 'undo-tree-yank 'undo-tree-move)
@@ -1232,10 +1220,6 @@ in the [[https://github.com/Fuco1/smartparens/wiki][wiki]] and a [[https://www.r
         sp-show-pair-delay 0
         sp-max-pair-length 3)
 
-  ;; disable smartparens in evil-mode's replace state (they conflict)
-  (add-hook 'evil-replace-state-entry-hook #'turn-off-smartparens-mode)
-  (add-hook 'evil-replace-state-exit-hook  #'turn-on-smartparens-mode)
-
   (sp-local-pair '(xml-mode nxml-mode php-mode) "<!--" "-->"
                  :post-handlers '(("| " "SPC"))))
 #+END_SRC
@@ -1284,13 +1268,6 @@ Most of this is trying to make Tramp work faster.
 
 #+BEGIN_SRC emacs-lisp :name treemacs
 (use-package treemacs)
-#+END_SRC
-
-**** treemacs-evil
-
-#+BEGIN_SRC emacs-lisp :name treemacs-evil
-(use-package treemacs-evil
-  :after treemacs evil)
 #+END_SRC
 
 **** treemacs-icons-dired
@@ -1412,8 +1389,6 @@ This is a package to perform text folding like in Vim. It has the following feat
 
 [[https://github.com/mhayashi1120/Emacs-wgrep][wgrep]] - Allows you to edit a grep buffer and apply those changes to the file buffer.
 
-# TODO: Is this handled properly by =evil-collections?=
-
 Usage:
 You can edit the text in the *grep* buffer after typing `C-c C-p`.
 After that the changed text is highlighted.
@@ -1457,79 +1432,6 @@ quickly select the exact char you want to zap to.
 #+begin_src emacs-lisp :name zzz-to-char
 (use-package zzz-to-char
   :init (setq zzz-to-char-reach 120))
-#+end_src
-
-* Evil
-
-There are a couple of in spacemacs & doom-emacs
-
-** Evil Mode settings
-
-Basic settings and configuration for evil-mode.  Keybindings and mappings are
-done in the =Keybindings= section at the end of this file.
-
-#+BEGIN_SRC emacs-lisp :name evil-mode
-(use-package evil
-  :commands evil-mode
-  :init
-  (setq evil-default-state      'normal
-        evil-want-C-u-scroll    t
-        evil-want-C-w-delete    t
-        evil-esc-delay          0
-        evil-want-Y-yank-to-eol t
-        evil-shift-width        4
-        evil-want-integration   t
-        evil-want-keybinding    nil  ; this is for evil-collection
-        evil-want-C-i-jump      t)
-  (setq-default evil-symbol-word-search 1)
-
-  (evil-mode 1)
-  :config
-
-  ;; https://emacs.stackexchange.com/questions/14940/emacs-doesnt-paste-in-evils-visual-mode-with-every-os-clipboard/15054#15054
-  ;; Imagine the following scenario.  One wants to paste some previously copied
-  ;; (from application other than Emacs) text to the system's clipboard in place
-  ;; of some contiguous block of text in a buffer.  Hence, one switches to
-  ;; `evil-visual-state' and selects the corresponding block of text to be
-  ;; replaced.  However, one either pastes some (previously killed) text from
-  ;; `kill-ring' or (if `kill-ring' is empty) receives the error: "Kill ring is
-  ;; empty"; see `evil-visual-paste' and `current-kill' respectively.  The
-  ;; reason why `current-kill' does not return the desired text from the
-  ;; system's clipboard is because `evil-visual-update-x-selection' is being run
-  ;; by `evil-visual-pre-command' before `evil-visual-paste'.  That is
-  ;; `x-select-text' is being run (by `evil-visual-update-x-selection') before
-  ;; `evil-visual-paste'.  As a result, `x-select-text' copies the selected
-  ;; block of text to the system's clipboard as long as
-  ;; `x-select-enable-clipboard' is non-nil (and in this scenario we assume that
-  ;; it is).  According to the documentation of `interprogram-paste-function',
-  ;; it should not return the text from the system's clipboard if it was last
-  ;; provided by Emacs (e.g. with `x-select-text').  Thus, one ends up with the
-  ;; problem described above.  To solve it, simply make
-  ;; `evil-visual-update-x-selection' do nothing:
-  (fset 'evil-visual-update-x-selection 'ignore)
-
-  ;; More Esc quits
-  (define-key evil-normal-state-map [escape] 'keyboard-quit)
-  (define-key evil-visual-state-map [escape] 'keyboard-quit)
-  (define-key evil-insert-state-map [escape] 'evil-normal-state)
-  (global-set-key [escape] 'evil-exit-emacs-state)
-  )
-#+END_SRC
-
-** Evil Collection
-
-https://github.com/emacs-evil/evil-collection
-
-A community derived collection of evil-mode bindings for modes/parts of Emacs that evil does not cover by
-default.
-
-#+BEGIN_SRC emacs-lisp :name evil-collection
-(use-package evil-collection
-  :after evil
-  :init
-  (setq evil-collection-company-use-tng nil)
-  :config
-  (evil-collection-init))
 #+END_SRC
 
 ** Evil Commentary
@@ -1545,74 +1447,6 @@ default.
   (use-package evil-commentary
     :config
     (evil-commentary-mode))
-#+END_SRC
-
-** Evil Magit
-
-[[https://github.com/redguardtoo/evil-nerd-commenter][evil-magit]] - Help Evil & Magit play well together
-
-#+BEGIN_SRC emacs-lisp :name evil-magit
-(use-package evil-magit)
-#+END_SRC
-
-** Evil markdown mode
-
-https://github.com/Somelauw/evil-markdown
-
-Integrates evil and markdown-mode - some features:
-
-- Bindings for navigation between heading
-- Bindings for promotion / demotion of heading
-- markdown-element text objects
-
-#+BEGIN_SRC emacs-lisp :name evil-markdown
-(use-package evil-markdown
-  :load-path "repos-not-in-melpa/evil-markdown/"
-  :after evil markdown-mode)
-#+END_SRC
-
-** Evil Numbers
-
-http://github.com/cofi/evil-numbers
-Increment/Decrement numbers in normal & visual modes.
-
-#+BEGIN_SRC emacs-lisp :name evil-numbers
-  (use-package evil-numbers
-    :defer t
-    :config
-    (define-key evil-normal-state-map (kbd "C-c +") 'evil-numbers/inc-at-pt)
-    (define-key evil-visual-state-map (kbd "C-c +") 'evil-numbers/inc-at-pt)
-
-    (define-key evil-normal-state-map (kbd "C-c -") 'evil-numbers/dec-at-pt)
-    (define-key evil-visual-state-map (kbd "C-c -") 'evil-numbers/dec-at-pt))
-#+END_SRC
-
-** Evil Org
-
-https://github.com/Somelauw/evil-org-mode
-
-The integration of Evil and Org mode - a more complicated config example:
-https://github.com/Somelauw/evil-org-mode/blob/master/doc/example_config.el
-
-#+BEGIN_SRC emacs-lisp :name evil-org-mode
-(use-package evil-org
-  :after org
-  :config
-  (add-hook 'org-mode-hook 'evil-org-mode)
-  (add-hook 'evil-org-mode-hook
-            (lambda ()
-              (evil-org-set-key-theme))))
-#+END_SRC
-
-** Evil Surround
-
-Package emulates surround.vim by Tpope.
-https://github.com/emacs-evil/evil-surround
-
-#+BEGIN_SRC emacs-lisp :name evil-surround
-(use-package evil-surround
-  :config
-  (global-evil-surround-mode 1))
 #+END_SRC
 
 * Org mode
@@ -1790,13 +1624,7 @@ from Emacs. It supports various kind of emacs buffer, like:
   :config
   (setq  magit-log-arguments '("--graph" "--decorate" "--color")
          magit-save-repository-buffers 'dontask
-         magit-revert-buffers 'silent)
-  (set! :evil-state 'magit-status-mode 'emacs)
-  (after! evil
-    ;; Switch to emacs state only while in `magit-blame-mode', then back when
-    ;; its done (since it's a minor-mode).
-    (add-hook! 'magit-blame-mode-hook
-      (evil-local-mode (if magit-blame-mode -1 +1)))))
+         magit-revert-buffers 'silent))
 #+END_SRC
 
 ** Magit Todos
@@ -1913,10 +1741,7 @@ Show TODOs in Magit status buffer for each file.
   ;; `header-line-format', which has better visibility.
   (setq git-timemachine-show-minibuffer-details nil)
   (add-hook 'git-timemachine-mode-hook #'+vcs|init-header-line)
-  (advice-add #'git-timemachine-show-revision :after #'+vcs*update-header-line)
-
-  ;; Force evil to rehash keybindings for the current state
-  (add-hook 'git-timemachine-mode-hook #'evil-force-normal-state))
+  (advice-add #'git-timemachine-show-revision :after #'+vcs*update-header-line))
 
 ;; From redguardtoo - http://blog.binchen.org/posts/new-git-timemachine-ui-based-on-ivy-mode.html
 (defun my-git-timemachine-show-selected-revision ()
@@ -2722,14 +2547,6 @@ that evil-collection and others don't override bindings that I want.
 (use-package general
   :commands (general-create-definer general-define-key general-override-mode)
   :config
-  (setq general-override-states '(insert
-                                  emacs
-                                  hybrid
-                                  normal
-                                  visual
-                                  motion
-                                  operator
-                                  replace))
   (general-override-mode))
 #+END_SRC
 
@@ -2778,28 +2595,22 @@ Keychord has a couple of drawbacks
      is most and not all, because many are probably not interesting to most
      users.
    - =which-key-show-major-mode= will show the currently active major-mode
-     bindings. It's similar to =C-h m= but in a which-key format. It is also
-     aware of evil commands defined using =evil-define-key=.
+     bindings. It's similar to =C-h m= but in a which-key format.
    - =which-key-show-next-page= is the command used for paging.
    - =which-key-undo= can be used to undo the last keypress when in the middle
      of a key sequence.
 
 #+BEGIN_SRC emacs-lisp :name which-key
     (use-package which-key
-      :after evil
       :commands which-key-mode
       :init
-      (setq which-key-allow-evil-operators t
-            which-key-show-operator-state-maps t))
+      (setq which-key-show-operator-state-maps t))
 #+END_SRC
 
 ** Escape
 
 Some code to use =Escape= to quit more things. Between Evil and this we should
 have most instances covered.
-
-You would think that [[https://github.com/syl20bnr/evil-escape][evil-escape]] would be a possibility but it uses =fd= as a keychord
-to <escape>.  Not really what I was wanting to do.
 
 #+begin_src emacs-lisp :name Escape keys
 (define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
@@ -3077,11 +2888,7 @@ Resize windows dynamically
   "Like evil-scroll-line-to-top but without the COUNT that causes an error."
   (interactive)
   (helm-org-in-buffer-headings)
-  (evil-save-column
-    (let ((line (line-number-at-pos (point))))
-      (goto-char (point-min))
-      (forward-line (1- line)))
-    (recenter 0)))
+    (recenter 0))
 
 (defhydra hydra-orgmode-mode (:color blue :hint nil)
   "
@@ -3231,12 +3038,12 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
 
 #+BEGIN_SRC emacs-lisp :name evil-mappings
 
-     ;;;
-     ;;; Evil maps - not state maps
-     ;;;
+;;;
+;;; Mode maps.
+;;;
 
+;; help-mode
 (general-define-key
- :states 'normal
  :keymaps 'help-mode-map
  "o" 'ace-link-help        ; was getting overwritten by evil-collection-help.el
  "SPC" 'nil                ; don't want anything messing with our leader key
@@ -3245,23 +3052,24 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
 ;; Add some bindings to the window "C-w <something" map.
 ;; Thu Nov 22 22:54:18 2018 - we have to bind evil-window-map this way, as
 ;; opposed to using general.el
-(define-key evil-window-map "b" 'balance-windows)          ; replaces evil-window-bottom-right.
-(define-key evil-window-map "d" 'ace-delete-window)        ; was unused
-(define-key evil-window-map "e" 'hydra-window-sizing/body) ; was unused
-(define-key evil-window-map "f" 'make-frame)               ; was unused
-(define-key evil-window-map "i" 'ace-maximize-window)      ; was unused
-(define-key evil-window-map "m" 'doom/toggle-fullscreen)   ; was unused
-(define-key evil-window-map "r" 'winner-redo)              ; replaces evil-window-rotate-downwards
-(define-key evil-window-map "u" 'winner-undo)              ; was unused
-(define-key evil-window-map "-" 'ace-window)               ; was unused
-(define-key evil-window-map "\\" '(lambda ()
-                                    (interactive)
-                                    (split-window-right)
-                                    (windmove-right)))               ; was unused
-(define-key evil-window-map "/" '(lambda ()
-                                   (interactive)
-                                   (split-window-below)
-                                   (windmove-down)))               ; was unused
+;; (define-key evil-window-map "b" 'balance-windows)          ; replaces evil-window-bottom-right.
+;; (define-key evil-window-map "d" 'ace-delete-window)        ; was unused
+;; (define-key evil-window-map "e" 'hydra-window-sizing/body) ; was unused
+;; (define-key evil-window-map "f" 'make-frame)               ; was unused
+;; (define-key evil-window-map "i" 'ace-maximize-window)      ; was unused
+;; (define-key evil-window-map "m" 'doom/toggle-fullscreen)   ; was unused
+;; (define-key evil-window-map "r" 'winner-redo)              ; replaces evil-window-rotate-downwards
+;; (define-key evil-window-map "u" 'winner-undo)              ; was unused
+;; (define-key evil-window-map "-" 'ace-window)               ; was unused
+;; (define-key evil-window-map "\\" '(lambda ()
+;;                                     (interactive)
+;;                                     (split-window-right)
+;;                                     (windmove-right)))               ; was unused
+;; (define-key evil-window-map "/" '(lambda ()
+;;                                    (interactive)
+;;                                    (split-window-below)
+;;                                    (windmove-down)))               ; was unused
+;; 
 
 ;;;
 ;;; Evil Insert state map
@@ -3324,54 +3132,43 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
                                               (evil-normal-state)
                                               (evil-visual-restore)))
 
-     ;;;
-     ;;; Leader keys
-     ;;;
+;;;
+;;; Leader key equivalent.
+;;;
 (general-create-definer my-leader-def
-  ;; :prefix my-leader
-  :prefix "SPC")
+  :prefix "C-SPC")
 
-(my-leader-def 'normal 'override
-  "c" 'hydra-cee/body
-  "e" 'deftpunk/hydra-major-mode-hack
-  "f" 'hydra-files-projectile/body
-  "g" 'hydra-version-control/body
-  "h" 'help
-  "i" 'helm-mini
-  "k" 'flex//kill-current-buffer
-  "p" 'counsel-projectile-switch-project
-  "q" 'save-buffers-kill-terminal
-  "r" 'counsel-rg
-  "s" 'swiper
-  "w" 'save-buffer
-  "y" 'helm-show-kill-ring
- )
+;; (my-leader-def 'normal 'override
+;;   "c" 'hydra-cee/body
+;;   "e" 'deftpunk/hydra-major-mode-hack
+;;   "f" 'hydra-files-projectile/body
+;;   "g" 'hydra-version-control/body
+;;   "h" 'help
+;;   "i" 'helm-mini
+;;   "k" 'flex//kill-current-buffer
+;;   "p" 'counsel-projectile-switch-project
+;;   "q" 'save-buffers-kill-terminal
+;;   "r" 'counsel-rg
+;;   "s" 'swiper
+;;   "w" 'save-buffer
+;;   "y" 'helm-show-kill-ring
+;;  )
 
-    ;;;
-    ;;; Local Leader
-    ;;;
+;;;
+;;; Local Leader equivalent.
+;;;
+(global-unset-key (kbd "C-,"))
 (general-create-definer my-local-leader-def
-  :prefix "SPC SPC")
-(my-local-leader-def 'normal 'override
-  "l" 'avy-goto-char-in-line
-  "s" 'avy-goto-char-2)
+  :prefix "C-,")
 
-     ;;;
-     ;;; 'jk' binding
-     ;;;
+;;;
+;;; 'jk' binding
+;;;
 (key-chord-define-global "jk" 'helm-M-x)
 ;; (key-chord-define-global "jk" 'hydra-jk/body)
 
 ;; Moved to here so that all of the bindings are picked up.
 (which-key-mode t)
-
-;; Change some of the org-mode mappings that interfere with my evil mode window bindings.
-(general-define-key
- :states 'normal
- :keymaps 'org-mode-map
- "C-j" 'nil
- "C-k" 'nil
- )
 #+END_SRC
 
 * Notes
