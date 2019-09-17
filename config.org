@@ -952,8 +952,6 @@ Completion that IMHO is better than auto-complete.
   (after! helm-mode
     (add-to-list 'helm-completing-read-handlers-alist '(find-file-at-point . nil)))
   )
-
-
 #+END_SRC
 
 **** [[https://github.com/dash-docs-el/helm-dash][helm-dash]]
@@ -1432,21 +1430,6 @@ quickly select the exact char you want to zap to.
 #+begin_src emacs-lisp :name zzz-to-char
 (use-package zzz-to-char
   :init (setq zzz-to-char-reach 120))
-#+END_SRC
-
-** Evil Commentary
-
-[[https://github.com/linktohack/evil-commentary][evil-commentary]] - A port of [[https://github.com/tpope/vim-commentary][vim-commentary]] by tpope
-
-- =gcc= comments out a line (takes a count)
-- =gc= comments out the target of a motion,
-  e.g. =gcap= to comment out a paragraph (normal state)
-  and =gc= to comment out the selection (visual state).
-
-#+BEGIN_SRC emacs-lisp :name evil-commentary
-  (use-package evil-commentary
-    :config
-    (evil-commentary-mode))
 #+END_SRC
 
 * Org mode
@@ -3096,9 +3079,9 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
 ;  "]b" 'previous-buffer
 ;  "[b" 'next-buffer)
 
-# ;; Some easy window moving keys
-# ;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order toxtxt
-# ;; get this to work(?)
+;; Some easy window moving keys
+;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order toxtxt
+;; get this to work(?)
 ;;(global-unset-key  (kbd "C-j"))
 ;;(global-unset-key  (kbd "C-k"))
 ;;(global-unset-key  (kbd "C-l"))
