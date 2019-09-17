@@ -3069,11 +3069,6 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
 ;;                                    (interactive)
 ;;                                    (split-window-below)
 ;;                                    (windmove-down)))               ; was unused
-;; 
-
-;;;
-;;; Evil Insert state map
-;;;
 
 ;; Make some changes that are more inline with "readline" applications
 ;; everywhere else.
@@ -3087,54 +3082,52 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
  "C-l" 'recenter-top-bottom         ; I find this handy in insert mode
  )
 
-     ;;;
-     ;;; Evil Normal state map
-     ;;;
-(general-define-key
- :states 'normal
- ;; run the macro in the q register
- "Q" "@q"
- "U" 'undo-tree-redo
- "Y" "yg_"
- "gd" 'counsel-etags-find-tag-at-point
- )
+; (general-define-key
+;  :states 'normal
+;  ;; run the macro in the q register
+;  "Q" "@q"
+;  "U" 'undo-tree-redo
+;  "Y" "yg_"
+;  "gd" 'counsel-etags-find-tag-at-point
+;  )
 
-(general-define-key
- :states 'normal
- "]b" 'previous-buffer
- "[b" 'next-buffer)
+; (general-define-key
+;  :states 'normal
+;  "]b" 'previous-buffer
+;  "[b" 'next-buffer)
 
-;; Some easy window moving keys
-;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order toxtxt
-;; get this to work(?)
-(global-unset-key  (kbd "C-j"))
-(global-unset-key  (kbd "C-k"))
-(global-unset-key  (kbd "C-l"))
-;; (global-unset-key (kbd "C-h"))
-(define-key evil-normal-state-map (kbd "C-j") 'windmove-down)
-(define-key evil-normal-state-map (kbd "C-k") 'windmove-up)
-(define-key evil-normal-state-map (kbd "C-h") 'windmove-left)
-(define-key evil-normal-state-map (kbd "C-l") 'windmove-right)
+# ;; Some easy window moving keys
+# ;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order toxtxt
+# ;; get this to work(?)
+;;(global-unset-key  (kbd "C-j"))
+;;(global-unset-key  (kbd "C-k"))
+;;(global-unset-key  (kbd "C-l"))
+;;;; (global-unset-key (kbd "C-h"))
+;;(define-key evil-normal-state-map (kbd "C-j") 'windmove-down)
+;;(define-key evil-normal-state-map (kbd "C-k") 'windmove-up)
+;;(define-key evil-normal-state-map (kbd "C-h") 'windmove-left)
+;;(define-key evil-normal-state-map (kbd "C-l") 'windmove-right)
 
-     ;;;
-     ;;; Evil visual state map
-     ;;;
-
-;; Indent visually.
-(define-key evil-visual-state-map (kbd "<") (lambda ()
-                                              (interactive)
-                                              (evil-shift-left (region-beginning) (region-end))
-                                              (evil-normal-state)
-                                              (evil-visual-restore)))
-(define-key evil-visual-state-map (kbd ">") (lambda ()
-                                              (interactive)
-                                              (evil-shift-right (region-beginning) (region-end))
-                                              (evil-normal-state)
-                                              (evil-visual-restore)))
+;; ;; Indent visually.
+;; (define-key evil-visual-state-map (kbd "<") (lambda ()
+;;                                               (interactive)
+;;                                               (evil-shift-left (region-beginning) (region-end))
+;;                                               (evil-normal-state)
+;;                                               (evil-visual-restore)))
+;; (define-key evil-visual-state-map (kbd ">") (lambda ()
+;;                                               (interactive)
+;;                                               (evil-shift-right (region-beginning) (region-end))
+;;                                               (evil-normal-state)
+;;                                               (evil-visual-restore)))
 
 ;;;
 ;;; Leader key equivalent.
 ;;;
+(global-unset-key (kbd "C-SPC"))
+(global-unset-key (kbd "C-v"))
+(general-define-key
+  "C-v" 'set-mark-command)
+
 (general-create-definer my-leader-def
   :prefix "C-SPC")
 
