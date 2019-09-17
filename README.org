@@ -23,8 +23,6 @@ reviewing [[https://github.com/hlissner/doom-emacs][doom-emacs]] and other confi
 
 Some brief highlights:
 
-- lots & lots of [[https://github.com/emacs-evil/evil][Evil]]; it keeps my hands pain-free.
-
 - I don't make use of custom.el, I prefer to be explicit about the things that I am changing.
 
 - All of the extraneous Emacs files/dirs are kept under =.local/= & =.emacs.d/etc/=
