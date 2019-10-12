@@ -2132,7 +2132,9 @@ count_of_ = get_total("");
 ** Programming Languages
 *** Clojure
 
-**** [[https://cider.mx/][Cider]]
+**** Cider
+
+[[https://cider.mx/][CIDER]] is the Clojure(Script) Interactive Development Environment that Rocks!
 
 #+BEGIN_SRC emacs-lisp :name cider
 (use-package cider)
