@@ -2145,7 +2145,43 @@ count_of_ = get_total("");
 [[https://github.com/clojure-emacs/clojure-mode][clojure-mode]] - Emacs support for the Clojure(Script) programming language
 
 #+BEGIN_SRC emacs-lisp :name clojure-mode
-(use-package clojure-mode)
+(use-package clojure-mode
+  :init (setq clojure-docstring-fill-prefix-width 0)
+  )
+#+END_SRC
+
+**** clojure mode extra font  locking
+
+#+BEGIN_SRC emacs-lisp :name clojure-mode-extra-font-locking
+(use-package clojure-mode-extra-font-locking)
+#+END_SRC
+
+**** clj-refactor
+
+[[https://github.com/clojure-emacs/clj-refactor.el][clj-refactor]] - A collection of Clojure refactoring functions for Emacs
+
+#+BEGIN_SRC emacs-lisp :name clj-refactor
+(use-package clj-refactor
+  :commands clj-refactor-mode)
+#+END_SRC
+
+**** clojure snippets
+
+[[https://github.com/mpenet/clojure-snippets][clojure-snippets]] Some snippets specific for Clojure
+
+#+BEGIN_SRC emacs-lisp :name clojure-snippets
+(use-package clojure-snippets)
+#+END_SRC
+
+**** Clojure mode hooks & functions
+
+#+BEGIN_SRC emacs-lisp :name clojure-hooks
+(defun deftmacs::clojure-mode-hook ()
+  "Setup for clojure mode"
+  (clj-refactor-mode 1)
+  (yas-minor-mode 1))
+
+(add-hook 'clojure-mode-hook #'deftmacs::clojure-mode-hook)
 #+END_SRC
 
 *** Common Lisp
