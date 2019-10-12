@@ -252,7 +252,7 @@ https://github.com/hlissner/emacs-doom-themes
 
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
-;; (load-theme 'doom-molokai t)
+(load-theme 'doom-molokai t)
 #+end_src
 
 **** kaolin themes
@@ -282,6 +282,14 @@ A better representation of the classic Monokai theme from Sublime in Emacs.
 #+BEGIN_SRC emacs-lisp :name tao
 ;(use-package tao-theme)
 ;(load-theme 'tao-yang t)
+#+END_SRC
+
+**** dark monokai
+
+#+BEGIN_SRC emacs-lisp :name darkokai
+(use-package darkokai-theme
+  :init (setq darkokai-mode-line-padding 1))
+;;(load-theme 'darkokai t)
 #+END_SRC
 
 ** Highlighting
@@ -2239,101 +2247,6 @@ REPL for elisp
                                          (eldoc-mode 1))))
 #+end_src
 
-*** Golang
-
-Support for golang.
-
-Be sure to install the tools support for Go first:
-
-go get -u github.com/nsf/gocode
-go get -u github.com/rogpeppe/godef
-go get -u golang.org/x/tools/cmd/goimports
-go get -u github.com/jstemmer/gotags
-go get github.com/matryer/moq
-
-#+BEGIN_SRC emacs-lisp :name go-mode
-(use-package go-mode
-  :config
-  (add-hook 'before-save-hook #'gofmt-before-save)
-  (add-hook 'go-mode-hook 'flycheck-mode)
-  (add-hook 'go-mode-hook 'dumb-jump-mode)
-  (setq go-packages-function 'go-packages-go-list))
-#+END_SRC
-
-**** Enable =company-go=
-#+BEGIN_SRC emacs-lisp
-  (use-package company-go
-    :config
-    (add-hook 'go-mode-hook 'company-mode)
-    (add-to-list 'company-backends 'company-go))
-#+END_SRC
-
-**** Enable =go-stackstracer=
-#+BEGIN_SRC emacs-lisp
-  (use-package go-stacktracer)
-#+END_SRC
-
-**** Enable =go-add-tags=
-#+BEGIN_SRC emacs-lisp
-  (use-package go-add-tags)
-#+END_SRC
-
-**** Enable =go-eldoc=
-#+BEGIN_SRC emacs-lisp
-  (use-package go-eldoc
-    :diminish eldoc-mode
-    :config (add-hook 'go-mode-hook 'go-eldoc-setup))
-#+END_SRC
-
-**** Enable =go-gopath=
-#+BEGIN_SRC emacs-lisp
-  (use-package go-gopath)
-#+END_SRC
-
-**** Enable =go-direx=
-#+BEGIN_SRC emacs-lisp
-  (use-package go-direx)
-#+END_SRC
-
-**** Enable =gotest=
-#+BEGIN_SRC emacs-lisp
-  (use-package gotest)
-#+END_SRC
-
-**** Integrate =moq=
-Quick custom function to integrate with the moq tool to generate quick mocks
-#+BEGIN_SRC emacs-lisp
-  (defun moq ()
-    (interactive)
-    (let ((interface (word-at-point))
-          (test-file (concat (downcase (word-at-point)) "_test.go")))
-      (shell-command
-       (concat "moq -out " test-file " . " interface))
-      (find-file test-file)))
-#+END_SRC
-
-**** See test coverage faster
-
-Simple function to see the test coverage of the current open buffer
-
-#+BEGIN_SRC emacs-lisp
-    (defun go-coverage-here ()
-      (interactive)
-      (shell-command "go test . -coverprofile=cover.out")
-      (go-coverage "cover.out")
-      (rotate:even-horizontal))
-#+END_SRC
-
-*** Javascript
-
-Because work.
-
-#+begin_src emacs-lisp :name js2-mode
-(use-package js2-mode
-  :config
-  (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode)))
-#+end_src
-
 *** Python
 
 **** Initial Configuration
@@ -2462,46 +2375,7 @@ I use pyvenv to manage miniconda environments.
     (pyvenv-tracking-mode 1))
 #+end_src
 
-*** Rust
-
-#+BEGIN_SRC emacs-lisp :name Rust
-  (use-package rust-mode
-    :mode "\\.rs'")
-#+END_SRC
-
-*** Shell
-
-#+begin_src emacs-lisp :name shell scripting
-  (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
-#+end_src
-
 * Miscellaneous file type support
-*** Ansible
-
-    [[https://github.com/k1LoW/emacs-ansible][emacs-ansible]] Minor mode for dealing with Ansible files.  Requires yasnippet.
-
-#+BEGIN_SRC emacs-lisp :name ansible
-  (use-package ansible)
-  (use-package ansible-doc)
-  (use-package company-ansible
-    :config (add-to-list 'company-backends 'company-ansible))
-#+END_SRC
-
-*** csv
-
-Comma (or other delimiter) separated files.
-
-#+begin_src emacs-lisp :name csv
-(use-package csv-nav
-  :load-path "emacswikilibs/csv-nav/"
-  :defer t
-  :mode ("\\.[Cc][Ss][Vv]\\'" . csv-mode)
-  :init
-  (progn
-    (use-package csv-mode)
-    (setq csv-separators '("," ";" "|" " "))))
-#+end_src
-
 *** Groovy / Jenkinsfile
 
 [[https://github.com/Groovy-Emacs-Modes/groovy-emacs-modes][Groovy / Jenkinsfile]] support.
@@ -3288,7 +3162,7 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
 
 (defun deftpunk:split-horizontally-recenter ()
   (interactive)
-  (deftpunk:split-and-recenter "horizontal")
+  (deftpunk:split-and-recenter "horizontal"))
 
 ;; Add some bindings to the window "C-w <something" map.
 ;; Thu Nov 22 22:54:18 2018 - we have to bind evil-window-map this way, as
