@@ -2408,9 +2408,9 @@ The interactive SQL mode is based on ComintMode. The following interpreters are 
                   (toggle-truncate-lines t)))
     #+end_src
 
-*** [[https://github.com/m00natic/vlfi][VLF]]
+*** VLF
 
-View Large Files in Emacs
+[[https://github.com/m00natic/vlfi][View Large Files]] in Emacs
 
 #+BEGIN_SRC emacs-lisp :name vlfi
 (use-package vlf)
@@ -2571,7 +2571,6 @@ commands are available:
     (smartparens-mode -1))
   (add-hook 'markdown-mode #'flex-emacs:mardown))
 #+end_src
-
 
 *** Pandoc
 
