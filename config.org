@@ -2140,6 +2140,14 @@ count_of_ = get_total("");
 (use-package cider)
 #+END_SRC
 
+**** Clojure mode
+
+[[https://github.com/clojure-emacs/clojure-mode][clojure-mode]] - Emacs support for the Clojure(Script) programming language
+
+#+BEGIN_SRC emacs-lisp :name clojure-mode
+(use-package clojure-mode)
+#+END_SRC
+
 *** Common Lisp
 
 **** Slime
