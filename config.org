@@ -2182,6 +2182,9 @@ count_of_ = get_total("");
   (yas-minor-mode 1))
 
 (add-hook 'clojure-mode-hook #'deftmacs::clojure-mode-hook)
+(add-hook 'clojure-mode-hook #'subword-mode)
+(add-hook 'clojure-mode-hook #'smartparens-strict-mode)
+
 #+END_SRC
 
 *** Common Lisp
