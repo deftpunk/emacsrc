@@ -2137,7 +2137,9 @@ count_of_ = get_total("");
 [[https://cider.mx/][CIDER]] is the Clojure(Script) Interactive Development Environment that Rocks!
 
 #+BEGIN_SRC emacs-lisp :name cider
-(use-package cider)
+(use-package cider
+  :config
+  (setq cider-test-show-report-on-success t))
 #+END_SRC
 
 **** Clojure mode
