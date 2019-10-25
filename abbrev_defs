@@ -7,9 +7,9 @@
 
 (define-abbrev-table 'ansible-doc-module-mode-abbrev-table '())
 
-(define-abbrev-table 'awk-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'array-mode-abbrev-table '())
+
+(define-abbrev-table 'awk-mode-abbrev-table '())
 
 (define-abbrev-table 'bmkp-edit-bookmark-record-mode-abbrev-table '())
 
@@ -23,13 +23,9 @@
 
 (define-abbrev-table 'bookmark-show-annotation-mode-abbrev-table '())
 
-(define-abbrev-table 'c++-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'c++-mode-abbrev-table '())
 
-(define-abbrev-table 'c-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'c-mode-abbrev-table '())
 
 (define-abbrev-table 'calendar-mode-abbrev-table '())
 
@@ -55,7 +51,12 @@
 
 (define-abbrev-table 'cider-test-report-mode-abbrev-table '())
 
-(define-abbrev-table 'clojure-mode-abbrev-table '())
+(define-abbrev-table 'cljr--change-signature-mode-abbrev-table '())
+
+(define-abbrev-table 'clojure-mode-abbrev-table
+  '(
+    ("superceded" "superseded" nil 0)
+   ))
 
 (define-abbrev-table 'clojurec-mode-abbrev-table '())
 
@@ -66,6 +67,8 @@
 (define-abbrev-table 'completion-list-mode-abbrev-table '())
 
 (define-abbrev-table 'csv-mode-abbrev-table '())
+
+(define-abbrev-table 'debugger-mode-abbrev-table '())
 
 (define-abbrev-table 'diff-mode-abbrev-table '())
 
@@ -170,6 +173,7 @@
     ("iwth" "with" nil 1)
     ("jumplcoud" "jumpcloud" nil 2)
     ("levelign" "leveling" nil 1)
+    ("liek" "like" nil 1)
     ("loook" "Look" nil 1)
     ("lsit" "list" nil 1)
     ("ltos" "lots" nil 1)
@@ -218,6 +222,7 @@
     ("slef" "self" nil 6)
     ("sliem" "slime" nil 1)
     ("soem" "some" nil 1)
+    ("soemthing" "something" nil 1)
     ("soemtimes" "sometimes" nil 1)
     ("somethign" "something" nil 1)
     ("somthing" "something" nil 1)
@@ -284,9 +289,7 @@
 
 (define-abbrev-table 'ivy-occur-mode-abbrev-table '())
 
-(define-abbrev-table 'java-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'java-mode-abbrev-table '())
 
 (define-abbrev-table 'jinja2-mode-abbrev-table '())
 
@@ -350,9 +353,7 @@
 
 (define-abbrev-table 'nrepl-messages-mode-abbrev-table '())
 
-(define-abbrev-table 'objc-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'objc-mode-abbrev-table '())
 
 (define-abbrev-table 'occur-edit-mode-abbrev-table '())
 
@@ -373,9 +374,7 @@
 
 (define-abbrev-table 'paradox-menu-mode-abbrev-table '())
 
-(define-abbrev-table 'pike-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'pike-mode-abbrev-table '())
 
 (define-abbrev-table 'process-menu-mode-abbrev-table '())
 
@@ -434,4 +433,6 @@
 (define-abbrev-table 'vterm-mode-abbrev-table '())
 
 (define-abbrev-table 'xref--xref-buffer-mode-abbrev-table '())
+
+(define-abbrev-table 'yaml-mode-abbrev-table '())
 
