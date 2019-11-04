@@ -203,9 +203,10 @@ Configure some builtin modes related to UI
 
 Set up the modeline and themes.
 
-*** [[https://github.com/domtronn/all-the-icons.el][all the icons]]
+*** all the icons
 
-Make all of the icons look pretty. A utility package to collect various Icon Fonts and propertize them within Emacs.
+[[https://github.com/domtronn/all-the-icons.el][all-the-icons]] - Make all of the icons look pretty. A utility package to collect various Icon Fonts and
+propertize them within Emacs.
 
 #+begin_src emacs-lisp :name all_the_icons
 (use-package all-the-icons)
@@ -226,8 +227,14 @@ A really nice and performant modeline broken out of [[https://github.com/hlissne
 
 #+begin_src emacs-lisp :name doom_modeline
 (use-package doom-modeline
+  :commands doom-modeline-mode
   :init
-  (setq doom-modeline-minor-modes t)
+  (setq doom-modeline-minor-modes t
+        doom-modeline-buffer-file-name-style 'truncate-upto-project
+        doom-modeline-major-mode-color-icon t
+        doom-modeline-major-mode-icon t
+        doom-modeline-buffer-modification-icon t
+        doom-modeline-icon (display-graphic-p))
   :hook (after-init . doom-modeline-mode))
   #+end_src
 
@@ -244,26 +251,16 @@ https://github.com/hlissner/emacs-doom-themes
   (setq doom-themes-enable-bold t
         doom-themes-enable-italic t)
   :config
-  ;; Enable flashing mode-line on errors
+  ;;Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
 
-  ;; or for treemacs users
-  ;; (doom-themes-neotree-config)
+  ;;or for treemacs users
+  (doom-themes-neotree-config)
 
-  ;; Corrects (and improves) org-mode's native fontification.
+  ;;Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
-(load-theme 'doom-molokai t)
+;;(load-theme 'doom-molokai t)
 #+end_src
-
-**** kaolin themes
-
-https://github.com/ogdenwebb/emacs-kaolin-themes
-Kaolin is a set of eye pleasing themes for GNU Emacs with support for a large number of modes and
-external packages.
-
-#+BEGIN_SRC emacs-lisp :name kaolin-themes
-(use-package kaolin-themes)
-#+END_SRC
 
 **** monokai-theme
 
@@ -277,19 +274,12 @@ A better representation of the classic Monokai theme from Sublime in Emacs.
 ;; (load-theme 'monokai t)
 #+end_src
 
-**** tao themes
-
-#+BEGIN_SRC emacs-lisp :name tao
-;(use-package tao-theme)
-;(load-theme 'tao-yang t)
-#+END_SRC
-
 **** dark monokai
 
 #+BEGIN_SRC emacs-lisp :name darkokai
-(use-package darkokai-theme
-  :init (setq darkokai-mode-line-padding 1))
-;;(load-theme 'darkokai t)
+;; (use-package darkokai-theme
+;; :init (setq darkokai-mode-line-padding 1))
+;; (load-theme 'darkokai t)
 #+END_SRC
 
 ** Highlighting
@@ -1736,6 +1726,18 @@ Display TAGS from column 72
  (setq org-tags-column -72)
 #+end_src
 
+** helm-org
+
+[[https://github.com/emacs-helm/helm-org][helm-org]] Helm for org headlines and keywords completion.
+
+#+BEGIN_SRC emacs-lisp :name helm-org
+(use-package helm-org
+  :commands (helm-org-in-buffer-headings helm-org-capture-templates)
+  :config
+  (add-to-list 'helm-completing-read-handlers-alist '(org-capture . helm-org-completing-read-tags))
+  (add-to-list 'helm-completing-read-handlers-alist '(org-set-tags . helm-org-completing-read-tags)))
+#+END_SRC
+
 ** [[https://github.com/sabof/org-bullets][org-bullets]]
 
 UTF-8 bullets for org-mode bullets.  You can go crazy with these.
@@ -2048,6 +2050,40 @@ Magit for Hg - make Mercurial just a little more palatable - [[https://ananthaku
               (side            . bottom)
               (reusable-frames . visible)
               (window-height   . 0.33)))
+#+end_src
+
+*** restclient
+
+[[https://github.com/pashky/restclient.el][restclient.el]] - An in Emacs replacement for Postman/Restman - more convenient than bouncing
+back and forth between a browser or another cmdline.
+
+Some useful links:
+[[https://codelearn.me/2017/10/22/restclient.html][Restclient (Postman for Emacs)]]
+[[https://www.youtube.com/watch?v=L7Jcoe3oHTs][Using Emacs Episode 60 - Restclient]]
+[[https://github.com/TatriX/realworld-rust-rocket/blob/master/tests/dev.http][restclient file example]]
+
+#+begin_src emacs-lisp :name restclient
+(use-package restclient)
+#+end_src
+
+[[https://github.com/iquiw/company-restclient][company-restclient]]
+Company-mode completion back-end for restclient-mode
+Provides the following:
+- HTTP method name completion
+- HTTP header name completion
+  If header name starts with uppercase character, the completion result is
+  capitalized (e.g. "Content-Type"). Otherwise, the completion result contains
+  lowercase characters only (e.g. "content-type").
+- HTTP header value completion
+  If header name matches with key of a cutomizable association list,
+  company-restclient-header-values, the corresponding value, list of strings,
+  is used for completion candidates.
+- Description about HTTP method and header is displayed in minibuffer
+- Variable name completion
+
+#+begin_src emacs-lisp :name company-restclient
+(use-package company-restclient
+  :config (add-to-list 'company-backends 'company-restclient))
 #+end_src
 
 *** smart-dash
@@ -2845,6 +2881,30 @@ Resize windows dynamically
      ("<ESC>" nil "Quit"))
 #+end_src
 
+*** hydra-windows
+
+A hydra for window management.
+
+#+BEGIN_SRC emacs-lisp :name hydra-windows
+(defhydra hydra-windows (:color blue :hint nil)
+  "
+Windows
+"
+  ("b" balance-windows)
+  ("c" delete-window)
+  ("d" ace-delete-window)
+  ("e" hydra-window-sizing/body)
+  ("f" make-frame)
+  ("i" ace-maximize-window)
+  ("m" doom/toggle-fullscreen)
+  ("o" delete-other-windows)
+  ("r" winner-redo)
+  ("u" winner-undo)
+  ("=" balance-windows)
+  ("-" ace-window)
+  ("<ESC>" nil "Quit" :exit t))
+#+END_SRC
+
 ** Hydra mode maps
 *** hydra-emacs-lisp
 
@@ -2955,10 +3015,9 @@ Resize windows dynamically
   ("s" swiper)
   ("v" hydra-version-control/body)
   ("x" helm-M-x)
+  ("w" hydra-windows/body)
   ("y" helm-show-kill-ring)
-
-  ("<ESC>" nil "Quit" :exit t)
-  )
+  ("<ESC>" nil "Quit" :exit t))
 #+end_src
 
 ** Ctrl/Alt/Super
@@ -2968,26 +3027,32 @@ Resize windows dynamically
 (global-set-key (kbd "C-c C-g") 'magit-file-dispatch)
 ;; a
 (global-unset-key (kbd "s-a"))
+
 ;; d
 (global-unset-key (kbd "s-d"))
 (global-unset-key (kbd "C-s-d"))
 (global-set-key (kbd "s-C-d") 'crux-insert-date)
 ;; f
 (global-unset-key (kbd "s-f"))
-(global-set-key (kbd "s-f") 'avy-goto-char-in-line)
+(global-set-key (kbd "s-f") 'avy-goto-char-2)
+
 ;; g
 (global-unset-key (kbd "s-g"))
 ;; h
 (global-unset-key (kbd "s-h"))
 ;; i
 (global-unset-key (kbd "s-i"))
+(global-unset-key (kbd "C-i"))
 (bind-key "s-i" 'helm-mini)
+
 ;; j
 (global-unset-key (kbd "s-j"))
 ;; k
 (global-unset-key (kbd "s-k"))
 ;; l
 (global-unset-key (kbd "s-l"))
+(global-set-key (kbd "s-l") 'avy-goto-char-in-line)
+
 ;; n
 (global-unset-key (kbd "s-n"))
 (global-set-key (kbd "s-n") 'new-frame)
@@ -3008,6 +3073,10 @@ Resize windows dynamically
 ;; -
 (global-unset-key (kbd "s--"))
 (bind-key "s--" 'ace-window)
+
+;; =
+(global-set-key (kbd "C-=") 'er/expand-region)
+
 ;; arrows
 (global-set-key (kbd "M-<left>") 'backward-word)
 (global-set-key (kbd "M-<right>") 'forward-word)
@@ -3183,7 +3252,6 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
      ;;; 'jk' binding
      ;;;
 (key-chord-define-global "jk" 'helm-M-x)
-;; (key-chord-define-global "jk" 'hydra-jk/body)
 
 ;; Moved to here so that all of the bindings are picked up.
 (which-key-mode t)
