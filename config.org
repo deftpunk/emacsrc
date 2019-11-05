@@ -1744,9 +1744,10 @@ UTF-8 bullets for org-mode bullets.  You can go crazy with these.
 
 #+begin_src emacs-lisp :name org-bullets
 (use-package org-bullets
- :config
- (add-hook 'org-mode-hook (lambda ()
-                            (org-bullets-mode 1))))
+  :commands org-bullets-mode
+  :config
+  (add-hook 'org-mode-hook (lambda ()
+                             (org-bullets-mode 1))))
 #+end_src
 
 ** org-capture & org-protocol
@@ -2063,7 +2064,8 @@ Some useful links:
 [[https://github.com/TatriX/realworld-rust-rocket/blob/master/tests/dev.http][restclient file example]]
 
 #+begin_src emacs-lisp :name restclient
-(use-package restclient)
+(use-package restclient
+  :mode (("\\.http\\'" . restclient-mode)))
 #+end_src
 
 [[https://github.com/iquiw/company-restclient][company-restclient]]
@@ -3237,7 +3239,8 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
   "s" 'swiper
   "w" 'save-buffer
   "y" 'helm-show-kill-ring
- )
+  "-" 'ace-window
+  )
 
     ;;;
     ;;; Local Leader
