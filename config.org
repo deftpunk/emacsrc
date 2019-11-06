@@ -977,7 +977,7 @@ Browse Dash docsets inside emacs.
   :init
   (setq helm-dash-docsets-path (expand-file-name "dash-docsets" flex-emacs-dir))
   :config
-  (setq helm-dash-common-docsets '("Python_2" "Python_3")))
+  (setq helm-dash-common-docsets '("Python_2" "Python_3" "Clojure")))
         ;; helm-dash-browser-func 'eww-browse-url))
 #+END_SRC
 
@@ -2053,6 +2053,30 @@ Magit for Hg - make Mercurial just a little more palatable - [[https://ananthaku
               (window-height   . 0.33)))
 #+end_src
 
+*** lsp mode
+
+[[https://github.com/emacs-lsp/lsp-mode][lsp-mode]] - Language Server Protocol Support for Emacs
+
+#+BEGIN_SRC emacs-lisp :name lsp-mode
+(use-package lsp-mode
+  :hook (clojure-mode . lsp-deferred)
+  :commands (lsp lsp-deferred)
+  :config
+  (add-to-list 'lsp-language-id-configuration '(clojure-mode . "clojure-mode"))
+  :init
+  (setq lsp-enable-indentation nil)
+  (add-hook 'clojure-mode-hook #'lsp)
+  (add-hook 'clojurec-mode-hook #'lsp)
+  (add-hook 'clojurescript-mode-hook #'lsp))
+
+(use-package lsp-ui :commands lsp-ui-mode)
+(use-package company-lsp :commands company-lsp)
+(use-package helm-lsp :commands helm-lsp-workspace-symbol)
+
+(use-package company-box
+  :hook (company-mode . company-box-mode))
+#+END_SRC
+
 *** restclient
 
 [[https://github.com/pashky/restclient.el][restclient.el]] - An in Emacs replacement for Postman/Restman - more convenient than bouncing
@@ -2062,6 +2086,7 @@ Some useful links:
 [[https://codelearn.me/2017/10/22/restclient.html][Restclient (Postman for Emacs)]]
 [[https://www.youtube.com/watch?v=L7Jcoe3oHTs][Using Emacs Episode 60 - Restclient]]
 [[https://github.com/TatriX/realworld-rust-rocket/blob/master/tests/dev.http][restclient file example]]
+[[https://erick.navarro.io/blog/testing-an-api-with-emacs-and-restclient/][testing and api with emacs and restclient]]
 
 #+begin_src emacs-lisp :name restclient
 (use-package restclient
@@ -2964,6 +2989,21 @@ Windows
   ("<ESC>" nil "Quit" :exit t))
 #+end_src
 
+*** hydra-clojure-mode
+
+A hydra for clojure-mode
+
+#+BEGIN_SRC emacs-lisp :name hydra-clojure-mode
+(defhydra hydra-clojure-mode (:color blue :hint nil)
+  "
+                                                                         .-----------.
+                                                                         |  Org Mode |
+   ,---------------------------------------------------------------------'-----------'
+   [_j_] cider-jack-in
+"
+  ("j" cider-jack-in))
+#+END_SRC
+
 *** hydra-python-mode
 
  hydra for python.
@@ -2999,6 +3039,7 @@ Windows
   (let ((my-hmodes '((lisp-interaction-mode . hydra-emacs-lisp/body)
                      (python-mode . hydra-python-mode/body)
                      (org-mode . hydra-orgmode-mode/body)
+                     (clojure-mode . hydra-clojure-mode/body)
                      (emacs-lisp-mode . hydra-emacs-lisp/body))))
     (condition-case error
         (funcall (assoc-default major-mode my-hmodes))
