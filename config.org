@@ -2908,30 +2908,6 @@ Resize windows dynamically
      ("<ESC>" nil "Quit"))
 #+end_src
 
-*** hydra-windows
-
-A hydra for window management.
-
-#+BEGIN_SRC emacs-lisp :name hydra-windows
-(defhydra hydra-windows (:color blue :hint nil)
-  "
-Windows
-"
-  ("b" balance-windows)
-  ("c" delete-window)
-  ("d" ace-delete-window)
-  ("e" hydra-window-sizing/body)
-  ("f" make-frame)
-  ("i" ace-maximize-window)
-  ("m" doom/toggle-fullscreen)
-  ("o" delete-other-windows)
-  ("r" winner-redo)
-  ("u" winner-undo)
-  ("=" balance-windows)
-  ("-" ace-window)
-  ("<ESC>" nil "Quit" :exit t))
-#+END_SRC
-
 ** Hydra mode maps
 *** hydra-emacs-lisp
 
