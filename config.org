@@ -458,18 +458,32 @@ Some default editor values.
 Directory listing in Emacs.
 
 #+begin_src emacs-lisp :name Dired
-  ;; Omit the . and .. files cuz we can go up a directory other ways.
-  (setq-default dired-omit-mode t
-                dired-omit-verbose nil
-                dired-omit-files "^\\.$\\|^\\.\\.$")
+;; Omit the . and .. files cuz we can go up a directory other ways.
+(setq-default dired-omit-mode t
+              dired-omit-verbose nil
+              dired-omit-files "^\\.$\\|^\\.\\.$")
 
-  ;; Use gls on a Mac
-  (when IS-MAC
-    (if (executable-find "gls")
-        (progn
-          (setq insert-directory-program "gls")
-          (setq dired-listing-switches "-lFaGh1v --group-directories-first"))
-      (setq dired-listing-switches "-ahlF")))
+;; Use gls on a Mac
+(when IS-MAC
+  (if (executable-find "gls")
+      (progn
+        (setq insert-directory-program "gls")
+        (setq dired-listing-switches "-lFaGh1v --group-directories-first"))
+    (setq dired-listing-switches "-ahlF")))
+
+                                        ;(use-package dired
+                                        ;  :hook (dired-mode . dired-hide-details-mode)
+                                        ; :config
+                                        ;(use-package diredfl
+                                        ; :commands diredfl-global-mode
+                                        ;:config
+                                        ; (diredfl-global-mode 1)))
+
+(use-package dired-git-info
+  :commands dired-git-info-mode
+  :hook (dired-mode . dired-git-info-mode)
+  :bind (:map dired-mode-map
+              (")" . dired-git-info-mode)))
 #+end_src
 
 **** dired-subtree
@@ -1279,43 +1293,9 @@ Most of this is trying to make Tramp work faster.
 (setq create-lockfiles nil)
 #+end_src
 
-*** Treemacs
+*** undo-tree
 
-#+BEGIN_SRC emacs-lisp :name treemacs
-(use-package treemacs)
-#+END_SRC
-
-**** treemacs-evil
-
-#+BEGIN_SRC emacs-lisp :name treemacs-evil
-(use-package treemacs-evil
-  :after treemacs evil)
-#+END_SRC
-
-**** treemacs-icons-dired
-
-#+BEGIN_SRC emacs-lisp :name treemacs-icons-dired
-(use-package treemacs-icons-dired
-  :after treemacs dired)
-#+END_SRC
-
-**** treemacs-magit
-
-#+BEGIN_SRC emacs-lisp :name treemacs-magit
-(use-package treemacs-magit
-  :after treemacs magit)
-#+END_SRC
-
-**** treemacs-projectile
-
-#+BEGIN_SRC emacs-lisp :name treemacs-projectile
-(use-package treemacs-projectile
-  :after treemacs projectile)
-#+END_SRC
-
-*** [[https://www.emacswiki.org/emacs/UndoTree][Undo Tree]]
-
-Make undo something more like the undo/redo you get in other
+[[https://www.emacswiki.org/emacs/UndoTree][Undo Tree]] - Make undo something more like the undo/redo you get in other
 editors.  There is also =undo-tree-visualize= that allows you to visually
 walk through the changes that you have made.
 
@@ -2743,6 +2723,7 @@ Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
              (helm-do-ag)
            (helm-projectile-ag))))
   ("c" projectile-invalidate-cache)
+  ("d" dired)
   ("f" counsel-find-file)
   ("k" kill-buffer) ; gets you a Helm interface to choose which buffer.
   ("m" (lambda ()
