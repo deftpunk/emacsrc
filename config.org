@@ -977,13 +977,11 @@ Completion that IMHO is better than auto-complete.
   (after! helm-mode
     (add-to-list 'helm-completing-read-handlers-alist '(find-file-at-point . nil)))
   )
-
-
 #+END_SRC
 
-**** [[https://github.com/dash-docs-el/helm-dash][helm-dash]]
+**** helm-dash
 
-Browse Dash docsets inside emacs.
+ [[https://github.com/dash-docs-el/helm-dash][helm-dash]] - Browse Dash docsets inside emacs.
 
 #+BEGIN_SRC emacs-lisp :name helm-dash
 (use-package helm-dash
@@ -1080,9 +1078,9 @@ Keys bound here:
   :load-path "emacswikilibs/help-fns-plus/")
 #+END_SRC
 
-**** [[https://github.com/Wilfred/helpful][Helpful]]
+**** helpful
 
-A better Emacs *help* buffer
+[[https://github.com/Wilfred/helpful][Helpful]] - A better Emacs *help* buffer
 
 #+BEGIN_SRC emacs-lisp :name helpful
 (use-package helpful)
@@ -1120,9 +1118,9 @@ modify them in the *Process Environment* buffer.  =M-x list-environment=
   :commands (move-text-up move-text-down))
 #+END_SRC
 
-*** [[https://github.com/Fanael/persistent-scratch][persistent-scratch]]
+*** persistent-scratch
 
-Is an Emacs package that preserves the state of scratch buffers across
+[[https://github.com/Fanael/persistent-scratch][persistent-scratch]] - Is an Emacs package that preserves the state of scratch buffers across
 Emacs sessions by saving the state to and restoring it from a file.
 
 #+begin_src emacs-lisp :name persistent-scratch
@@ -1133,27 +1131,6 @@ Emacs sessions by saving the state to and restoring it from a file.
   :config
   (persistent-scratch-setup-default))
 #+end_src
-
-*** [[https://github.com/nex3/perspective-el][Perspective]]
-
-Perspectives for Emacs.
-
-Commands are all prefixed by C-x x. Here are the main commands:
-Key -- Command
-
-    s -- persp-switch: Query a perspective to switch or create
-    k -- persp-remove-buffer: Query a buffer to remove from current perspective
-    c -- persp-kill : Query a perspective to kill
-    r -- persp-rename: Rename current perspective
-    a -- persp-add-buffer: Query an open buffer to add to current perspective
-    A -- persp-set-buffer: Add buffer to current perspective and remove it from all others
-    i -- persp-import: Import a given perspective from another frame.
-    n, <right> -- persp-next : Switch to next perspective
-    p, <left> -- persp-prev: Switch to previous perspective
-
-#+BEGIN_SRC emacs-lisp :name perspectives
-;; (use-package perspective)
-#+END_SRC
 
 *** Projectile
 
@@ -1253,9 +1230,9 @@ in the [[https://github.com/Fuco1/smartparens/wiki][wiki]] and a [[https://www.r
                  :post-handlers '(("| " "SPC"))))
 #+END_SRC
 
-*** [[https://github.com/bbatsov/super-save][super-save]]
+*** super-save
 
-An auto-saving library.
+[[https://github.com/bbatsov/super-save][super-save]] - An auto-saving library.
 https://emacsredux.com/blog/2018/09/29/super-save-0-dot-3/
 
 #+BEGIN_SRC emacs-lisp :name super-save
