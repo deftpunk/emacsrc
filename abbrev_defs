@@ -9,9 +9,7 @@
 
 (define-abbrev-table 'array-mode-abbrev-table '())
 
-(define-abbrev-table 'awk-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'awk-mode-abbrev-table '())
 
 (define-abbrev-table 'bmkp-edit-bookmark-record-mode-abbrev-table '())
 
@@ -25,13 +23,9 @@
 
 (define-abbrev-table 'bookmark-show-annotation-mode-abbrev-table '())
 
-(define-abbrev-table 'c++-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'c++-mode-abbrev-table '())
 
-(define-abbrev-table 'c-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'c-mode-abbrev-table '())
 
 (define-abbrev-table 'calendar-mode-abbrev-table '())
 
@@ -202,9 +196,11 @@
     ("ofthe" "of the" nil 2)
     ("openiong" "opening" nil 1)
     ("ot" "to" nil 9)
+    ("parrent" "parent" nil 1)
     ("pelase" "please" nil 1)
     ("pirnt" "print" nil 3)
     ("plya" "play" nil 1)
+    ("poeple" "People" nil 1)
     ("probelm" "problem" nil 1)
     ("probrelms" "problems" nil 1)
     ("pyhton" "python" nil 2)
@@ -239,6 +235,7 @@
     ("taht" "that" nil 3)
     ("tath" "that" nil 1)
     ("teh" "the" nil 11)
+    ("the" "The" nil 1)
     ("theat" "that" nil 1)
     ("thigns" "things" nil 1)
     ("thne" "then" nil 1)
@@ -296,9 +293,7 @@
 
 (define-abbrev-table 'ivy-occur-mode-abbrev-table '())
 
-(define-abbrev-table 'java-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'java-mode-abbrev-table '())
 
 (define-abbrev-table 'jinja2-mode-abbrev-table '())
 
@@ -362,9 +357,7 @@
 
 (define-abbrev-table 'nrepl-messages-mode-abbrev-table '())
 
-(define-abbrev-table 'objc-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'objc-mode-abbrev-table '())
 
 (define-abbrev-table 'occur-edit-mode-abbrev-table '())
 
@@ -385,9 +378,7 @@
 
 (define-abbrev-table 'paradox-menu-mode-abbrev-table '())
 
-(define-abbrev-table 'pike-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'pike-mode-abbrev-table '())
 
 (define-abbrev-table 'process-menu-mode-abbrev-table '())
 
