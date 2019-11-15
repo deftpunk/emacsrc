@@ -2774,28 +2774,25 @@ Hydra for version control functions.
 #+begin_src emacs-lisp :name hydra-version-control
 (defhydra hydra-version-control (:color blue :hint nil)
   "
-  git-messenger
-  -------------
-  c - Copy commit ID        s - Pop up git show --stat
-  d - Pop up git diff       S - Pop up git show --stat -p
-  m - Copy commit message   q - Quit
+^Git                ^Git Utilites           ^Monky                   ^General
+^^------------------^^----------------------^^-----------------------^^---------------
+_b_lame             _t_imemachine           _k_ monky-status         _a_ vc-annotate
+_s_tatus            _g_it gutter            ^^                       _w_ browse remote
+_u_nstage file      _m_essenger
+_d_ispatch
 
 
-                                                                      ,-------------------.
-      General                    Git                                  | Version control   |
-    ,-----------------------------------------------------------------'-------------------'
-                                [_m_] git-messenger
-    [_a_] vc-annotate           [_s_] Magit status
-                                [_u_] unstage file
-                                [_b_] blame
-                                [_t_] timemachine
+
+^git-messenger:popup-message^
+^^-----------------------------------------------------------
+c - Copy commit ID        s - Pop up git show --stat
+d - Pop up git diff       S - Pop up git show --stat -p
+m - Copy commit message   q - Quit
 
   "
   ("a" vc-annotate)
 
-  ;; If currently monky-blame-mode then quit it, else try to blame current
-  ;; file.  If no, check magit-blame-mode and either quit that or start
-  ;; magit-blame.
+  ;; Check magit-blame-mode and either quit that or start magit-blame.
   ("b" (lambda ()
          (interactive)
          (if (bound-and-true-p magit-blame-mode)
@@ -2810,8 +2807,7 @@ Hydra for version control functions.
   ("w" browse-at-remote)
   ("s" magit-status)
 
-  ("<ESC>" nil "quit")
-  )
+  ("<ESC>" nil "quit"))
 #+end_src
 
 *** hydra-window-sizing
