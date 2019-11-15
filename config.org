@@ -3180,8 +3180,27 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
                                               (evil-visual-restore)))
 
      ;;;
-     ;;; Leader keys
+     ;;; 'jk' binding
      ;;;
+(key-chord-define-global "jk" 'hydra-jk/body)
+
+;; Moved to here so that all of the bindings are picked up.
+(which-key-mode t)
+
+;; Change some of the org-mode mappings that interfere with my evil mode window bindings.
+(general-define-key
+ :states 'normal
+ :keymaps 'org-mode-map
+ "C-j" 'nil
+ "C-k" 'nil
+ )
+#+END_SRC
+
+*** Evil leader
+
+Create leader keys bindings using general.el
+
+#+BEGIN_SRC emacs-lisp :name leader
 (general-create-definer my-leader-def
   ;; :prefix my-leader
   :prefix "SPC")
@@ -3202,31 +3221,18 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
   "y" 'helm-show-kill-ring
   "-" 'ace-window
   )
+#+END_SRC
 
-    ;;;
-    ;;; Local Leader
-    ;;;
+*** Evil localleader
+
+Create a "localleader" equivalent.  Its not really that yet
+
+#+BEGIN_SRC emacs-lisp :name localleader
 (general-create-definer my-local-leader-def
   :prefix "SPC SPC")
 (my-local-leader-def 'normal 'override
   "l" 'avy-goto-char-in-line
   "s" 'avy-goto-char-2)
-
-     ;;;
-     ;;; 'jk' binding
-     ;;;
-(key-chord-define-global "jk" 'helm-M-x)
-
-;; Moved to here so that all of the bindings are picked up.
-(which-key-mode t)
-
-;; Change some of the org-mode mappings that interfere with my evil mode window bindings.
-(general-define-key
- :states 'normal
- :keymaps 'org-mode-map
- "C-j" 'nil
- "C-k" 'nil
- )
 #+END_SRC
 
 * Notes
