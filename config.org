@@ -2676,29 +2676,18 @@ Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
 *** hydra-files-projectile
 
 #+begin_src emacs-lisp :name hydra-files-projectile
-(defhydra hydra-files-projectile (:color blue
-                                         :hint nil)
+(defhydra hydra-files-projectile (:color blue :hint nil)
   "
-    ,----------------------.
-   | Files, Projects, etc. |   CURRENT PROJECT: %(if (fboundp 'projectile-project-root) (projectile-project-root) \"NO Project\")
-   '-----------------------'--------------------------------------------------------------------------.
+CURRENT PROJECT: %(if (fboundp 'projectile-project-root) (projectile-project-root) \"NO Project\")
 
+^Projects^                   ^Files^             ^Buffers^               ^Others^
+^^---------------------------^^------------------^^----------------------^^--------------.
+_c_lear projectile cache     _f_ind file         _k_ill buffer           _d_ired
+_p_ switch projects          _k_ill buffer       _m_essages buffer       _n_ew frame
+^^                           ^^                  _s_cratch buffer
 
-
-
-  _a_ Ag                                             _m_ Go to *Messages*     _s_ Go to *scratch*
-
-  _c_ Clear Projectile Cache                                                  _t_ Helm Tramp
-                                                     _p_ Switch Projects
-                                _k_ Kill Buffer
-  _f_ Find File
 
   "
-  ("a" (lambda ()
-         (interactive)
-         (if (no-projectile-projectp)
-             (helm-do-ag)
-           (helm-projectile-ag))))
   ("c" projectile-invalidate-cache)
   ("d" dired)
   ("f" counsel-find-file)
@@ -2712,7 +2701,7 @@ Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
   ("s" eme-goto-scratch)
   ("t" helm-tramp)
 
-  ("<ESC" nil "Quit" :exit t))
+  ("ESC" nil "Quit" :exit t))
 #+end_src
 
 *** hydra-flycheck
@@ -2981,11 +2970,12 @@ A hydra for clojure-mode
 
 (defhydra hydra-jk (:color blue :hint nil)
   "
-,----------------.
-| Master Blaster |
-'----------------'---------------------------------------------------------------------------------
+,----------------.                                                             .-------------------.
+| Master Blaster |                                                             | Press Esc to Quit |
+'----------------'-------------------------------------------------------------'-------------------'
 
     [_x_] Helm/Counsel M-x        [_q_] Exit Emacs
+    [_w_] Window Mngmnt
   "
   ("i" helm-mini)
   ("q" save-buffers-kill-terminal)
