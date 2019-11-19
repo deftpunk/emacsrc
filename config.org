@@ -529,11 +529,11 @@ Directory listing in Emacs.
                                         ;:config
                                         ; (diredfl-global-mode 1)))
 
-(use-package dired-git-info
-  :commands dired-git-info-mode
-  :hook (dired-mode . dired-git-info-mode)
-  :bind (:map dired-mode-map
-              (")" . dired-git-info-mode)))
+;; (use-package dired-git-info
+;;   :commands dired-git-info-mode
+;;   :hook (dired-mode . dired-git-info-mode)
+;;   :bind (:map dired-mode-map
+;;               (")" . dired-git-info-mode)))
 #+end_src
 
 **** dired-subtree
