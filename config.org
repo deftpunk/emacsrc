@@ -409,6 +409,55 @@ Run the UI hook - ideally this should make graphic, terminal & daemon Emacs look
 #+end_src
 
 * Editor
+** Editor keybinding magic
+
+Do some keybinding management early so that it can be used in specific modes.
+
+*** General
+
+[[https://github.com/noctuid/general.el][general.el]] - Use general.el to setup evil-mode, leader and other keybindings.
+
+Set the 'general-override-states' and enable the 'general-override-mode' so
+that evil-collection and others don't override bindings that I want.
+
+#+BEGIN_SRC emacs-lisp :name general.el
+(use-package general
+  :commands (general-create-definer general-define-key general-override-mode)
+  :config
+  (setq general-override-states '(insert
+                                  emacs
+                                  hybrid
+                                  normal
+                                  visual
+                                  motion
+                                  operator
+                                  replace))
+  (general-override-mode))
+#+END_SRC
+
+*** which-key
+
+[[https://github.com/justbur/emacs-which-key][which-key]] - Display available keybindings.
+
+   - =which-key-show-top-level= will show most key bindings without a prefix. It
+     is most and not all, because many are probably not interesting to most
+     users.
+   - =which-key-show-major-mode= will show the currently active major-mode
+     bindings. It's similar to =C-h m= but in a which-key format. It is also
+     aware of evil commands defined using =evil-define-key=.
+   - =which-key-show-next-page= is the command used for paging.
+   - =which-key-undo= can be used to undo the last keypress when in the middle
+     of a key sequence.
+
+#+BEGIN_SRC emacs-lisp :name which-key
+    (use-package which-key
+      :after evil
+      :commands which-key-mode
+      :init
+      (setq which-key-allow-evil-operators t
+            which-key-show-operator-state-maps t))
+#+END_SRC
+
 ** Editor Values
 
 Some default editor values.
