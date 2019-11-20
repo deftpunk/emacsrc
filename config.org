@@ -411,7 +411,7 @@ Run the UI hook - ideally this should make graphic, terminal & daemon Emacs look
 * Editor
 ** Editor keybinding magic
 
-Do some keybinding management early so that it can be used in specific modes.
+Bring in some keybinding management extensions early so that they can be used in specific modes.
 
 *** General
 
@@ -439,15 +439,15 @@ that evil-collection and others don't override bindings that I want.
 
 [[https://github.com/justbur/emacs-which-key][which-key]] - Display available keybindings.
 
-   - =which-key-show-top-level= will show most key bindings without a prefix. It
-     is most and not all, because many are probably not interesting to most
-     users.
-   - =which-key-show-major-mode= will show the currently active major-mode
-     bindings. It's similar to =C-h m= but in a which-key format. It is also
-     aware of evil commands defined using =evil-define-key=.
-   - =which-key-show-next-page= is the command used for paging.
-   - =which-key-undo= can be used to undo the last keypress when in the middle
-     of a key sequence.
+- =which-key-show-top-level= will show most key bindings without a prefix. It
+  is most and not all, because many are probably not interesting to most
+  users.
+- =which-key-show-major-mode= will show the currently active major-mode
+  bindings. It's similar to =C-h m= but in a which-key format. It is also
+  aware of evil commands defined using =evil-define-key=.
+- =which-key-show-next-page= is the command used for paging.
+- =which-key-undo= can be used to undo the last keypress when in the middle
+  of a key sequence.
 
 #+BEGIN_SRC emacs-lisp :name which-key
     (use-package which-key
