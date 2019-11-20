@@ -2076,7 +2076,8 @@ Magit for Hg - make Mercurial just a little more palatable - [[https://ananthaku
   (add-hook 'clojurec-mode-hook #'lsp)
   (add-hook 'clojurescript-mode-hook #'lsp))
 
-(use-package lsp-ui :commands lsp-ui-mode)
+(use-package lsp-ui
+  :commands lsp-ui-mode)
 (use-package company-lsp :commands company-lsp)
 (use-package helm-lsp :commands helm-lsp-workspace-symbol)
 
@@ -2097,7 +2098,9 @@ Some useful links:
 
 #+begin_src emacs-lisp :name restclient
 (use-package restclient
-  :mode (("\\.http\\'" . restclient-mode)))
+  :mode (("\\.http\\'" . restclient-mode))
+  :bind (:map restclient-mode-map
+              ("C-c C-f" . json-mode-beautify)))
 #+end_src
 
 [[https://github.com/iquiw/company-restclient][company-restclient]]
@@ -2209,7 +2212,10 @@ count_of_ = get_total("");
 #+BEGIN_SRC emacs-lisp :name cider
 (use-package cider
   :config
-  (setq cider-test-show-report-on-success t))
+  (setq cider-test-show-report-on-success t
+        cider-repl-use-pretty-printing t
+        cider-repl-display-help-banner t)
+  )
 #+END_SRC
 
 **** Clojure mode
@@ -2274,22 +2280,6 @@ count_of_ = get_total("");
   (use-package cl-lib-highlight
     :config
     (cl-lib-highlight-initialize))
-#+end_src
-
-**** Evaluation
-
-Borrowed from Sacha Chau who borrowed it from Steve Purcell - change
-=C-x C-e= to evaluate regions as well as last sexp.
-
-#+begin_src emacs-lisp :name emacs-lisp-evaluation
-  (defun sanityinc/eval-last-sexp-or-region (prefix)
-    "Eval region from BEG to END if active, otherwise the last sexp."
-    (interactive "P")
-    (if (and (mark) (use-region-p))
-        (eval-region (min (point) (mark)) (max (point) (mark)))
-      (pp-eval-last-sexp prefix)))
-
-  (bind-key "C-x C-e" 'sanityinc/eval-last-sexp-or-region emacs-lisp-mode-map)
 #+end_src
 
 **** elisp-slime-nav
@@ -2390,9 +2380,10 @@ The interactive SQL mode is based on ComintMode. The following interpreters are 
 Json mode
 
 #+begin_src emacs-lisp :name json-mode
-  (use-package json-mode
-    :defer t
-    :diminish json-mode)
+(use-package json-mode
+  :defer t
+  :commands json-mode-beautify
+  :diminish json-mode)
 #+end_src
 
 YAML mode
@@ -2582,28 +2573,6 @@ resize windows.
 
 General is potentially useful anytime that you are defining keys.
 
-*** General
-
-[[https://github.com/noctuid/general.el][general.el]] - Use general.el to setup evil-mode, leader and other keybindings.
-
-Set the 'general-override-states' and enable the 'general-override-mode' so
-that evil-collection and others don't override bindings that I want.
-
-#+BEGIN_SRC emacs-lisp :name general.el
-(use-package general
-  :commands (general-create-definer general-define-key general-override-mode)
-  :config
-  (setq general-override-states '(insert
-                                  emacs
-                                  hybrid
-                                  normal
-                                  visual
-                                  motion
-                                  operator
-                                  replace))
-  (general-override-mode))
-#+END_SRC
-
 *** Hydra
 
 [[https://github.com/abo-abo/hydra][Hydra]] - Make Emacs bindings that stick around.
@@ -2640,29 +2609,6 @@ Keychord has a couple of drawbacks
     :init
     (key-chord-mode 1))
 #+end_src
-
-*** which-key
-
-[[https://github.com/justbur/emacs-which-key][which-key]] - Display available keybindings.
-
-   - =which-key-show-top-level= will show most key bindings without a prefix. It
-     is most and not all, because many are probably not interesting to most
-     users.
-   - =which-key-show-major-mode= will show the currently active major-mode
-     bindings. It's similar to =C-h m= but in a which-key format. It is also
-     aware of evil commands defined using =evil-define-key=.
-   - =which-key-show-next-page= is the command used for paging.
-   - =which-key-undo= can be used to undo the last keypress when in the middle
-     of a key sequence.
-
-#+BEGIN_SRC emacs-lisp :name which-key
-    (use-package which-key
-      :after evil
-      :commands which-key-mode
-      :init
-      (setq which-key-allow-evil-operators t
-            which-key-show-operator-state-maps t))
-#+END_SRC
 
 ** Escape
 
