@@ -9,7 +9,9 @@
 
 (define-abbrev-table 'array-mode-abbrev-table '())
 
-(define-abbrev-table 'awk-mode-abbrev-table '())
+(define-abbrev-table 'awk-mode-abbrev-table
+  '(
+   ))
 
 (define-abbrev-table 'bmkp-edit-bookmark-record-mode-abbrev-table '())
 
@@ -23,9 +25,13 @@
 
 (define-abbrev-table 'bookmark-show-annotation-mode-abbrev-table '())
 
-(define-abbrev-table 'c++-mode-abbrev-table '())
+(define-abbrev-table 'c++-mode-abbrev-table
+  '(
+   ))
 
-(define-abbrev-table 'c-mode-abbrev-table '())
+(define-abbrev-table 'c-mode-abbrev-table
+  '(
+   ))
 
 (define-abbrev-table 'calendar-mode-abbrev-table '())
 
@@ -96,7 +102,13 @@
 
 (define-abbrev-table 'flycheck-error-list-mode-abbrev-table '())
 
+(define-abbrev-table 'flycheck-error-message-mode-abbrev-table '())
+
 (define-abbrev-table 'fundamental-mode-abbrev-table '())
+
+(define-abbrev-table 'gfm-mode-abbrev-table '())
+
+(define-abbrev-table 'gfm-view-mode-abbrev-table '())
 
 (define-abbrev-table 'git-commit-elisp-text-mode-abbrev-table '())
 
@@ -196,6 +208,7 @@
     ("ofthe" "of the" nil 2)
     ("openiong" "opening" nil 1)
     ("ot" "to" nil 9)
+    ("palying" "playing" nil 1)
     ("parrent" "parent" nil 1)
     ("pelase" "please" nil 1)
     ("pirnt" "print" nil 3)
@@ -235,7 +248,7 @@
     ("taht" "that" nil 3)
     ("tath" "that" nil 1)
     ("teh" "the" nil 11)
-    ("the" "The" nil 1)
+    ("the" "The" nil 2)
     ("theat" "that" nil 1)
     ("thigns" "things" nil 1)
     ("thne" "then" nil 1)
@@ -293,7 +306,9 @@
 
 (define-abbrev-table 'ivy-occur-mode-abbrev-table '())
 
-(define-abbrev-table 'java-mode-abbrev-table '())
+(define-abbrev-table 'java-mode-abbrev-table
+  '(
+   ))
 
 (define-abbrev-table 'jinja2-mode-abbrev-table '())
 
@@ -347,6 +362,10 @@
 
 (define-abbrev-table 'magit-todos-list-mode-abbrev-table '())
 
+(define-abbrev-table 'markdown-mode-abbrev-table '())
+
+(define-abbrev-table 'markdown-view-mode-abbrev-table '())
+
 (define-abbrev-table 'message-mode-abbrev-table '())
 
 (define-abbrev-table 'messages-buffer-mode-abbrev-table '())
@@ -357,7 +376,9 @@
 
 (define-abbrev-table 'nrepl-messages-mode-abbrev-table '())
 
-(define-abbrev-table 'objc-mode-abbrev-table '())
+(define-abbrev-table 'objc-mode-abbrev-table
+  '(
+   ))
 
 (define-abbrev-table 'occur-edit-mode-abbrev-table '())
 
@@ -378,7 +399,9 @@
 
 (define-abbrev-table 'paradox-menu-mode-abbrev-table '())
 
-(define-abbrev-table 'pike-mode-abbrev-table '())
+(define-abbrev-table 'pike-mode-abbrev-table
+  '(
+   ))
 
 (define-abbrev-table 'process-menu-mode-abbrev-table '())
 
@@ -396,6 +419,8 @@
 (define-abbrev-table 'reb-mode-abbrev-table '())
 
 (define-abbrev-table 'restclient-mode-abbrev-table '())
+
+(define-abbrev-table 'ruby-mode-abbrev-table '())
 
 (define-abbrev-table 'rxt-help-mode-abbrev-table '())
 
