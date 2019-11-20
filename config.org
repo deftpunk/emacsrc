@@ -2853,22 +2853,18 @@ Resize windows dynamically
  hydra for Elisp modes.  It inherits the smartparens hydra.
 
 #+begin_src emacs-lisp :name hydra-emacs-lisp
- (defhydra hydra-emacs-lisp (:color red)
-   "
-                                                            ,-----------------.
-    Docs               Utilities                            | Emacs Lisp Mode |
-------------------------------------------------------------'-----------------'
- [_d_] Describe        [_i_] ELM
-                       [_p_] ELP
-"
-   ("d" describe-foo-at-point :exit t)
-   ("e" eval-expression :exit t)
-   ("i" ielm :exit t)
-   ("p" hydra-emacs-lisp-profiler/body :exit t)
-   ("r" eval-region :exit t)
-   ("x" eval-defun :exit t)
-   ("<ESC>" nil "Quit" :exit t)
-   )
+(defhydra hydra-emacs-lisp (:color blue :hint nil)
+  "
+^Docs^                          ^Utilities
+^^------------------------------^^---------------------------------------
+_d_escribe at point             _i_elm
+
+
+ "
+  ("d" describe-foo-at-point )
+  ("i" ielm )
+  ("<ESC>" nil "Quit" :exit t)
+  )
 #+end_src
 
 *** hydra-org-mode
@@ -2982,6 +2978,17 @@ A hydra for clojure-mode
 ** Ctrl/Alt/Super
 
 #+begin_src emacs-lisp :name keybindings
+
+;; Borrowed from Sacha Chau who borrowed it from Steve Purcell - change
+;; =C-x C-e= to evaluate regions as well as last sexp.
+(defun sanityinc/eval-last-sexp-or-region (prefix)
+  "Eval region from BEG to END if active, otherwise the last sexp."
+  (interactive "P")
+  (if (and (mark) (use-region-p))
+      (eval-region (min (point) (mark)) (max (point) (mark)))
+    (pp-eval-last-sexp prefix)))
+(global-unset-key (kbd "C-x C-e"))
+(global-set-key "C-x C-e" 'sanityinc/eval-last-sexp-or-region emacs-lisp-mode-map)
 
 (global-set-key (kbd "C-c C-g") 'magit-file-dispatch)
 ;; a
@@ -3178,7 +3185,8 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
      ;;;
      ;;; 'jk' binding
      ;;;
-(key-chord-define-global "jk" 'hydra-jk/body)
+;; (key-chord-define-global "jk" 'hydra-jk/body)
+(key-chord-define-global "jk" 'helm-M-x)
 
 ;; Moved to here so that all of the bindings are picked up.
 (which-key-mode t)
@@ -3221,7 +3229,8 @@ Create leader keys bindings using general.el
 
 *** Evil localleader
 
-Create a "localleader" equivalent.  Its not really that yet
+Create a "localleader" equivalent.  Its not really that because these are *not* buffer specific, we use
+the deftpunk/hydra-major-mode-hack for buffer specific bindings via hydras.
 
 #+BEGIN_SRC emacs-lisp :name localleader
 (general-create-definer my-local-leader-def
