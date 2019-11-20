@@ -435,6 +435,28 @@ that evil-collection and others don't override bindings that I want.
   (general-override-mode))
 #+END_SRC
 
+*** Hydra
+
+[[https://github.com/abo-abo/hydra][Hydra]] - Make Emacs bindings that stick around.  The usefulness in Hydra is in displaying infrequently
+used keybindings or showing possible bindings.
+
+The :color key is a shortcut. It aggregates :exit and :foreign-keys key in the following way:
+
+| color    | toggle                     |
+|----------+----------------------------|
+| red      |                            |
+| blue     | :exit t                    |
+| amaranth | :foreign-keys warn         |
+| teal     | :foreign-keys warn :exit t |
+| pink     | :foreign-keys run          |
+
+It's also a trick to make you instantly aware of the current hydra keys that you're about to press: the
+keys will be highlighted with the appropriate color.
+
+#+begin_src emacs-lisp :name Hydra
+(use-package hydra)
+#+end_src
+
 *** which-key
 
 [[https://github.com/justbur/emacs-which-key][which-key]] - Display available keybindings.
@@ -878,9 +900,9 @@ Select a link to jump to in Info, help, woman, org or eww modes
     :load-path "emacswikilibs/bookmark-plus/")
 #+end_src
 
-*** [[https://github.com/abo-abo/swiper][avy, ivy, counsel and swiper]]
+*** Avy, Ivy, Counsel, Swiper - aboabo's great stuff
 
-avy, ivy, counsel and swiper from the great abo-abo, who also came up with hydra.
+[[https://github.com/abo-abo/swiper][avy, ivy, counsel and swiper]] - from the author of hydra & lispy
 
 - Ivy, a generic completion mechanism for Emacs.
 - Counsel, a collection of Ivy-enhanced versions of common Emacs commands.
@@ -931,6 +953,15 @@ Turning on counsel-mode to see remaps of Emacs commands
   (setq ivy-rich-path-style 'abbrev
         ivy-virtual-abbreviate 'full)
   :config (ivy-rich-mode 1))
+#+END_SRC
+
+**** avy-zap
+
+[[https://github.com/cute-jumper/avy-zap][avy-zap]] - Use avy to zap-to-char or zap-up-to-char
+
+#+BEGIN_SRC emacs-lisp :name avy-zap
+(use-package avy-zap
+  :commands (avy-zap-to-char-dwim avy-zap-up-to-char-dwim))
 #+END_SRC
 
 **** counsel-etags
@@ -1807,7 +1838,7 @@ from Emacs. It supports various kind of emacs buffer, like:
 
 ** Git
 
-** Magit
+*** Magit
 
 [[https://magit.vc/][Magit]] - The best git porcelain around.
 
@@ -1828,7 +1859,7 @@ from Emacs. It supports various kind of emacs buffer, like:
       (evil-local-mode (if magit-blame-mode -1 +1)))))
 #+END_SRC
 
-** Magit Todos
+*** Magit Todos
 
 https://github.com/alphapapa/magit-todos
 Show TODOs in Magit status buffer for each file.
@@ -1841,7 +1872,7 @@ Show TODOs in Magit status buffer for each file.
   (magit-todos-mode 1))
 #+END_SRC
 
-* git-gutter & git-gutter-fringe
+*** git-gutter & git-gutter-fringe
 
 [[https://github.com/syohex/emacs-git-gutter][git-gutter]] - Highlighting uncommited changes in the buffer.
 
@@ -1870,52 +1901,9 @@ Show TODOs in Magit status buffer for each file.
 
 (set-face-foreground 'git-gutter-fr:modified "blue3")
 (set-face-foreground 'git-gutter:modified "blue3")
-
-;; Traverse git-gutter hunks using ivy mode.
-;; http://blog.binchen.org/posts/enhance-emacs-git-gutter-with-ivy-mode.html
-(require 'ivy)
-(require 'git-gutter)
-
-(defun my-reshape-git-gutter (gutter)
-  "Re-shape gutter for `ivy-read'."
-  (let* ((linenum-start (aref gutter 3))
-         (linenum-end (aref gutter 4))
-         (target-line "")
-         (target-linenum 1)
-         (tmp-line "")
-         (max-line-length 0))
-    (save-excursion
-      ;; find out the longest stripped line in the gutter
-      (while (<= linenum-start linenum-end)
-        (goto-line linenum-start)
-        (setq tmp-line (replace-regexp-in-string "^[ \t]*" ""
-                                                 (buffer-substring (line-beginning-position)
-                                                                   (line-end-position))))
-        (when (> (length tmp-line) max-line-length)
-          (setq target-linenum linenum-start)
-          (setq target-line tmp-line)
-          (setq max-line-length (length tmp-line)))
-
-        (setq linenum-start (1+ linenum-start))))
-    ;; build (key . linenum-start)
-    (cons (format "%s %d: %s"
-                  (if (eq 'deleted (aref gutter 1)) "-" "+")
-                  target-linenum target-line)
-          target-linenum)))
-
-(defun my-goto-git-gutter ()
-  (interactive)
-  (if git-gutter:diffinfos
-      (let* ((collection (mapcar 'my-reshape-git-gutter
-                                 git-gutter:diffinfos)))
-        (ivy-read "git-gutters:"
-                  collection
-                  :action (lambda (linenum)
-                            (goto-line linenum))))
-    (message "NO git-gutters!")))
 #+END_SRC
 
-** git-messenger
+*** git-messenger
 
 [[https://github.com/syohex/emacs-git-messenger][git-messenger]] - Provides a function that pops up the commit message of the current line.
 
@@ -1928,7 +1916,7 @@ Show TODOs in Magit status buffer for each file.
   (define-key git-messenger-map (kbd "m") 'git-messenger:copy-message))
 #+END_SRC
 
-** git-timemachine
+*** git-timemachine
 
 [[https://github.com/pidu/git-timemachine][git-timemachine]] - Allows you to go back and forth to the revisions of a file.
 
@@ -1970,7 +1958,7 @@ Show TODOs in Magit status buffer for each file.
   (git-timemachine--start #'my-git-timemachine-show-selected-revision))
 #+END_SRC
 
-** gitignore-mode
+*** gitignore-mode
 
 [[https://github.com/magit/git-modes][gitignore-mode]] - Pull in the mode for editing .gitignore files.
 
@@ -1979,13 +1967,28 @@ Show TODOs in Magit status buffer for each file.
   :defer t)
 #+END_SRC
 
-** git-link
+*** git-link
 
 [[https://github.com/sshaw/git-link][git-link]] - Create URLs for files and commits in GitHub/Bitbucket/GitLab/... repositories.
 
 #+BEGIN_SRC emacs-lisp :name git-link
 (use-package git-link
   :commands (git-link git-link-commit git-link-homepage))
+#+END_SRC
+
+*** helm-hunks
+
+[[https://github.com/torgeir/helm-hunks.el][helm-hunks]] A helm interface for git hunks - browsing, staging, unstaging and killing.
+
+#+BEGIN_SRC emacs-lisp :name helm-hunks
+(use-package helm-hunks
+  :commands (helm-hunks
+             helm-hunks-current-buffer
+             helm-hunks-staged
+             helm-hunks-staged-current-buffer)
+  :config
+  (setq helm-hunks-preview-diffs t))
+(add-hook 'git-gutter:update-hooks 'helm-hunks-refresh-hook)
 #+END_SRC
 
 ** Mercurial
@@ -2066,7 +2069,7 @@ Magit for Hg - make Mercurial just a little more palatable - [[https://ananthaku
 
 #+BEGIN_SRC emacs-lisp :name lsp-mode
 (use-package lsp-mode
-  :hook (clojure-mode . lsp-deferred)
+  :hook ((clojure-mode python-mode) . lsp-deferred)
   :commands (lsp lsp-deferred)
   :config
   (add-to-list 'lsp-language-id-configuration '(clojure-mode . "clojure-mode"))
@@ -2269,7 +2272,18 @@ count_of_ = get_total("");
 **** Settings
 
 #+begin_src emacs-lisp :name emacs-lisp-settings
-  ;; (add-hook 'emacs-lisp-mode-hook #'aggressive-mode-hook)
+(defun sanityinc/eval-last-sexp-or-region (prefix)
+  "Eval region from BEG to END if active, otherwise the last sexp."
+  (interactive "P")
+  (if (and (mark) (use-region-p))
+      (eval-region (min (point) (mark)) (max (point) (mark)))
+    (pp-eval-last-sexp prefix)))
+
+(general-define-key
+ :states '(insert emacs)
+ :keymaps 'emacs-lisp-mode-map
+ "C-x C-e" 'sanityinc/eval-last-sexp-or-region
+ )
 #+end_src
 
 **** cl-lib highlighting
@@ -2572,27 +2586,6 @@ Hydra is useful for its menu and if you want to use a set of keybindings for a p
 resize windows.
 
 General is potentially useful anytime that you are defining keys.
-
-*** Hydra
-
-[[https://github.com/abo-abo/hydra][Hydra]] - Make Emacs bindings that stick around.
-
-The :color key is a shortcut. It aggregates :exit and :foreign-keys key in the following way:
-
-| color    | toggle                     |
-|----------+----------------------------|
-| red      |                            |
-| blue     | :exit t                    |
-| amaranth | :foreign-keys warn         |
-| teal     | :foreign-keys warn :exit t |
-| pink     | :foreign-keys run          |
-
-It's also a trick to make you instantly aware of the current hydra keys that you're about to press: the
-keys will be highlighted with the appropriate color.
-
-#+begin_src emacs-lisp :name Hydra
-(use-package hydra)
-#+end_src
 
 *** [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]]
 
@@ -2981,14 +2974,6 @@ A hydra for clojure-mode
 
 ;; Borrowed from Sacha Chau who borrowed it from Steve Purcell - change
 ;; =C-x C-e= to evaluate regions as well as last sexp.
-(defun sanityinc/eval-last-sexp-or-region (prefix)
-  "Eval region from BEG to END if active, otherwise the last sexp."
-  (interactive "P")
-  (if (and (mark) (use-region-p))
-      (eval-region (min (point) (mark)) (max (point) (mark)))
-    (pp-eval-last-sexp prefix)))
-(global-unset-key (kbd "C-x C-e"))
-(global-set-key "C-x C-e" 'sanityinc/eval-last-sexp-or-region emacs-lisp-mode-map)
 
 (global-set-key (kbd "C-c C-g") 'magit-file-dispatch)
 ;; a
