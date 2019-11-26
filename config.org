@@ -2604,11 +2604,6 @@ Dependencies: Node.js & vmd
 * Keybindings
 ** Configuration & Settings
 
-=Hydra & General Tips=
-Hydra is useful for its menu and if you want to use a set of keybindings for a period of time, e.g.
-resize windows.
-
-General is potentially useful anytime that you are defining keys.
 
 *** [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]]
 
@@ -2791,7 +2786,7 @@ Hydra for version control functions.
 _b_lame             _t_imemachine           _k_ monky-status         _a_ vc-annotate
 _s_tatus            _g_it gutter            ^^                       _w_ browse remote
 _u_nstage file      _m_essenger
-_d_ispatch
+_d_ispatch          _h_elm hunks
 
 
 
@@ -2812,12 +2807,13 @@ m - Copy commit message   q - Quit
            (call-interactively 'magit-blame))))
   ("d" magit-file-dispatch)
   ("g" +version-control@git-gutter/body)
+  ("h" helm-hunks-current-buffer)
   ("k" monky-status)
   ("m" git-messenger:popup-message)
   ("t" git-timemachine)
   ("u" magit-unstage-file)
   ("w" browse-at-remote)
-  ("s" magit-status)
+  ("s" deftpunk:unpackaged/magit-status)
 
   ("<ESC>" nil "quit"))
 #+end_src
