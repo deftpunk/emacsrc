@@ -413,6 +413,12 @@ Run the UI hook - ideally this should make graphic, terminal & daemon Emacs look
 
 Bring in some keybinding management extensions early so that they can be used in specific modes.
 
+=Hydra & General Tips=
+Hydra is useful for its menu and if you want to use a set of keybindings for a period of time, e.g.
+resize windows.
+
+General is useful anytime that you are defining keys.
+
 *** General
 
 [[https://github.com/noctuid/general.el][general.el]] - Use general.el to setup evil-mode, leader and other keybindings.
