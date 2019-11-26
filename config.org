@@ -2348,6 +2348,29 @@ REPL for elisp
                                          (eldoc-mode 1))))
 #+end_src
 
+*** Python
+
+**** pyvenv
+
+[[https://github.com/jorgenschaefer/pyvenv][pyvenv-mode]]
+
+#+BEGIN_SRC emacs-lisp :name pyvenv
+(use-package pyvenv
+  :commands (pyvenv-activate pyvenv-workon))
+#+END_SRC
+
+**** lsp-python-ms
+
+[[https://github.com/andrew-christianson/lsp-python-ms][lsp-python-ms]] The Microsoft PYthon language server client
+
+#+BEGIN_SRC emacs-lisp :name python-mode
+(use-package lsp-python-ms
+  :ensure t
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-python-ms)
+                          (lsp))))  ; or lsp-deferred
+#+END_SRC
+
 * Miscellaneous file type support
 *** Groovy / Jenkinsfile
 
