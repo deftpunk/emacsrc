@@ -1998,6 +1998,15 @@ Show TODOs in Magit status buffer for each file.
 (add-hook 'git-gutter:update-hooks 'helm-hunks-refresh-hook)
 #+END_SRC
 
+*** helm-ls-git
+
+[[https://github.com/emacs-helm/helm-ls-git][helm-ls-git]] Another helm to list git files.
+
+#+BEGIN_SRC emacs-lisp :name helm-ls-git
+(use-package helm-ls-git
+  :commands (helm-ls-git-ls helm-browse-project))
+#+END_SRC
+
 ** Mercurial
 
 Because I still have to deal with this at work for some really old internal repos.
@@ -2009,6 +2018,15 @@ Magit for Hg - make Mercurial just a little more palatable - [[https://ananthaku
 #+BEGIN_SRC emacs-lisp :name monky
   (use-package monky
     :init (setq monky-process-type 'cmdserver))
+#+END_SRC
+
+*** helm-ls-hg
+
+https://github.com/emacs-helm/helm-ls-hg
+
+#+BEGIN_SRC emacs-lisp :name helm-ls-hg
+(use-package helm-ls-hg
+  :commands helm-ls-hg-status-command helm-ls-hg-find-files-in-project)
 #+END_SRC
 
 * Software Development
