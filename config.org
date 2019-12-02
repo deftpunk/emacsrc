@@ -1162,7 +1162,8 @@ Keys bound here:
 
 #+BEGIN_SRC emacs-lisp :name help-fns
 (use-package help-fns+
-  :load-path "emacswikilibs/help-fns-plus/")
+  :load-path "emacswikilibs/help-fns-plus/"
+  :commands (describe-keymap describe-buffer describe-file))
 #+END_SRC
 
 **** helpful
