@@ -9,9 +9,7 @@
 
 (define-abbrev-table 'array-mode-abbrev-table '())
 
-(define-abbrev-table 'awk-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'awk-mode-abbrev-table '())
 
 (define-abbrev-table 'bmkp-edit-bookmark-record-mode-abbrev-table '())
 
@@ -25,13 +23,9 @@
 
 (define-abbrev-table 'bookmark-show-annotation-mode-abbrev-table '())
 
-(define-abbrev-table 'c++-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'c++-mode-abbrev-table '())
 
-(define-abbrev-table 'c-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'c-mode-abbrev-table '())
 
 (define-abbrev-table 'calendar-mode-abbrev-table '())
 
@@ -104,6 +98,8 @@
 
 (define-abbrev-table 'flycheck-error-message-mode-abbrev-table '())
 
+(define-abbrev-table 'flymake-diagnostics-buffer-mode-abbrev-table '())
+
 (define-abbrev-table 'fundamental-mode-abbrev-table '())
 
 (define-abbrev-table 'gfm-mode-abbrev-table '())
@@ -154,6 +150,7 @@
     ("eidt" "edit" nil 1)
     ("embarassing" "embarrassing" nil 1)
     ("emial" "Email" nil 1)
+    ("entery" "Enter" nil 1)
     ("environemnt" "environment" nil 1)
     ("excpet" "except" nil 1)
     ("executeable" "executable" nil 1)
@@ -248,8 +245,8 @@
     ("sute" "sure" nil 1)
     ("taht" "that" nil 3)
     ("tath" "that" nil 1)
-    ("teh" "the" nil 11)
-    ("the" "The" nil 2)
+    ("teh" "the" nil 1)
+    ("the" "The" nil 4)
     ("theat" "that" nil 1)
     ("thigns" "things" nil 1)
     ("thne" "then" nil 1)
@@ -307,9 +304,7 @@
 
 (define-abbrev-table 'ivy-occur-mode-abbrev-table '())
 
-(define-abbrev-table 'java-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'java-mode-abbrev-table '())
 
 (define-abbrev-table 'jinja2-mode-abbrev-table '())
 
@@ -328,6 +323,18 @@
 (define-abbrev-table 'logview-filter-edit-mode-abbrev-table '())
 
 (define-abbrev-table 'logview-mode-abbrev-table '())
+
+(define-abbrev-table 'lsp-browser-mode-abbrev-table '())
+
+(define-abbrev-table 'lsp-log-io-mode-abbrev-table '())
+
+(define-abbrev-table 'lsp-rust-analyzer-status-mode-abbrev-table '())
+
+(define-abbrev-table 'lsp-rust-analyzer-syntax-tree-mode-abbrev-table '())
+
+(define-abbrev-table 'lsp-ui-flycheck-list-mode-abbrev-table '())
+
+(define-abbrev-table 'lsp-ui-imenu-mode-abbrev-table '())
 
 (define-abbrev-table 'magit-cherry-mode-abbrev-table '())
 
@@ -377,9 +384,7 @@
 
 (define-abbrev-table 'nrepl-messages-mode-abbrev-table '())
 
-(define-abbrev-table 'objc-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'objc-mode-abbrev-table '())
 
 (define-abbrev-table 'occur-edit-mode-abbrev-table '())
 
@@ -400,9 +405,7 @@
 
 (define-abbrev-table 'paradox-menu-mode-abbrev-table '())
 
-(define-abbrev-table 'pike-mode-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'pike-mode-abbrev-table '())
 
 (define-abbrev-table 'process-menu-mode-abbrev-table '())
 
@@ -413,7 +416,9 @@
     ("sysx" "import sys; sys.exit(-1)" nil 1)
    ))
 
-(define-abbrev-table 'python-mode-skeleton-abbrev-table '())
+(define-abbrev-table 'python-mode-skeleton-abbrev-table
+  '(
+   ))
 
 (define-abbrev-table 'reb-lisp-mode-abbrev-table '())
 
@@ -459,6 +464,8 @@
 (define-abbrev-table 'vc-git-log-view-mode-abbrev-table '())
 
 (define-abbrev-table 'vc-git-region-history-mode-abbrev-table '())
+
+(define-abbrev-table 'vc-hg-log-view-mode-abbrev-table '())
 
 (define-abbrev-table 'vterm-mode-abbrev-table '())
 
