@@ -2387,7 +2387,25 @@ REPL for elisp
 #+end_src
 
 *** Python
+**** python mode
 
+#+BEGIN_SRC emacs-lisp :name python-mode
+;; Turn on line numbering for python
+;; Turn off aggressive-indent-mode cuz it goes wild with Python.
+(add-hook 'python-mode-hook
+          (lambda ()
+            (display-line-numbers-mode t)
+            (aggressive-indent-mode -1)))
+
+(defun my-python-hook()
+  (interactive)
+  (setq tab-width     4
+        python-indent 4
+        python-shell-interpreter "ipython"
+        python-shell-interpreter-args "-i"))
+
+(add-hook 'python-mode-hook 'my-python-hook)
+#+END_SRC
 **** pyvenv
 
 [[https://github.com/jorgenschaefer/pyvenv][pyvenv-mode]]
