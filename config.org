@@ -1783,9 +1783,9 @@ Display TAGS from column 72
   (add-to-list 'helm-completing-read-handlers-alist '(org-set-tags . helm-org-completing-read-tags)))
 #+END_SRC
 
-** [[https://github.com/sabof/org-bullets][org-bullets]]
+** org-bullets
 
-UTF-8 bullets for org-mode bullets.  You can go crazy with these.
+[[https://github.com/sabof/org-bullets][org-bullets]] UTF-8 bullets for org-mode bullets.  You can go crazy with these.
 
 #+begin_src emacs-lisp :name org-bullets
 (use-package org-bullets
