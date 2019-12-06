@@ -167,6 +167,7 @@
     ("fwe" "few" nil 1)
     ("fxing" "fixing" nil 1)
     ("gaurantee" "guarantee" nil 0)
+    ("givign" "Giving" nil 1)
     ("goest" "" nil 1)
     ("goole" "google" nil 1)
     ("handlign" "handling" nil 1)
@@ -445,6 +446,8 @@
 (define-abbrev-table 'speedbar-mode-abbrev-table '())
 
 (define-abbrev-table 'tabulated-list-mode-abbrev-table '())
+
+(define-abbrev-table 'tar-mode-abbrev-table '())
 
 (define-abbrev-table 'term-mode-abbrev-table '())
 

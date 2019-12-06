@@ -1258,13 +1258,14 @@ Emacs sessions by saving the state to and restoring it from a file.
 [[https://github.com/syohex/emacs-quickrun][Quickrun]] - Run command quickly. This packages is inspired quickrun.vim
 
 #+begin_src emacs-lisp :name quickrun
-  (use-package quickrun
-    :commands (quickrun
-               quickrun-region
-               quickrun-with-arg
-               quickrun-shell
-               quickrun-compile-only
-               quickrun-replace-region))
+(use-package quickrun
+  :commands (quickrun
+             quickrun-region
+             quickrun-with-arg
+             quickrun-shell
+             quickrun-compile-only
+             quickrun-replace-region
+             helm-quickrun))
 #+end_src
 
 *** Rainbow Delimiters
@@ -2809,7 +2810,7 @@ to <escape>.  Not really what I was wanting to do.
 ** Hydra maps
 *** hydra-cee
 
-Hydra for what would normally be ~C-c x~ or ~C-c C-x~ commands.
+Hydra for utilities, or ~C-c x~ or ~C-c C-x~ commands.
 
 #+begin_src emacs-lisp :name hydra-cee
   (defhydra hydra-cee (:color blue :hint nil)
