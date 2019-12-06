@@ -2559,6 +2559,24 @@ where
 #+END_SRC
 
 ** Vagrant
+*** vagrant
+
+[[https://github.com/ottbot/vagrant.el/tree/636ce2f9af32ea199170335a9cf1201b64873440][vagrant]] manage Vagrant from within Emacs
+
+Commands:
+- vagrant-up
+- vagrant-provision
+- vagrant-status
+- vagrant-ssh
+- vagrant-halt
+- vagrant-destroy
+- vagrant-suspend
+- vagrant-resume
+
+#+BEGIN_SRC emacs-lisp :name vagrant.el
+(use-package vagrant)
+#+END_SRC
+
 *** vagrant-tramp
 
 [[https://github.com/dougm/vagrant-tramp][vagrant-tramp]] Vagrant method for Emacs' tramp
