@@ -2934,7 +2934,7 @@ Move around the various git-gutter hunks.
 
 *** hydra-version-control
 
-Hydra for version control functions.
+Hydra for version control functions - see the Magit section for more information.
 
 #+begin_src emacs-lisp :name hydra-version-control
 (defhydra hydra-version-control (:color blue :hint nil)
@@ -2945,7 +2945,7 @@ _b_lame             _t_imemachine           _k_ monky-status         _a_ vc-anno
 _s_tatus            _g_it gutter            ^^                       _w_ browse remote
 _u_nstage file      _m_essenger
 _d_ispatch          _h_elm hunks
-
+_l_og
 
 
 ^git-messenger:popup-message^
@@ -2967,6 +2967,7 @@ m - Copy commit message   q - Quit
   ("g" +version-control@git-gutter/body)
   ("h" helm-hunks-current-buffer)
   ("k" monky-status)
+  ("l" magit-log)
   ("m" git-messenger:popup-message)
   ("t" git-timemachine)
   ("u" magit-unstage-file)
