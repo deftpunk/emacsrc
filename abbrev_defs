@@ -5,6 +5,8 @@
 
 (define-abbrev-table 'Info-edit-mode-abbrev-table '())
 
+(define-abbrev-table 'Man-mode-abbrev-table '())
+
 (define-abbrev-table 'ansible-doc-module-mode-abbrev-table '())
 
 (define-abbrev-table 'array-mode-abbrev-table '())
@@ -194,6 +196,7 @@
     ("mdoe" "mode" nil 1)
     ("messign" "messing" nil 1)
     ("miliseconds" "milliseconds" nil 2)
+    ("mjor" "major" nil 1)
     ("mofing" "moving" nil 1)
     ("movign" "moving" nil 2)
     ("mroe" "more" nil 1)
@@ -471,6 +474,8 @@
 (define-abbrev-table 'vc-hg-log-view-mode-abbrev-table '())
 
 (define-abbrev-table 'vterm-mode-abbrev-table '())
+
+(define-abbrev-table 'woman-mode-abbrev-table '())
 
 (define-abbrev-table 'xref--xref-buffer-mode-abbrev-table '())
 
