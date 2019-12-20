@@ -80,9 +80,9 @@ Some MacOSX specific configuration
 
 Some libraries or collections of extensions that we find useful.
 
-** [[https://github.com/bbatsov/crux][CRUX]]
+** crux
 
-A Collection of Ridiculously Useful eXtensions for Emacs
+[[https://github.com/bbatsov/crux][CRUX]] - Collection of Ridiculously Useful eXtensions for Emacs
 
 #+BEGIN_SRC emacs-lisp :name crux
 (use-package crux)
@@ -463,6 +463,15 @@ keys will be highlighted with the appropriate color.
 #+begin_src emacs-lisp :name Hydra
 (use-package hydra)
 #+end_src
+
+*** Major mode Hydra & Pretty Hydra
+
+[[https://github.com/jerrypnz/major-mode-hydra.el][major-mode & pretty-hydra]] Make it easy to create major mode hydras and hydras with bells & whistles.
+
+
+#+BEGIN_SRC emacs-lisp :name pretty-hydra
+(use-package major-mode-hydra)
+#+END_SRC
 
 *** which-key
 
@@ -1933,6 +1942,10 @@ from Emacs. It supports various kind of emacs buffer, like:
 *** Magit
 
 [[https://magit.vc/][Magit]] - The best git porcelain around.
+
+Some more informational links:
+https://emacsair.me/2017/09/01/magit-walk-through/
+https://emacsair.me/2017/09/01/the-magical-git-interface/
 
 #+BEGIN_SRC emacs-lisp :name magit
 (setq vc-follow-symlinks t) ; follow symlinks
