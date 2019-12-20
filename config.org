@@ -233,6 +233,7 @@ A really nice and performant modeline broken out of [[https://github.com/hlissne
         doom-modeline-buffer-file-name-style 'truncate-upto-project
         doom-modeline-major-mode-color-icon t
         doom-modeline-major-mode-icon t
+        doom-modeline-vcs-max-length 14
         doom-modeline-buffer-modification-icon t
         doom-modeline-icon (display-graphic-p))
   :hook (after-init . doom-modeline-mode))
@@ -1437,7 +1438,7 @@ tree renderer.
 (use-package lsp-treemacs
   :defer t
   :after treemacs lsp-mode
-  :comands (lsp-treemacs-sync-mode lsp-treemacs-errors-list lsp-treemacs-symbols-list lsp-treemacs-references lsp-treemacs-implementaions)
+  :commands (lsp-treemacs-sync-mode lsp-treemacs-errors-list lsp-treemacs-symbols-list lsp-treemacs-references lsp-treemacs-implementaions)
   :config
   (lsp-treemacs-sync-mode 1))
 #+END_SRC
@@ -2176,9 +2177,15 @@ https://github.com/emacs-helm/helm-ls-hg
 
 [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]] - Language Server Protocol Support for Emacs
 
+*Trying out different LSP code outliners*
+1. Treemacs + treemacs-lsp-mode 12/7/2019 - didn't work for python, maybe because i don't use
+   pyls (too slow)
+2. lsp-outliner
+
 #+BEGIN_SRC emacs-lisp :name lsp-mode
 (use-package lsp-mode
-  :hook ((clojure-mode python-mode) . lsp-deferred)
+  :diminish lsp-mode
+  :hook (prog-mode . lsp-deferred)
   :commands (lsp lsp-deferred)
   :config
   (add-to-list 'lsp-language-id-configuration '(clojure-mode . "clojure-mode"))
