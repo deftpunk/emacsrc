@@ -467,7 +467,7 @@ keys will be highlighted with the appropriate color.
 *** Major mode Hydra & Pretty Hydra
 
 [[https://github.com/jerrypnz/major-mode-hydra.el][major-mode & pretty-hydra]] Make it easy to create major mode hydras and hydras with bells & whistles.
-
+https://www.reddit.com/r/emacs/comments/cdfr20/ann_majormodehydra_prettyhydra_020/
 
 #+BEGIN_SRC emacs-lisp :name pretty-hydra
 (use-package major-mode-hydra)
@@ -1051,7 +1051,7 @@ Completion that IMHO is better than auto-complete.
 
 #+BEGIN_SRC emacs-lisp :name Helm
 (use-package helm
-  :commands (helm-mini helm-M-x)
+  :commands (helm-mini helm-M-x helm-scroll-other-window)
     :bind (:map helm-map
               ([escape] . helm-keyboard-quit))
   :init
@@ -1181,7 +1181,15 @@ Keys bound here:
 [[https://github.com/Wilfred/helpful][Helpful]] - A better Emacs *help* buffer
 
 #+BEGIN_SRC emacs-lisp :name helpful
-(use-package helpful)
+(use-package helpful
+  :pretty-hydra
+  ((:color teal :quitkey "<Esc>")
+   ("Helpful"
+    (("c" helpful-command "commands")
+     ("f" helpful-callable "callable")
+     ("k" helpful-key "keybindings")
+     ("v" helpful-variable "variables")
+     ))))
 #+END_SRC
 
 *** hl-todo
@@ -3392,12 +3400,13 @@ Create leader keys bindings using general.el
   ;; :prefix my-leader
   :prefix "SPC")
 
+;; helpful-hydra/body - is defined in the helpful 'use-package' declaration
 (my-leader-def 'normal 'override
   "c" 'hydra-cee/body
   "e" 'deftpunk/hydra-major-mode-hack
   "f" 'hydra-files-projectile/body
   "g" 'hydra-version-control/body
-  "h" 'help
+  "h" 'helpful-hydra/body
   "i" 'helm-mini
   "k" 'flex//kill-current-buffer
   "p" 'counsel-projectile-switch-project
