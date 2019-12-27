@@ -2117,9 +2117,11 @@ Show TODOs in Magit status buffer for each file.
 
 Because I still have to deal with this at work for some really old internal repos.
 
-*** [[https://github.com/ananthakumaran/monky][Monky]]
+*** Monky
 
-Magit for Hg - make Mercurial just a little more palatable - [[https://ananthakumaran.in/monky/index.html][User Manual]]
+[[https://github.com/ananthakumaran/monky][Magit for Hg]] - make Mercurial just a little more palatable cuz I still have to use it at work.
+
+[[https://ananthakumaran.in/monky/index.html][User Manual]]
 
 #+BEGIN_SRC emacs-lisp :name monky
   (use-package monky
