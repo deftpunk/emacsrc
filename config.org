@@ -895,7 +895,12 @@ Select a link to jump to in Info, help, woman, org or eww modes
 (use-package ace-window
   :config
   (setq aw-keys '(?a ?s ?d ?f ?j ?k ?l)
-	aw-leading-char-style 'path)
+        aw-leading-char-style 'path
+        aw-dispatch-alist '((?s aw-swap-windows "Swap Windows")
+                            (?2 aw-split-window-vert "Split Window Vertically")
+                            (?3 aw-split-window-horz "Split Window Horizontally")
+                            (?? aw-show-dispatch-help))
+        aw-dispatch-always t)
   (set-face-attribute 'aw-leading-char-face nil :height 3.0))
 #+end_src
 
