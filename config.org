@@ -276,14 +276,6 @@ A better representation of the classic Monokai theme from Sublime in Emacs.
 ;; (load-theme 'monokai t)
 #+end_src
 
-**** dark monokai
-
-#+BEGIN_SRC emacs-lisp :name darkokai
-;; (use-package darkokai-theme
-;; :init (setq darkokai-mode-line-padding 1))
-;; (load-theme 'darkokai t)
-#+END_SRC
-
 ** Highlighting
 
 *** Beacon
