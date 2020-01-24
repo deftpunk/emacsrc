@@ -272,7 +272,8 @@ A better representation of the classic Monokai theme from Sublime in Emacs.
 #+begin_src emacs-lisp :name monokai-theme
 (use-package monokai-theme
   :init
-  (setq monokai-background "#1b1d1e"))
+  ;; (setq monokai-background "1b1d1e")
+  )
 ;; (load-theme 'monokai t)
 #+end_src
 
@@ -2417,6 +2418,19 @@ count_of_ = get_total("");
 (add-hook 'clojure-mode-hook #'subword-mode)
 (add-hook 'clojure-mode-hook #'smartparens-strict-mode)
 
+#+END_SRC
+
+*** Common Lisp
+
+**** Slime
+
+#+BEGIN_SRC emacs-lisp :name slime
+(use-package slime
+  :init
+  (setq inferior-lisp-program "/usr/local/bin/sbcl"
+        slime-contribs '(slime-fancy))
+  :config
+  (load (expand-file-name "~/quicklisp/slime-helper.el")))
 #+END_SRC
 
 *** Emacs Lisp
