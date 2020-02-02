@@ -1455,7 +1455,7 @@ tree renderer.
 (use-package lsp-treemacs
   :defer t
   :after treemacs lsp-mode
-  :commands (lsp-treemacs-sync-mode lsp-treemacs-errors-list lsp-treemacs-symbols-list lsp-treemacs-references lsp-treemacs-implementaions)
+  :commands (lsp-treemacs-sync-mode lsp-treemacs-errors-list lsp-treemacs-symbols lsp-treemacs-references lsp-treemacs-implementaions)
   :config
   (lsp-treemacs-sync-mode 1))
 #+END_SRC
@@ -2225,9 +2225,10 @@ https://github.com/emacs-helm/helm-ls-hg
         lsp-ui-doc-enable t
         lsp-ui-doc-position 'top
         lsp-ui-doc-include-signature t
-        lsp-ui-sideline-enable nil
+        lsp-ui-sideline-enable t
+        lsp-ui-imenu-enable t
         lsp-ui-flycheck-enable t
-        lsp-ui-flycheck-list-position 'right
+        lsp-ui-flycheck-list-position 'bottom
         lsp-ui-flycheck-live-reporting t
         lsp-ui-peek-enable t
         lsp-ui-peek-list-width 60
@@ -2512,6 +2513,34 @@ REPL for elisp
                                          (smartparens-mode 1)
                                          (eldoc-mode 1))))
 #+end_src
+
+*** Golang
+
+**** go-mode
+
+[[https://github.com/dominikh/go-mode.el][go-mode]] Emacs mode for the Go programming language
+
+#+BEGIN_SRC emacs-lisp :name golang
+(defun custom-go-mode ()
+  (display-line-numbers-mode 1))
+
+(use-package go-mode
+  :defer t
+  :mode ("\\.go\\'" . go-mode)
+  :init
+  (add-hook 'go-mode-hook 'custom-go-mode)
+  :config
+  (add-hook 'before-save-hook #'gofmt-before-save))
+#+END_SRC
+
+**** golang + lsp-mode
+
+#+BEGIN_SRC emacs-lisp :name go-lspmode
+(defun lsp-go-install-save-hooks ()
+  (add-hook 'before-save-hook #'lsp-format-buffer t t)
+  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+(add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+#+END_SRC
 
 *** Python
 **** python mode
