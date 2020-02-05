@@ -2306,16 +2306,17 @@ A very poor - but its all we got - class/object browser.
 I use [[https://github.com/joaotavora/yasnippet][yasnippet]] for all of my snippet needs - the [[http://joaotavora.github.io/yasnippet/][manual]].
 
 #+begin_src emacs-lisp :name yasnippet
-  (use-package yasnippet-snippets)
+(use-package yasnippet-snippets)
 
-  (use-package yasnippet
-    :commands yas-global-mode
-    :mode ("/\\.emacs\\.d/snippets/" . snippet-mode)
-    :init
-    (setq yas-snippet-dirs '("~/.emacs.d/snippets")
-          yas-verbosity 3)
-    (yas-global-mode 1)
-    (use-package helm-c-yasnippet))
+(use-package yasnippet
+  :commands yas-global-mode
+  :mode ("/\\.emacs\\.d/snippets/" . snippet-mode)
+  :init
+  (setq yas-snippet-dirs '("~/.emacs.d/snippets")
+        yas-verbosity 3)
+  (yas-global-mode 1)
+  (use-package helm-c-yasnippet
+    :init (setq helm-yas-space-match-any-greedy t)))
 #+end_src
 
 **** auto-yasnippet
@@ -2434,6 +2435,12 @@ count_of_ = get_total("");
   (load (expand-file-name "~/quicklisp/slime-helper.el")))
 #+END_SRC
 
+**** common-lisp-snippets
+
+#+BEGIN_SRC emacs-lisp :name common-lisp-snippets
+(use-package common-lisp-snippets)
+#+END_SRC
+
 *** Emacs Lisp
 **** Settings
 
@@ -2529,6 +2536,8 @@ REPL for elisp
   :mode ("\\.go\\'" . go-mode)
   :init
   (add-hook 'go-mode-hook 'custom-go-mode)
+  (setq compile-command "echo Building... && go build -v && echo Testing... && go test -v && echo Linter... && golint")
+  (setq compilation-read-command nil)
   :config
   (add-hook 'before-save-hook #'gofmt-before-save))
 #+END_SRC
@@ -2540,6 +2549,14 @@ REPL for elisp
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+#+END_SRC
+
+**** go-snippets
+
+[[https://github.com/toumorokoshi/go-snippets][go-snippets]] yasnippets for golang
+
+#+BEGIN_SRC emacs-lisp :name go-snippets
+(use-package go-snippets)
 #+END_SRC
 
 *** Python
@@ -2639,7 +2656,7 @@ YAML mode
 
 #+begin_src emacs-lisp :name yaml-mode
   (use-package yaml-mode
-    :mode ("\\.yml$" "\\.sls$")
+    :mode ("\\.yml$" "\\.sls$" "\\.yaml$")
     :diminish yaml-mode
     :config
     (with-eval-after-load 'yaml-mode
@@ -3507,6 +3524,7 @@ the deftpunk/hydra-major-mode-hack for buffer specific bindings via hydras.
 
 * Notes
 ** New plugins to Investigate
+*** flyspell-correct
 *** pcre2el
 ;; pcre2el
 ;; https://github.com/joddie/pcre2el/tree/0b5b2a2c173aab3fd14aac6cf5e90ad3bf58fa7d
