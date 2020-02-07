@@ -2559,6 +2559,30 @@ REPL for elisp
 (use-package go-snippets)
 #+END_SRC
 
+
+*** Nim
+
+#+BEGIN_SRC emacs-lisp :name nim
+(use-package lsp-mode
+  :commands lsp
+  :config
+  ;; Register `nimlsp` from https://github.com/PMunch/nimlsp
+  (add-to-list 'lsp-language-id-configuration '(nim-mode . "nim"))
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection '("nimlsp"))
+                    :major-modes '(nim-mode)
+                    :server-id 'nim-ls)))
+
+(use-package highlight-indent-guides
+  :defer
+  :init
+  (setq highlight-indent-guides-method 'character))
+
+(use-package nim-mode
+  :hook ((nim-mode . highlight-indent-guides-mode)
+         (nim-mode . lsp)))
+#+END_SRC
+
 *** Python
 **** python mode
 
