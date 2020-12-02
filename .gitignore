@@ -1,0 +1,10 @@
+elpa/
+cache/
+.org-id-locations
+loaddefs.el
+src/
+local/
+/.cache/
+/etc/url/
+/loaddefs.el~
+/projectile-bookmarks.eld
