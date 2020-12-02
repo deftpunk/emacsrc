@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: tkex
+# key: tkex
+# --
+try:
+    $1
+except KeyError as ke:
+    raise ${2:ConfigurationError}("$3{}".format($4))

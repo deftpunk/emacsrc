@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: pax
+# key: pax
+# --
+:param $1: $2

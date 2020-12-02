@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: foro
+# key: foro
+# --
+for org_id, api_key in self.api_keys.items():
+    $0

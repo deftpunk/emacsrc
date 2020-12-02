@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: deftest
+# key: deftest
+# --
+def test_${1}(self):
+    """ ${2} """
+    ${0}

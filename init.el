@@ -45,7 +45,7 @@ missing) and shouldn't be deleted.")
   "Where the dynamically generated autoloads file ends up.")
 
 (defconst deftpunk--src-dir (concat deftpunk--emacs-dir "/src")
-  "Where I put packages that I clone.")
+  "Where I put packages that I clone manually from github, etc.")
 
 ;; Some hooks
 (defvar deftpunk-init-ui-hook nil
@@ -75,7 +75,7 @@ missing) and shouldn't be deleted.")
     (setq user-emacs-directory (file-name-directory load-file-name)))
 
   (load (concat user-emacs-directory "core/core-lib")
-	nil 'nomessage)
+        nil 'nomessage)
 
   ;;
   ;;; Optimizations from Doom Emacs
@@ -127,9 +127,9 @@ missing) and shouldn't be deleted.")
     (setq gc-cons-percentage 0.6)
     (add-transient-hook! 'pre-command-hook (gcmh-mode +1))
     (with-eval-after-load 'gcmh
-      (setq gcmh-idle-delay 10
+      (setq gcmh-idle-delay 30
 	    gcmh-high-cons-threshold 16777216
-	    gcmh-verbose t
+	    gcmh-verbose nil ; I don't want to see any messaging when it runs.
 	    gc-cons-percentage 0.1)
       (add-hook 'focus-out-hook #'gcmh-idle-garbage-collect)))
 
@@ -192,27 +192,27 @@ missing) and shouldn't be deleted.")
   ;;; Package initialization.
 
   (setq package--init-file-ensured t
-	package-user-dir (concat deftpunk--emacs-dir "/elpa")
-	package-enable-at-startup nil
-	package-archives
-	'(("gnu"   . "https://elpa.gnu.org/packages/")
-	  ("melpa" . "https://melpa.org/packages/"))
+        package-user-dir (concat deftpunk--emacs-dir "/elpa")
+        package-enable-at-startup 3il
+        package-archives
+        '(("gnu"   . "https://elpa.gnu.org/packages/")
+          ("melpa" . "https://melpa.org/packages/"))
 
-	;; security settings
-	gnutls-verify-error (not (getenv "INSECURE")) ; you shouldn't use this
-	tls-checktrust gnutls-verify-error
-	tls-program (list "gnutls-cli --x509cafile %t -p %p %h"
-			  ;; compatibility fallbacks
-			  "gnutls-cli -p %p %h"
-			  "openssl s_client -connect %h:%p -no_ssl2 -no_ssl3 -ign_eof")
+        ;; security settings
+        gnutls-verify-error (not (getenv "INSECURE")) ; you shouldn't use this
+        tls-checktrust gnutls-verify-error
+        tls-program (list "gnutls-cli --x509cafile %t -p %p %h"
+                          ;; compatibility fallbacks
+                          "gnutls-cli -p %p %h"
+                          "openssl s_client -connect %h:%p -no_ssl2 -no_ssl3 -ign_eof")
 
-	use-package-verbose 1
-	use-package-always-ensure t
-	use-package-minimum-reported-time 0.1
+        use-package-verbose 1
+        use-package-always-ensure t
+        use-package-minimum-reported-time 0.1
 
-	byte-compile-dynamic nil
-	byte-compile-verbose 1
-	byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
+        byte-compile-dynamic nil
+        byte-compile-verbose 1
+        byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
 
   ;; Initialize the core packages.
   (setq deftpunk--refreshed-p nil)
@@ -407,21 +407,21 @@ missing) and shouldn't be deleted.")
   ;;
   ;;; Scrolling
   (setq hscroll-margin 2
-	hscroll-step 1
-	;; Emacs spends too much effort recentering the screen if you scroll the
-	;; cursor more than N lines past window edges (where N is the settings of
-	;; `scroll-conservatively'). This is especially slow in larger files
-	;; during large-scale scrolling commands. If kept over 100, the window is
-	;; never automatically recentered.
-	scroll-conservatively 101
-	scroll-margin 0
-	scroll-preserve-screen-position t
-	;; Reduce cursor lag by a tiny bit by not auto-adjusting `window-vscroll'
-	;; for tall lines.
-	auto-window-vscroll nil
-	;; mouse
-	mouse-wheel-scroll-amount '(5 ((shift) . 2))
-	mouse-wheel-progressive-speed nil)  ; don't accelerate scrolling
+        hscroll-step 1
+        ;; Emacs spends too much effort recentering the screen if you scroll the
+        ;; cursor more than N lines past window edges (where N is the settings of
+        ;; `scroll-conservatively'). This is especially slow in larger files
+        ;; during large-scale scrolling commands. If kept over 100, the window is
+        ;; never automatically recentered.
+        scroll-conservatively 101
+        scroll-margin 0
+        scroll-preserve-screen-position t
+        ;; Reduce cursor lag by a tiny bit by not auto-adjusting `window-vscroll'
+        ;; for tall lines.
+        auto-window-vscroll nil
+        ;; mouse
+        mouse-wheel-scroll-amount '(5 ((shift) . 2))
+        mouse-wheel-progressive-speed nil)  ; don't accelerate scrolling
 
   ;; Remove hscroll-margin in shells, otherwise it causes jumpiness
   (setq-hook! '(eshell-mode-hook term-mode-hook) hscroll-margin 0)
@@ -429,10 +429,10 @@ missing) and shouldn't be deleted.")
   ;;
   ;;; Cursors
   (setq blink-cursor-mode -1                ; distraction prevention.
-	blink-matching-paren nil            ; more distraction prevention.
-	cursor-in-non-selected-windows nil  ; hide cursors in other windows.
-	visible-cursor nil                  ; use the "normal" cursor.
-	x-stretch-cursor nil)               ; don't stretch the cursor to fit wide characters.
+        blink-matching-paren nil            ; more distraction prevention.
+        cursor-in-non-selected-windows nil  ; hide cursors in other windows.
+        visible-cursor nil                  ; use the "normal" cursor.
+        x-stretch-cursor nil)               ; don't stretch the cursor to fit wide characters.
 
   ;;
   ;;; Fringes
@@ -505,7 +505,7 @@ missing) and shouldn't be deleted.")
 
   ;; Favor vertical splits over horizontal ones. Screens are usually wide.
   (setq split-width-threshold 160
-	split-height-threshold nil)
+        split-height-threshold nil)
 
   ;;
   ;;; Minibuffer
@@ -555,11 +555,11 @@ missing) and shouldn't be deleted.")
 
   ;; History and Backup settings - save nothing, that's what git is for ... unless we have to :)
   (setq auto-save-default nil
-	create-lockfiles nil
-	make-backup-files nil
-	auto-save-list-file-prefix (concat deftpunk--cache-dir "autosave/")
-	auto-save-file-name-transforms `((".*" ,auto-save-list-file-prefix t))
-	backup-directory-alist       (list (cons "." (concat deftpunk--cache-dir "/backup/"))))
+        create-lockfiles nil
+        make-backup-files nil
+        auto-save-list-file-prefix (concat deftpunk--cache-dir "autosave/")
+        auto-save-file-name-transforms `((".*" ,auto-save-list-file-prefix t))
+        backup-directory-alist       (list (cons "." (concat deftpunk--cache-dir "/backup/"))))
 
   ;;
   ;;; Buffers
@@ -575,7 +575,7 @@ missing) and shouldn't be deleted.")
 
   ;; Spaces over tabs and 4 spaces at that ... as if there are other options, go-mode not withstanding.
   (setq-default indent-tabs-mode nil
-		tab-width 4)
+                tab-width 4)
 
   ;; Make `tabify' and `untabify' only affect indentation. Not tabs/spaces in the
   ;; middle of a line.
@@ -654,15 +654,15 @@ missing) and shouldn't be deleted.")
   (setq ansi-color-for-comint-mode t)
   (after! compile
 	  (setq compilation-always-kill t        ; kill compilation process before starting another
-		compilation-ask-about-save nil   ; save all buffers on `compile'
-		compilation-error-screen-columns nil
-		compilation-context-lines 2
-		compilation-scroll-output 'first-error))
+          compilation-ask-about-save nil   ; save all buffers on `compile'
+          compilation-error-screen-columns nil
+          compilation-context-lines 2
+          compilation-scroll-output 'first-error))
 
   ;; Ediff
   (after! ediff
     (setq ediff-diff-options "-w" ; turn off whitespace checking
-	  ediff-use-long-help-message 1
+          ediff-use-long-help-message 1
           ediff-split-window-function #'split-window-horizontally
           ediff-window-setup-function #'ediff-setup-windows-plain))
 
@@ -843,8 +843,6 @@ missing) and shouldn't be deleted.")
             (file-newer-than-file-p deftpunk--org-configuration-file deftpunk--org-elfile))
     (my-tangle-config-org deftpunk--org-configuration-file deftpunk--org-elfile))
   (load-file deftpunk--org-elfile)
-
-  ; (org-babel-load-file deftpunk--org-configuration-file)
 
   ;;
   ;;; Finalize the setup.
