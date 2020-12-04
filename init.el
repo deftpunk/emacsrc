@@ -70,10 +70,12 @@ missing) and shouldn't be deleted.")
 						     (time-subtract after-init-time before-init-time)))
 					   gcs-done)))
 
-  ;; load up core-lib
   (let (file-name-handler-alist)
     (setq user-emacs-directory (file-name-directory load-file-name)))
 
+  ;; Load up core-lib which has a bunch of stuff we need/use to get started.
+  ;; Don't put the other code in this file into separate files, we tried that
+  ;; but its just slower.
   (load (concat user-emacs-directory "core/core-lib")
         nil 'nomessage)
 
@@ -85,7 +87,7 @@ missing) and shouldn't be deleted.")
   ;; this to `nil' in the past, but the `bidi-display-reordering's docs say that
   ;; is an undefined state and suggest this to be just as good:
   (setq-default bidi-display-reordering 'left-to-right
-		bidi-paragraph-direction 'left-to-right)
+                bidi-paragraph-direction 'left-to-right)
 
   ;; Reduce rendering/line scan work for Emacs by not rendering cursors or regions
   ;; in non-focused windows.
@@ -483,7 +485,7 @@ missing) and shouldn't be deleted.")
   ;; Don't resize windows & frames in steps; it's prohibitive to prevent the user
   ;; from resizing it to exact dimensions, and looks weird.
   (setq window-resize-pixelwise t
-	frame-resize-pixelwise t)
+        frame-resize-pixelwise t)
 
   ;; Set the frame title to the full path of the buffer we are working on.
   (setq frame-title-format
