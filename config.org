@@ -1,0 +1,448 @@
+
+#+TITLE: config.org
+#+AUTHOR: Deftpunk
+#+STARTUP: content
+#+OPTIONS: toc:4 :num:nil ^:nil
+
+* About 
+
+** Emacs
+
+The big, beautiful, thermonuclear, editing reactor.
+
+#+begin_quote
+“Emacs outshines all other editing software in approximately the same
+way that the noonday sun does the stars. It is not just bigger and
+brighter; it simply makes everything else vanish.”
+
+“Emacs is written in Lisp, which is the only computer language that is
+beautiful.”
+
+--Neal Stephenson
+#+end_quote
+
+** My Configuration
+
+My configuration is based on [[https://orgmode.org/][Orgmode]] and optimization/perfomance lessons gleaned from
+reviewing [[https://github.com/hlissner/doom-emacs][doom-emacs]] and other configuration's source. - see Credits section.
+
+*** Some brief highlights
+
+- lots & lots of [[https://github.com/emacs-evil/evil][Evil]]; it keeps my hands pain-free.
+
+- I don't make use of custom.el, I prefer to be explicit about the things that I am changing.
+
+- All of the extraneous Emacs files/dirs are kept under =.local/= & =.emacs.d/etc/=
+  I tried out [[https://github.com/tarsius/no-littering][no-littering]] but found that it didn't work quite as I would have liked.
+
+- Package management is handled by [[https://github.com/jwiegley/use-package][use-package]] and [[https://github.com/Malabarba/paradox/][Paradox]]
+
+- I autoload as many of the functions that I use as possible.  Avoid =require= and =load/load-file= as much as possible.
+
+*** Versions of Emacs for MacOSX
+
+I do most of my work on MacOSX these days and have tried several different builds
+of Emacs on that Operating System.
+
+**** Install via homebrew
+
+I am currently using the Emacs you install via Homebrew with several extensions.
+See the External Dependencies below before installing/using.
+
+=brew install emacs --with-cocoa --with-modules --with-gnutls --with-imagemagick@6=
+
+**** The railwaycat version
+
+Wed Aug 23 11:54:20 2017 - Tried the [[https://github.com/railwaycat/homebrew-emacsmacport][railwaycat emacsmacport]] port.  Ultimately decided
+not to use it.
+
+- didn't solve my ansi-term/zsh problem with full configuration
+- the Command key is now Alt; I liked having Alt & Super keys
+- looks really, really nice
+- the devicons package did not work out of the box, nor did the flycheck, etc. images
+
+**** The emacs-plus version
+
+Tried [[https://github.com/d12frosted/homebrew-emacs-plus][Emacs Plus]] as well, had similar problems as the railwaycat port - Emacs 25
+
+*** External Dependencies
+
+I rely on a few external programs to work with my Emacs installation.  Install
+these =first= before installing/running Emacs.
+
+   1. Install xcode
+   2. Install the following packages via =brew install=
+      - gls
+      - coreutils
+      - cask
+      - ripgrep
+      - aspell
+      - zstd
+   3. Install Node.js & the vmd module - =npm install -g vmd=
+   4. Install libvterm
+   5. Download latest org-mode
+   6. Install the losveka font - https://github.com/be5invis/iosevka
+      =brew tap homebrew/cask-fonts && brew cask install font-iosevka && brew cask install font-iosevka-slab=
+
+clone evil-unimpaired to src/
+clone bookmark-plus to src/
+
+** Credits
+
+Most of the basic settings and initial configuration are done in the
+=core/core*.el= files that are a heavy copy of [[https://github.com/hlissner/doom-emacs][doom-emacs]] and how it configures
+Emacs.  The result is a pretty fast initial startup given the amount of stuff.
+I also copy some ideas and code from [[http://spacemacs.org/][spacemacs]], [[https://seagle0128.github.io/.emacs.d/][centaur emacs]] and others - full
+props and credit to the authors of those fantastic configurations.
+
+* Libraries
+
+#+begin_src emacs-lisp :name crux
+(use-package crux)
+#+end_src
+
+* UI
+
+** all-the-icons
+
+[[https://github.com/domtronn/all-the-icons.el][all-the-icons]] - Make Emacs pretty.
+Don't forget to run =M-x all-the-icons-install-fonts= if this is a new install.
+
+#+begin_src emacs-lisp :name all_the_icons
+(use-package all-the-icons)
+#+end_src
+
+
+* Keybinding utilities
+
+Things like hydra, major-mode-hydra, posframe and general.el that have to come pretty early so that we
+can take advantage of them with other major mode packages and the like.
+
+** posframe
+
+A child frame at point connected to the root window's buffer.  I use this with
+hydra/major-mode-hydra/pretty-hydra for convenience.
+
+#+begin_src emacs-lisp :name posframe
+  (use-package posframe)
+#+end_src
+
+** The General
+
+[[https://github.com/noctuid/general.el][general.el]] - We use general.el to setup evil-mode, leader and other keybindings, as a result we pull it
+in quite early.
+
+Set the 'general-override-states' and enable the 'general-override-mode' so
+that evil-collection and others don't override bindings that I want.
+
+#+begin_src emacs-lisp :name general.el
+  (use-package general
+    :config
+    (setq general-override-states '(insert
+                                    emacs
+                                    hybrid
+                                    normal
+                                    visual
+                                    motion
+                                    operator
+                                    replace))
+    (general-override-mode))
+#+end_src
+
+** Hydra
+
+[[https://github.com/abo-abo/hydra][hydra]] - Make some bindings stick around.
+
+#+BEGIN_SRC emacs-lisp :name hydra
+  (use-package hydra)
+#+END_SRC
+
+** major-mode-hydra (includes pretty-hydra)
+
+pretty-hydra saves us the trouble of formating the docstring using classic hydra (can be a pain).
+
+#+BEGIN_SRC emacs-lisp :name majore-mode-hydra
+  (use-package major-mode-hydra
+    :init
+    ;; Set the major-mode-hydra title using all-the-icons icon for the major mode
+    (setq major-mode-hydra-title-generator
+        '(lambda (mode)
+           (s-concat "\n"
+                     (s-repeat 10 " ")
+                     (all-the-icons-icon-for-mode mode :v-adjust 0.05)
+                     " "
+                     (symbol-name mode)
+                     " commands"))))
+
+  ;; A bunch of utility functions from https://gist.github.com/mbuczko/e15d61363d31cf78ff17427072e0c325
+  (defun with-faicon (icon str &optional height v-adjust)
+    (s-concat (all-the-icons-faicon icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+
+  (defun with-fileicon (icon str &optional height v-adjust)
+    (s-concat (all-the-icons-fileicon icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+
+  (defun with-octicon (icon str &optional height v-adjust)
+    (s-concat (all-the-icons-octicon icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+
+  (defun with-material (icon str &optional height v-adjust)
+    (s-concat (all-the-icons-material icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+
+  (defun with-mode-icon (mode str &optional height nospace face)
+    (let* ((v-adjust (if (eq major-mode 'emacs-lisp-mode) 0.0 0.05))
+           (args     `(:height ,(or height 1) :v-adjust ,v-adjust))
+           (_         (when face
+                        (lax-plist-put args :face face)))
+           (icon     (apply #'all-the-icons-icon-for-mode mode args))
+           (icon     (if (symbolp icon)
+                         (apply #'all-the-icons-octicon "file-text" args)
+                       icon)))
+      (s-concat icon (if nospace "" " ") str)))
+#+END_SRC
+
+** hydra-posframe
+
+#+BEGIN_SRC emacs-lisp :name hydra-posframe
+  (use-package hydra-posframe
+    :straight (hydra-posframe :type git :host github :repo "Ladicle/hydra-posframe")
+    :hook (after-init . hydra-posframe-enable))
+#+END_SRC
+
+** which-key
+
+[[https://github.com/justbur/emacs-which-key][which-key]] - Display available keybindings.
+
+- =which-key-show-top-level= will show most key bindings without a prefix. It
+  is most and not all, because many are probably not interesting to most
+  users.
+- =which-key-show-major-mode= will show the currently active major-mode
+  bindings. It's similar to =C-h m= but in a which-key format. It is also
+  aware of evil commands defined using =evil-define-key=.
+- =which-key-show-next-page= is the command used for paging.
+- =which-key-undo= can be used to undo the last keypress when in the middle
+  of a key sequence.
+
+#+begin_src emacs-lisp :name which-key
+  (use-package which-key
+    :commands which-key-mode
+    :init
+    (setq which-key-allow-evil-operators t
+          which-key-show-operator-state-maps t)
+    :config
+    (which-key-mode))
+#+end_src
+
+* General Utilites
+
+Make Emacs nicer to use in some way.
+
+** ace-link
+
+[[https://github.com/abo-abo/ace-link][ace-link]] Select a link to jump to in Info, help, woman, org or eww modes
+
+#+begin_src emacs-lisp :name ace-link
+   (use-package ace-link
+     :init (ace-link-setup-default))
+#+end_src
+
+** ace-window
+
+[[https://github.com/abo-abo/ace-window][ace-window]] - Selecting a window/frame to switch to
+
+#+begin_src emacs-lisp :name ace-window
+  (use-package ace-window
+    :defer t
+    :init
+    (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)
+          aw-leading-char-style 'path
+          aw-dispatch-alist '((?? aw-show-dispatch-help))
+          aw-background t
+          aw-dispatch-always t)
+    :config
+    (set-face-attribute 'aw-leading-char-face nil :height 4.0))
+#+end_src
+
+* Software Development Utilites
+
+** Magit
+
+[[https://magit.vc/][Magit]] - The best git porcelain around.
+
+Some more informational links:
+https://emacsair.me/2017/09/01/magit-walk-through/
+https://emacsair.me/2017/09/01/the-magical-git-interface/
+
+#+begin_src emacs-lisp :name magit
+  (use-package magit
+    :defer t
+    :init
+    ;; Prevent ~/.emacs.d/transient from being created
+    (setq transient-levels-file (concat deftpunk--local-dir "transient/levels")
+          transient-values-file (concat deftpunk--local-dir "transient/values")
+          transient-history-file (concat deftpunk--local-dir "transient/history"))
+
+    :config
+    (setq  magit-log-arguments '("--graph" "--decorate" "--color")
+           magit-save-repository-buffers 'dontask
+           magit-revert-buffers 'silent)
+
+    (setq magit-revision-show-gravatars '("^Author:     " . "^Commit:     ")
+          magit-diff-refine-hunk t ; show granular diffs in selected hunk
+	  ;; Don't autosave repo buffers. This is too magical, and saving can
+	  ;; trigger a bunch of unwanted side-effects, like save hooks and
+	  ;; formatters. Trust us to know what we're doing.
+	  magit-save-repository-buffers nil)
+
+   ;; TODO: switching buffers, cleaning up, doom autoloads (modules/tools/magit/autoload.el)
+  ; (defadvice! +magit-revert-repo-buffers-deferred-a (&rest _)
+  ;   :after '(magit-checkout magit-branch-and-checkout)
+  ;   ;; Since the project likely now contains new files, best we undo the
+  ;   ;; projectile cache so it can be regenerated later.
+  ;   (projectile-invalidate-cache nil)
+  ;   ;; Use a more efficient strategy to auto-revert buffers whose git state has
+  ;   ;; changed: refresh the visible buffers immediately...
+  ;   (+magit-mark-stale-buffers-h))
+  ; ;; ...then refresh the rest only when we switch to them, not all at once.
+  ; (add-hook 'doom-switch-buffer-hook #'+magit-revert-buffer-maybe-h)
+
+    (after! evil
+      ;; Switch to emacs state only while in `magit-blame-mode', then back when
+      ;; its done (since it's a minor-mode).
+      (add-hook! 'magit-blame-mode-hook
+        (evil-local-mode (if magit-blame-mode -1 +1)))))
+#+end_src
+
+*** Magit Todos
+
+https://github.com/alphapapa/magit-todos
+Show TODOs in Magit status buffer for each file.
+
+#+BEGIN_SRC emacs-lisp :name magit-todos
+(use-package magit-todos
+  :defer t
+  :after magit
+  :config
+  (magit-todos-mode 1))
+#+END_SRC
+
+* Evil
+
+** evil dependencies
+
+*** goto-chg
+
+[[https://github.com/emacs-evil/goto-chg][goto-chg]]
+
+Provides support for the motions g; g, and for the last-change-register ., also
+provides the functions goto-last-change and goto-last-change-reverse.
+
+#+begin_src emacs-lisp :name goto-chg
+(use-package goto-chg)
+#+end_src
+
+*** undo-tree
+
+(use-package! undo-tree
+  :when (featurep! +tree)
+  ;; Branching & persistent undo
+  :hook (doom-first-buffer . global-undo-tree-mode)
+  :config
+  (setq undo-tree-visualizer-diff t
+        undo-tree-auto-save-history t
+        undo-tree-enable-undo-in-region t
+        ;; Increase undo-limits by a factor of ten to avoid emacs prematurely
+        ;; truncating the undo history and corrupting the tree. See
+        ;; https://github.com/syl20bnr/spacemacs/issues/12110
+        undo-limit 800000
+        undo-strong-limit 12000000
+        undo-outer-limit 120000000
+        undo-tree-history-directory-alist
+        `(("." . ,(concat doom-cache-dir "undo-tree-hist/"))))
+
+  ;; Compress undo-tree history files with zstd, if available. File size isn't
+  ;; the (only) concern here: the file IO barrier is slow for Emacs to cross;
+  ;; reading a tiny file and piping it in-memory through zstd is *slightly*
+  ;; faster than Emacs reading the entire undo-tree file from the get go (on
+  ;; SSDs). Whether or not that's true in practice, we still enjoy zstd's ~80%
+  ;; file savings (these files add up over time and zstd is so incredibly fast).
+  (when (executable-find "zstd")
+    (defadvice! doom--undo-tree-make-history-save-file-name-a (file)
+      :filter-return #'undo-tree-make-history-save-file-name
+      (concat file ".zst")))
+
+  ;; Strip text properties from undo-tree data to stave off bloat. File size
+  ;; isn't the concern here; undo cache files bloat easily, which can cause
+  ;; freezing, crashes, GC-induced stuttering or delays when opening files.
+  (defadvice! doom--undo-tree-strip-text-properties-a (&rest _)
+    :before #'undo-list-transfer-to-tree
+    (dolist (item buffer-undo-list)
+      (and (consp item)
+           (stringp (car item))
+           (setcar item (substring-no-properties (car item))))))
+
+  ;; Undo-tree is too chatty about saving its history files. This doesn't
+  ;; totally suppress it logging to *Messages*, it only stops it from appearing
+  ;; in the echo-area.
+  (advice-add #'undo-tree-save-history :around #'doom-shut-up-a))
+
+** evil
+
+[[https://github.com/emacs-evil/evil][evil]] Using Evil to make the editor part of Emacs even better than vim/neovim.
+
+#+begin_src emacs-lisp :name evil
+  (use-package evil
+    :init
+    (setq evil-default-state 'normal
+          evil-want-C-u-scroll    t
+          evil-want-C-w-delete    t
+          evil-esc-delay          0
+          evil-want-Y-yank-to-eol t
+          evil-shift-width        4
+          evil-want-integration   t
+          evil-want-keybinding    nil   ; this is for evil-collection
+          evil-toggle-key         "s-z" ; I want C-z to background in terminal
+          evil-want-C-i-jump      t)
+
+    (setq-default evil-symbol-word-search 1)
+
+    :config
+
+    (evil-mode 1)
+
+    ;; https://emacs.stackexchange.com/questions/14940/emacs-doesnt-paste-in-evils-visual-mode-with-every-os-clipboard/15054#15054
+    ;; Imagine the following scenario.  One wants to paste some previously copied
+    ;; (from application other than Emacs) text to the system's clipboard in place
+    ;; of some contiguous block of text in a buffer.  Hence, one switches to
+    ;; `evil-visual-state' and selects the corresponding block of text to be
+    ;; replaced.  However, one either pastes some (previously killed) text from
+    ;; `kill-ring' or (if `kill-ring' is empty) receives the error: "Kill ring is
+    ;; empty"; see `evil-visual-paste' and `current-kill' respectively.  The
+    ;; reason why `current-kill' does not return the desired text from the
+    ;; system's clipboard is because `evil-visual-update-x-selection' is being run
+    ;; by `evil-visual-pre-command' before `evil-visual-paste'.  That is
+    ;; `x-select-text' is being run (by `evil-visual-update-x-selection') before
+    ;; `evil-visual-paste'.  As a result, `x-select-text' copies the selected
+    ;; block of text to the system's clipboard as long as
+    ;; `x-select-enable-clipboard' is non-nil (and in this scenario we assume that
+    ;; it is).  According to the documentation of `interprogram-paste-function',
+    ;; it should not return the text from the system's clipboard if it was last
+    ;; provided by Emacs (e.g. with `x-select-text').  Thus, one ends up with the
+    ;; problem described above.  To solve it, simply make
+    ;; `evil-visual-update-x-selection' do nothing:
+    (fset 'evil-visual-update-x-selection 'ignore)
+
+    ;; More Esc quits
+    (define-key evil-normal-state-map [escape] 'keyboard-quit)
+    (define-key evil-visual-state-map [escape] 'keyboard-quit)
+    (define-key evil-insert-state-map [escape] 'evil-normal-state)
+    (global-set-key [escape] 'evil-exit-emacs-state))
+#+end_src
+
+* Keybindings
+
+** Hydras
+
+** Ctrl/Alt/Super
+
+#+begin_src emacs :name ctrl_alt_super
+  (global-set-key (kbd "C--") 'ace-window)
+#+end_src

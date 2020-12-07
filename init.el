@@ -192,48 +192,43 @@ missing) and shouldn't be deleted.")
 
   ;;
   ;;; Package initialization.
+  ;;; Using straight and use-package together - straight does the actual installation and use-package is
+  ;;; sugar around it.
 
-  (setq package--init-file-ensured t
-        package-user-dir (concat deftpunk--emacs-dir "/elpa")
-        package-enable-at-startup 3il
-        package-archives
-        '(("gnu"   . "https://elpa.gnu.org/packages/")
-          ("melpa" . "https://melpa.org/packages/"))
+  ;; Straight
+  (setq straight-base-dir deftpunk--local-dir
+        ;; change to "master" if we need a more stable straight.el
+        straight-repository-branch "develop"
+        ;; Per Doom, byte-code is rarely compatible across emacs versions, so
+        ;; build them in separate directories.
+        straight-build-dir (format "build-%s" emacs-version)
+        ;; We don't want the startup penalty
+        ;; Run M-x straight-check-all occasionaly :)
+        straight-check-for-modifications nil
+        ;; use-package is the sugar; to prevent installation set ":straight nil" in the use-package
+        ;; declaration.
+        straight-use-package-by-default t
+        ;; we want to handle Org ourselves.
+        straight-fix-org nil)
 
-        ;; security settings
-        gnutls-verify-error (not (getenv "INSECURE")) ; you shouldn't use this
-        tls-checktrust gnutls-verify-error
-        tls-program (list "gnutls-cli --x509cafile %t -p %p %h"
-                          ;; compatibility fallbacks
-                          "gnutls-cli -p %p %h"
-                          "openssl s_client -connect %h:%p -no_ssl2 -no_ssl3 -ign_eof")
+  ;; bootstrap straight if we need to.
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+         (expand-file-name "straight/repos/straight.el/bootstrap.el" deftpunk--local-dir))
+        (bootstrap-version 5))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
 
-        use-package-verbose 1
-        use-package-always-ensure t
-        use-package-minimum-reported-time 0.1
-
-        byte-compile-dynamic nil
-        byte-compile-verbose 1
-        byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
-
-  ;; Initialize the core packages.
-  (setq deftpunk--refreshed-p nil)
-  (condition-case _ (package-initialize)
-		  ('error (package-refresh-contents)
-		   (setq deftpunk--refreshed-p t)
-		   (package-initialize)))
-
-  (let ((core-packages (cl-remove-if #'package-installed-p deftpunk--core-packages)))
-    (when core-packages
-      (unless deftpunk--refreshed-p
-	(package-refresh-contents))
-      (dolist (package core-packages)
-	(let ((inhibit-message t))
-	  (package-install package))
-	(if (package-installed-p package)
-	    (message "✓ Installed %s" package)
-	    (error "✕ Couldn't install %s" package)))
-      (message "Installing core packages...done")))
+  ;; Lets use use-package
+  ;; Install delight here so that we can use it later on major/minor modes.
+  (straight-use-package 'use-package)
+  (use-package delight)
 
     ;;
     ;;; Clean up the UI early.
@@ -243,19 +238,19 @@ missing) and shouldn't be deleted.")
 
     ;;
     ;;; Lets try this autoloads thing one more time.
-    (defvar generated-autoload-file (concat deftpunk--emacs-dir "/loaddefs.el"))
-    (defun update-all-autoloads ()
-      (interactive)
-      (let ((generated-autoload-file (concat deftpunk--emacs-dir "/loaddefs.el")))
-	(message "generated-autoload-file %s" generated-autoload-file)
-	(when (not (file-exists-p generated-autoload-file))
-	  (with-current-buffer (find-file-noselect generated-autoload-file)
-	    (insert ";;") ;; create the file with non-zero size to appease autoload
-	    (save-buffer)))
-	(mapc #'update-directory-autoloads
-	      '("/Users/ebodine/MyStuff/emacs-bankruptcy-plain/autoloads"))))
-    (update-all-autoloads)
-    (load (concat deftpunk--emacs-dir "/loaddefs.el"))
+    ; (defvar generated-autoload-file (concat deftpunk--emacs-dir "/loaddefs.el"))
+    ; (defun update-all-autoloads ()
+    ;   (interactive)
+    ;   (let ((generated-autoload-file (concat deftpunk--emacs-dir "/loaddefs.el")))
+	; (message "generated-autoload-file %s" generated-autoload-file)
+	; (when (not (file-exists-p generated-autoload-file))
+	  ; (with-current-buffer (find-file-noselect generated-autoload-file)
+	    ; (insert ";;") ;; create the file with non-zero size to appease autoload
+	    ; (save-buffer)))
+	; (mapc #'update-directory-autoloads
+	      ; '("/Users/ebodine/MyStuff/emacs-bankruptcy-plain/autoloads"))))
+    ; (update-all-autoloads)
+    ; (load (concat deftpunk--emacs-dir "/loaddefs.el"))
 
   ;;
   ;;; Emacs core configuration.
@@ -670,6 +665,7 @@ missing) and shouldn't be deleted.")
 
 
   ;; Highlight the current line.
+  ;; Use some Doom ideas to make the hl-line active only when we want.
   (use-package hl-line
     :defer t
     :hook ((prog-mode text-mode conf-mode) . hl-line-mode)
@@ -695,6 +691,8 @@ missing) and shouldn't be deleted.")
           (hl-line-mode +1)))))
 
   ;; Line Numbers
+  ;; We will toggle line numbers when we need them but we want to make sure
+  ;; that they are configured correctly.
 
   ;; Explicitly define a width to reduce computation
   (setq-default display-line-numbers-width 2)
@@ -702,13 +700,6 @@ missing) and shouldn't be deleted.")
   ;; Show absolute line numbers for narrowed regions makes it easier to tell the
   ;; buffer is narrowed, and where you are, exactly.
   (setq-default display-line-numbers-widen t)
-
-  ;; Enable line numbers in most text-editing modes. We avoid
-  ;; `global-display-line-numbers-mode' because there are many special and
-  ;; temporary modes where we don't need/want them.
-  (add-hook! '(prog-mode-hook text-mode-hook conf-mode-hook)
-             #'display-line-numbers-mode)
-
 
   ;; Recentf
   (use-package recentf
