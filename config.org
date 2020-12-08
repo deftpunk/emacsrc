@@ -786,10 +786,216 @@ provides the functions goto-last-change and goto-last-change-reverse.
 
 * Keybindings
 
-** Hydras
-
 ** Ctrl/Alt/Super
 
 #+begin_src emacs :name ctrl_alt_super
   (global-set-key (kbd "C--") 'ace-window)
 #+end_src
+
+** Hydras
+
+*** the version-control hydra
+
+#+BEGIN_SRC emacs-lisp :name version-control-hydra
+  ;; A modified unpackaged/magit-status
+  ;; I removed the deletion of the other window.
+  ;;;###autoload
+  (defun deftpunk:unpackaged/magit-status ()
+    "Open a `magit-status' buffer and close the other window so only Magit is visible.
+  If a file was visited in the buffer that was active when this
+  command was called, go to its unstaged changes section."
+    (interactive)
+    (let* ((buffer-file-path (when buffer-file-name
+                               (file-relative-name buffer-file-name
+                                                   (locate-dominating-file buffer-file-name ".git"))))
+           (section-ident `((file . ,buffer-file-path) (unstaged) (status))))
+      (magit-status)
+      (when buffer-file-path
+        (goto-char (point-min))
+        (cl-loop until (when (equal section-ident (magit-section-ident (magit-current-section)))
+                         (magit-section-show (magit-current-section))
+                         (recenter)
+                         t)
+                 do (condition-case nil
+                        (magit-section-forward)
+                      (error (cl-return (magit-status-goto-initial-section-1))))))))
+
+    (defvar version-control-hydra--title (with-faicon "code" "Version Control" 1 -0.05))
+    (pretty-hydra-define version-control-hydra
+      (:color blue :title version-control-hydra--title)
+      ("Magit"
+       (("a" vc-annotate "side-by-side blame")
+        ("d" magit-file-dispatch "do stuff with git")
+        ("g" magit-status "magit status")
+        ("G" deftpunk:unpackaged/magit-status "Only magit-status")
+        ("h" helm-hunks-current-buffer "Helm Git hunks")
+        ("j" (progn (git-gutter:next-hunk 1) (recenter)) "next hunk")
+        ("k" (progn (git-gutter:previous-hunk 1) (recenter)) "previous hunk")
+        ("m" git-messenger:popup-message "git messenger")
+        ("l" magit-log "Git log")
+        ("t" git-timemachine "timemachine"))))
+#+END_SRC
+
+*** windows hydra
+
+#+BEGIN_SRC emacs-lisp :name windows-hydra
+  (defun spacemacs/alternate-window ()
+    "Switch back and forth between current and last window in the
+  current frame."
+    (interactive)
+    (let (;; switch to first window previously shown in this frame
+          (prev-window (get-mru-window nil t t)))
+      ;; Check window was not found successfully
+      (unless prev-window (user-error "Last window not found."))
+      (select-window prev-window)))
+
+    ;(defvar windows-hydra--title (with-faicon "window-maximize" "Windows" 1 -0.05))
+    (pretty-hydra-define windows-hydra
+      (:color red :title "Windows" :post (progn (message "Don't break the windows!")))
+      ("Change Size"
+       (("s" shrink-window-horizontally "shrink horizontally")
+        ("e" enlarge-window-horizontally "enlarge horizontally")
+        ("b" balance-windows "balance window height")
+        ("m" maximize-window "maximize current window")
+        ("M" minimize-window "minimize current window"))
+
+       "The Splits"
+       (("h" split-window-below "split horizontally")
+        ("v" split-window-right "split vertically")
+        ("c" delete-window "delete current window")
+        ("o" delete-other-windows "delete-other-windows"))
+
+       "Window Movement"
+       (("-" ace-window "ace window" :color blue)
+        ("h" windmove-left "← window")
+        ("j" windmove-down "↓ window")
+        ("k" windmove-up "↑ window")
+        ("l" windmove-right "→ window")
+        ("r" toggle-window-split "rotate windows")
+        ("w" spacemacs/alternate-window "last window"))))
+#+END_SRC
+
+*** the jk hydra
+
+#+BEGIN_SRC emacs-lisp :name jk-hydra
+  (defvar hydra-jk--title (with-faicon "cogs" "Control Panel" 1 -0.05))
+  (pretty-hydra-define hydra-jk
+    (:color blue :title hydra-jk--title
+            :post (progn
+                    (message "Thank you, please come again")))
+    ("Tools"
+     (("e" major-mode-hydra "Major Mode Hydra")
+      ("i" helm-mini "Buffers/Recentf")
+      ("s" swiper "Swiper")
+      ("x" helm-M-x "Fuzzy M-x"))
+
+     "Version Control"
+     (("g" version-control-hydra/body "Git stuff"))
+
+     "Windows"
+     (("-" ace-window "ace-window")
+      ("w" windows-hydra/body "windows hydra"))))
+#+END_SRC
+
+*** the toggle hydra
+
+l - line numbers
+n - treemacs
+t - some tagbar equivalent; maybe there is a lsp-mode outline
+
+** Evil leader
+
+Set up the leader key using general.el
+
+#+begin_src emacs-lisp :name leader
+  (general-create-definer my-leader-def
+    ;; :prefix my-leader
+    :prefix "SPC")
+
+  ;; helpful-hydra/body - is defined in the helpful 'use-package' declaration
+  (my-leader-def 'normal 'override
+    ;"c" 'hydra-cee/body
+    "e" 'major-mode-hydra
+    ;"f" 'hydra-files-projectile/body
+    "f" 'counsel-find-file
+    "g" 'version-control-hydra/body
+    ;"h" 'helpful-hydra/body
+    "i" 'helm-mini
+    "k" 'flex//kill-current-buffer
+    ; Use with M-o to select other actions, e.g. switch-project
+    "p" 'counsel-projectile
+    "q" 'save-buffers-kill-terminal
+    "r" 'counsel-rg
+    "s" 'swiper
+    "w" 'save-buffer
+    "y" 'counsel-yank-pop
+    "-" 'ace-window
+    )
+#+end_src
+
+
+** State keybindings
+
+*** Normal State bindings
+
+Normal state keybindings.
+
+#+BEGIN_SRC emacs-lisp :name normal-state
+  (general-define-key
+   :states 'normal
+   ;; run the macro in the q register
+   "Q" "@q"
+   "U" 'undo-tree-redo
+   "Y" "yg_"
+   ;; "gd" 'counsel-etags-find-tag-at-point
+   "gs" 'avy-goto-char-2
+   ;; Evil doesn't allow you to overload like Vim/Neovim do.  So this fails because s is not a prefix key.
+   ;; But 'v' gets blown away and doesn't fail with the same error???
+   ;; "ss" 'deftpunk:split-horizontally-recenter
+   ;; "vv" 'deftpunk:split-vertically-recenter
+   )
+
+;; Add some bindings to the window "C-w <something" map.
+;; Thu Nov 22 22:54:18 2018 - we have to bind evil-window-map this way, as
+;; opposed to using general.el
+(define-key evil-window-map "b" 'balance-windows)          ; replaces evil-window-bottom-right.
+(define-key evil-window-map "d" 'ace-delete-window)        ; was unused
+;; (define-key evil-window-map "e" 'hydra-window-sizing/body) ; was unused
+(define-key evil-window-map "f" 'make-frame)               ; was unused
+(define-key evil-window-map "i" 'ace-maximize-window)      ; was unused
+;; (define-key evil-window-map "m" 'doom/toggle-fullscreen)   ; was unused
+(define-key evil-window-map "r" 'winner-redo)              ; replaces evil-window-rotate-downwards
+(define-key evil-window-map "u" 'winner-undo)              ; was unused
+(define-key evil-window-map "-" 'ace-window)               ; was unused
+
+;; Some easy window moving keys
+;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order toxtxt
+;; get this to work(?)
+(global-unset-key  (kbd "C-j"))
+(global-unset-key  (kbd "C-k"))
+(global-unset-key  (kbd "C-l"))
+;; (global-unset-key (kbd "C-h"))
+(define-key evil-normal-state-map (kbd "C-j") 'windmove-down)
+(define-key evil-normal-state-map (kbd "C-k") 'windmove-up)
+(define-key evil-normal-state-map (kbd "C-h") 'windmove-left)
+(define-key evil-normal-state-map (kbd "C-l") 'windmove-right)
+
+;; TODO: modify gx to use - org-open-at-point
+#+END_SRC
+
+* keychord
+
+[[https://www.emacswiki.org/emacs/key-chord.el][key-chord]] Map pairs of simultaneously pressed keys to commands.
+
+Keychord has a couple of drawbacks
+1. Doesn't get recorded when recording macros.
+2. Can't use function keys in keychords
+3. Doesn't work well with internationalization packages.
+
+#+begin_src emacs-lisp :name key-chord
+  (use-package key-chord
+    :init
+    (key-chord-mode 1))
+  (key-chord-define-global "jk" 'hydra-jk/body)
+#+end_src
+
