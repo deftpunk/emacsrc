@@ -179,6 +179,24 @@ Currently it recognizes Lisp function, built-in function, macro, faceand variabl
   (put 'hes-escape-sequence-face 'face-alias 'font-lock-builtin-face))
 #+end_src
 
+*** highlight-indent-guides
+
+[[https://github.com/DarthFennec/highlight-indent-guides][highlight-indent-guides]] Highlight indentation levels.
+
+#+begin_src emacs-lisp :name highlight-indent-guides
+(use-package highlight-indent-guides
+  :defer t
+  :delight highlight-indent-guides-mode
+  :init
+  (setq highlight-indent-guides-method 'character
+        ;; default is \x2502 but it is very slow on Mac
+        highlight-indent-guides-character ?\xFFE8
+        highlight-indent-guides-responsive 'top)
+  :config
+  ;; only in Python
+  (add-hook 'python-mode-hook 'highlight-indent-guides-mode))
+#+end_src
+
 *** highlight numbers
 
 [[https://github.com/Fanael/highlight-numbers][highlight-numbers]] Highlight numeric literals in source code.
@@ -432,7 +450,138 @@ Make Emacs nicer to use in some way.
     (set-face-attribute 'aw-leading-char-face nil :height 4.0))
 #+end_src
 
+** hl-todo
+
+[[https://github.com/tarsius/hl-todo][hl-todo]] - Highlight TODO and similar keywords in comments and strings.
+By default it is only active in modes that derive from prog-mode.  It is a
+dependency for =magit-hl-todos= which toggles in =magit-status=.
+
+#+begin_src emacs-lisp :name hl-todo
+  (use-package hl-todo
+    :init
+    (setq hl-todo-highlight-punctuation ":"))
+  (add-hook 'prog-mode-hook 'hl-todo-mode)
+#+end_src
+
+
 * Software Development Utilites
+
+** Git
+
+*** git-gutter & git-gutter-fringe
+
+[[https://github.com/syohex/emacs-git-gutter][git-gutter]] - Highlighting uncommited changes in the buffer.
+
+#+begin_src emacs-lisp :name git-gutter
+(use-package git-gutter
+  :defer t
+  :delight "gg"
+  :init
+  (setq git-gutter:update-interval 0.1
+        git-gutter:ask-p nil
+        git-gutter:verbosity 0
+        git-gutter:handled-backends '(git))
+
+  (add-hook 'git-gutter:update-hooks 'magit-after-revert-hook)
+  (add-hook 'git-gutter:update-hooks 'magit-not-reverted-hook)
+  (add-hook 'git-gutter:update-hooks 'vc-checkin-hook)
+  (add-hook 'git-gutter:update-hooks 'focus-in-hook)
+  (add-hook 'git-gutter:update-hooks 'auto-revert-mode-hook)
+  (add-hook 'git-gutter:update-hooks 'after-revert-hook)
+  (global-git-gutter-mode 1))
+
+(use-package git-gutter-fringe)
+(require 'git-gutter-fringe)
+
+;; Update git-gutter on focus (in case I was using git externally) - from hlissner's emacs config.
+(add-hook 'focus-in-hook #'git-gutter:update-all-windows)
+
+(set-face-foreground 'git-gutter-fr:modified "blue3")
+(set-face-foreground 'git-gutter:modified "blue3")
+#+end_src
+
+*** git-link
+
+[[https://github.com/sshaw/git-link][git-link]] - Create URLs for files and commits in GitHub/Bitbucket/GitLab/... repositories.
+
+#+begin_src emacs-lisp :name git-link
+(use-package git-link
+  :defer t
+  :commands (git-link git-link-commit git-link-homepage))
+#+end_src
+
+*** git-messenger
+
+[[https://github.com/syohex/emacs-git-messenger][git-messenger]] - Provides a function that pops up the commit message of the current line.
+
+#+begin_src emacs-lisp :name git-messenger
+  (use-package git-messenger
+    :defer t
+    :init
+    (setq git-messenger:show-detail t
+           git-messenger:handled-backends '(git))
+    :config
+    (define-key git-messenger-map (kbd "m") 'git-messenger:copy-message)
+    (define-key git-messenger-map (kbd "ESC") 'git-messenger:popup-close))
+#+end_src
+
+*** git-modes
+
+[[https://github.com/magit/git-modes][git-modes]] major modes for gitattributes, gitconfig & gitignore files
+
+The gitconfig & gitignore modes derive from `conf-unix-mode` so you can use `gitignore-mode` for other
+files that have nothing to do with Git.
+```lisp
+(add-to-list 'auto-mode-alist
+             (cons "/.dockerignore\\'" 'gitignore-mode))
+```
+
+#+begin_src emacs-lisp :name git-modes
+  (use-package git-modes
+    :defer t)
+#+end_src
+
+*** git-timemachine
+
+[[https://github.com/pidu/git-timemachine][git-timemachine]] - Allows you to go back and forth to the revisions of a file.
+
+#+begin_src emacs-lisp :name git-timemachine
+(use-package git-timemachine
+  :defer t
+  :config
+  (require 'magit-blame)
+  ;; Sometimes I forget `git-timemachine' is enabled in a buffer, so instead of
+  ;; showing revision details in the minibuffer, show them in
+  ;; `header-line-format', which has better visibility.
+  (setq git-timemachine-show-minibuffer-details nil)
+  (add-hook 'git-timemachine-mode-hook #'+vcs|init-header-line)
+  (advice-add #'git-timemachine-show-revision :after #'+vcs*update-header-line)
+
+  ;; Force evil to rehash keybindings for the current state
+  (add-hook 'git-timemachine-mode-hook #'evil-force-normal-state))
+
+;; From redguardtoo - http://blog.binchen.org/posts/new-git-timemachine-ui-based-on-ivy-mode.html
+(defun my-git-timemachine-show-selected-revision ()
+  "Show last (current) revision of file."
+  (interactive)
+  (let (collection)
+    (setq collection
+          (mapcar (lambda (rev)
+                    ;; re-shape list for the ivy-read
+                    (cons (concat (substring (nth 0 rev) 0 7) "|" (nth 5 rev) "|" (nth 6 rev)) rev))
+                  (git-timemachine--revisions)))
+    (ivy-read "commits:"
+              collection
+              :action (lambda (rev)
+                        (git-timemachine-show-revision rev)))))
+
+(defun my-git-timemachine ()
+  "Open git snapshot with the selected version.  Based on ivy-mode."
+  (interactive)
+  (unless (featurep 'git-timemachine)
+    (require 'git-timemachine))
+  (git-timemachine--start #'my-git-timemachine-show-selected-revision))
+#+end_src
 
 ** Magit
 
@@ -606,6 +755,17 @@ provides the functions goto-last-change and goto-last-change-reverse.
     (define-key evil-visual-state-map [escape] 'keyboard-quit)
     (define-key evil-insert-state-map [escape] 'evil-normal-state)
     (global-set-key [escape] 'evil-exit-emacs-state))
+#+end_src
+
+** evil-collection
+
+[[https://github.com/emacs-evil/evil-collection][evil-collection]] A collection of Evil bindings.
+
+#+begin_src emacs-lisp :name evil-collection
+  (use-package evil-collection
+    :after evil
+    :config
+    (evil-collection-init))
 #+end_src
 
 ** evil-goggles
