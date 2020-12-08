@@ -112,6 +112,177 @@ Don't forget to run =M-x all-the-icons-install-fonts= if this is a new install.
 (use-package all-the-icons)
 #+end_src
 
+** doom modeline
+
+[[https://github.com/seagle0128/doom-modeline][doom-modeline]] - A really nice and performant modeline broken out of [[https://github.com/hlissner/doom-emacs][doom-emacs]] by its author.
+
+#+begin_src emacs-lisp :name doom_modeline
+  (use-package doom-modeline
+    :init
+    (setq doom-modeline-minor-modes t
+          doom-modeline-window-width-limit 80
+          doom-modeline-buffer-file-name-style 'truncate-upto-project
+          doom-modeline-modal-icon t
+          doom-modeline-major-mode-color-icon t
+          doom-modeline-major-mode-icon t
+          doom-modeline-major-mode-color-icon t
+          doom-modeline-buffer-modification-icon t
+          doom-modeline-lsp t
+          doom-modeline-vcs-max-length 14
+          doom-modeline-gnus nil
+          doom-modeline-gnus-timer 0
+          doom-modeline-buffer-modification-icon t
+          doom-modeline-project-detection 'projectile
+          doom-modeline-icon (display-graphic-p))
+    :hook (after-init . doom-modeline-mode))
+#+end_src
+
+** Extra highlights
+
+*** cl-lib
+
+[[https://github.com/skeeto/cl-lib-highlight][cl-lib]] Syntax highlighting for cl-lib, so that =cl-loop=, =cl-defun=,
+=cl-defstruct= and the like get highlighted
+
+#+begin_src emacs-lisp :name cl-lib
+(use-package cl-lib-highlight
+  :defer t
+  :config
+  (cl-lib-highlight-initialize))
+#+end_src
+
+*** highlight defined
+
+https://github.com/Fanael/highlight-defined
+Highlights defined Emacs Lisp symbols in source code.
+Currently it recognizes Lisp function, built-in function, macro, faceand variable names.
+
+#+BEGIN_SRC emacs-lisp :name highlight-defined
+(use-package highlight-defined
+  :defer t
+  :config
+  (add-hook 'emacs-lisp-mode-hook 'highlight-defined-mode))
+#+END_SRC
+
+*** highlight escape sequences
+
+[[https://github.com/dgutov/highlight-escape-sequences/blob/master/highlight-escape-sequences.el][highlight-escape-sequences]] highlight escape sequences with the builtin face.
+
+#+begin_src emacs-lisp :name highlight-escape-sequences
+(use-package highlight-escape-sequences
+  :defer t
+  :commands hes-mode
+  :init
+  (add-hook 'prog-mode-hook 'hes-mode)
+  :config
+  (put 'hes-escape-backslash-face 'face-alias 'font-lock-builtin-face)
+  (put 'hes-escape-sequence-face 'face-alias 'font-lock-builtin-face))
+#+end_src
+
+*** highlight numbers
+
+[[https://github.com/Fanael/highlight-numbers][highlight-numbers]] Highlight numeric literals in source code.
+
+#+begin_src emacs-lisp :name highlight-numbers
+(use-package highlight-numbers
+  :defer t
+  :commands highlight-numbers-mode
+  :init (add-hook 'prog-mode-hook #'highlight-numbers-mode))
+#+end_src
+
+*** highlight quotes
+
+[[https://github.com/Fanael/highlight-quoted][highlight-quotes]] Highlight Lisp quotes and quoted symbols
+
+#+begin_src emacs-lisp :name highlight-quotes
+(use-package highlight-quoted
+  :defer t
+  :config
+  (add-hook 'emacs-lisp-mode-hook 'highlight-quoted-mode))
+#+end_src
+
+*** highlight symbols
+
+[[https://github.com/gennad/auto-highlight-symbol][highlight-symbol]] Highlight the symbol under point.
+
+#+begin_src emacs-lisp :name highlight-symbol
+(use-package auto-highlight-symbol
+  :defer t
+  :commands auto-highlight-symbol-mode
+  :init
+  (setq ahs-case-fold-search nil
+        ahs-default-range 'ahs-range-whole-buffer
+        ahs-idle-interval 0.25
+        ahs-inhibit-face-list nil)
+  ;; but a box around the face.
+  (custom-set-faces `(ahs-face ((t (:box t)))))
+  (custom-set-faces `(ahs-definition-face ((t (:box t)))))
+  (custom-set-faces `(ahs-plugin-whole-buffer-face ((t (:box t)))))
+  :config
+  (add-hook 'prog-mode-hook 'auto-highlight-symbol-mode))
+#+end_src
+
+** Rainbow Delimiters
+
+[[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]] - Make parenthesis' standout no matter your language.
+
+#+begin_src emacs-lisp :name rainbow-delimiters
+  (use-package rainbow-delimiters
+    :config
+    (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+#+end_src
+
+** Rainbow mode
+
+[[https://julien.danjou.info/projects/emacs-packages][rainbow-mode]] - Show hex codes as their actual color.
+
+#+begin_src emacs-lisp :name rainbow-mode
+  (use-package rainbow-mode
+    :defer t
+    :commands rainbow-turn-on
+    :init
+    (add-hook 'prog-mode-hook 'rainbow-turn-on)
+    :config
+    (setq rainbow-x-colors nil))
+#+end_src
+
+** Themes
+
+#+begin_src emacs-lisp :name doom-themes
+  (use-package doom-themes
+    :config
+    (setq doom-themes-enable-bold t
+          doom-themes-enable-italic t)
+    (load-theme 'doom-moonlight t)
+    (doom-themes-org-config)
+  )
+#+end_src
+
+** solaire mode
+
+[[https://github.com/hlissner/emacs-solaire-mode][solaire mode]] Give windows that you are working on a brighter background.
+
+#+begin_src emacs-lisp :name solaire-mode
+;; A more complex, more lazy-loaded config
+(use-package solaire-mode
+  ;; Ensure solaire-mode is running in all solaire-mode buffers
+  :hook (change-major-mode . turn-on-solaire-mode)
+  ;; ...if you use auto-revert-mode, this prevents solaire-mode from turning
+  ;; itself off every time Emacs reverts the file
+  :hook (after-revert . turn-on-solaire-mode)
+  ;; To enable solaire-mode unconditionally for certain modes:
+  :hook (ediff-prepare-buffer . solaire-mode)
+  ;; Highlight the minibuffer when it is activated:
+  :hook (minibuffer-setup . solaire-mode-in-minibuffer)
+  :config
+  ;; The bright and dark background colors are automatically swapped the first 
+  ;; time solaire-mode is activated. Namely, the backgrounds of the `default` and
+  ;; `solaire-default-face` faces are swapped. This is done because the colors 
+  ;; are usually the wrong way around. If you don't want this, you can disable it:
+  (setq solaire-mode-auto-swap-bg nil)
+
+  (solaire-global-mode +1))
+#+end_src
 
 * Keybinding utilities
 
@@ -324,7 +495,7 @@ Show TODOs in Magit status buffer for each file.
   (magit-todos-mode 1))
 #+END_SRC
 
-* Evil
+* The Prime Evil
 
 ** evil dependencies
 
@@ -435,6 +606,22 @@ provides the functions goto-last-change and goto-last-change-reverse.
     (define-key evil-visual-state-map [escape] 'keyboard-quit)
     (define-key evil-insert-state-map [escape] 'evil-normal-state)
     (global-set-key [escape] 'evil-exit-emacs-state))
+#+end_src
+
+** evil-goggles
+
+[[https://github.com/edkolev/evil-goggles][evil-goggles]] Display a visual hint when editing with evil.
+
+#+begin_src emacs-lisp :name evil-goggles
+(use-package evil-goggles
+  :config
+  (evil-goggles-mode)
+
+  ;; optionally use diff-mode's faces; as a result, deleted text
+  ;; will be highlighed with `diff-removed` face which is typically
+  ;; some red color (as defined by the color theme)
+  ;; other faces such as `diff-added` will be used for other actions
+  (evil-goggles-use-diff-faces))
 #+end_src
 
 * Keybindings
