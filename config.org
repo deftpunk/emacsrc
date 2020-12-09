@@ -512,9 +512,6 @@ Consider using https://github.com/alphapapa/org-web-tools
 
 #+BEGIN_SRC emacs-lisp :name org-mode
     (defvar org-mode-map--title (with-faicon "book" "Org Mode bindings" 1 -0.05))
-  ;  (use-package org-mode
-   ;   :load-path "~/.emacs.d/src/org-mode")
-
     (major-mode-hydra-define org-mode
       (:title org-mode-map--title :color blue :separator "=")
       ("Tools"

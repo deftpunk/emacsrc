@@ -130,9 +130,9 @@ missing) and shouldn't be deleted.")
     (add-transient-hook! 'pre-command-hook (gcmh-mode +1))
     (with-eval-after-load 'gcmh
       (setq gcmh-idle-delay 30
-	    gcmh-high-cons-threshold 16777216
-	    gcmh-verbose nil ; I don't want to see any messaging when it runs.
-	    gc-cons-percentage 0.1)
+            gcmh-high-cons-threshold 16777216
+            gcmh-verbose nil ); I don't want to see any messaging when it runs.
+            ;;gc-cons-percentage 0.1)
       (add-hook 'focus-out-hook #'gcmh-idle-garbage-collect)))
 
   ;; HACK `tty-run-terminal-initialization' is *tremendously* slow for some
@@ -149,6 +149,21 @@ missing) and shouldn't be deleted.")
   ;; prevent the use of stale byte-code. Otherwise, it saves us a little IO time
   ;; to skip the mtime checks on every *.elc file.
   (setq load-prefer-newer noninteractive)
+
+  ;; It may also be wise to raise gc-cons-threshold while the minibuffer is active, so the GC doesn’t
+  ;; slow down expensive commands (or completion frameworks, like helm and ivy). Here is how Doom does
+  ;; it:
+  (defun doom-defer-garbage-collection-h ()
+    (setq gc-cons-threshold most-positive-fixnum))
+
+  (defun doom-restore-garbage-collection-h ()
+    ;; Defer it so that commands launched immediately after will enjoy the
+    ;; benefits.
+    (run-at-time
+     1 nil (lambda () (setq gc-cons-threshold 16777216)))) ; 16mb
+
+  (add-hook 'minibuffer-setup-hook #'doom-defer-garbage-collection-h)
+  (add-hook 'minibuffer-exit-hook #'doom-restore-garbage-collection-h)
 
   ;;
   ;;; My optimizations
