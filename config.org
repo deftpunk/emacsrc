@@ -271,7 +271,14 @@ Currently it recognizes Lisp function, built-in function, macro, faceand variabl
     :config
     (setq doom-themes-enable-bold t
           doom-themes-enable-italic t)
+
+    ;; The Doom version of Challenger Deep
     (load-theme 'doom-moonlight t)
+
+    ;; Improve treemacs look.
+    (doom-themes-treemacs-config)
+
+    ;; Correct & improve org-mode's native fontification.
     (doom-themes-org-config)
   )
 #+end_src
@@ -392,8 +399,9 @@ pretty-hydra saves us the trouble of formating the docstring using classic hydra
 
 #+BEGIN_SRC emacs-lisp :name hydra-posframe
   (use-package hydra-posframe
+    :defer t
     :straight (hydra-posframe :type git :host github :repo "Ladicle/hydra-posframe")
-    :hook (after-init . hydra-posframe-enable))
+    :hook (after-init . hydra-posframe-mode)) ; was hydra-posframe-enable
 #+END_SRC
 
 ** which-key
@@ -463,6 +471,97 @@ dependency for =magit-hl-todos= which toggles in =magit-status=.
   (add-hook 'prog-mode-hook 'hl-todo-mode)
 #+end_src
 
+* Prose
+
+** Org Mode
+
+Use the Org mode we downloaded into src
+  ;; Use the latest Org mode.
+  ;; To install or update the latest Org:
+  ;; 1. git clone or git pull in src/org-mode
+  ;; 2. make autoloads
+  (add-to-list 'load-path (concat deftpunk--src-dir "/org-mode/lisp"))
+  (require 'org-loaddefs)
+
+The manual: [[http://orgmode.org/manual/index.html][Org Manual]]
+
+[[https://orgmode.org/manual/Emphasis-and-monospace.html][Emphasis]]
+You can make words *bold*, /italic/, _underlined_, =verbatim= and ~code~, and, if you must,
+‘+strike-through+’. Text in the code and verbatim string is not processed for Org mode specific syntax,
+it is exported verbatim.
+
+[[http://orgmode.org/manual/Easy-templates.html#Easy-templates][Easy templates:]]
+
+TODO: Easy templates have been superseded by Org-Selectors (C-c C-,) - need to figure out what I want to
+do here as I kind of like the easy template flow.
+
+<s <TAB> expands/completes the 'src' block
+<e <TAB> -> example block
+<q <TAB> -> quote
+<v <TAB> -> verse; renders block quotes and newline breaks
+
+Possibilities for adding unicode characters:
+http://heikkil.github.io/blog/2015/03/22/hydra-for-unicode-input-in-emacs/
+http://thewanderingcoder.com/2015/03/emacs-org-mode-styling-non-smart-quotes-zero-width-space-and-tex-input-method/
+
+Markup:
+
+http://ergoemacs.org/emacs/emacs_org_markup.
+
+Consider using https://github.com/alphapapa/org-web-tools
+
+#+BEGIN_SRC emacs-lisp :name org-mode
+    (defvar org-mode-map--title (with-faicon "book" "Org Mode bindings" 1 -0.05))
+  ;  (use-package org-mode
+   ;   :load-path "~/.emacs.d/src/org-mode")
+
+    (major-mode-hydra-define org-mode
+      (:title org-mode-map--title :color blue :separator "=")
+      ("Tools"
+       (("h" helm-org-in-buffer-headings "Org headings"))))
+#+END_SRC
+
+** Org mode bindings
+
+Change some of the org-mode mappings that interfere with my evil mode window bindings.
+
+#+begin_src emacs-lisp :name org-mode-keybindings
+  (general-define-key
+   :states 'normal
+   :keymaps 'org-mode-map
+   ;; These 2 interfere with window navigation.
+   "C-j" 'nil
+   "C-k" 'nil)
+#+end_src
+
+** helm-org
+
+[[https://github.com/emacs-helm/helm-org][helm-org]] Helm for org headlines and keywords completion.
+
+#+BEGIN_SRC emacs-lisp :name helm-org
+  (use-package helm-org
+    :defer t
+    :commands (helm-org-in-buffer-headings helm-org-capture-templates))
+
+  ;; In order for make org-capture & org-set-tags work properly, uncomment below
+  ;; (add-to-list 'helm-completing-read-handlers-alist '(org-capture . helm-org-completing-read-tags))
+  ;; (add-to-list 'helm-completing-read-handlers-alist '(org-set-tags . helm-org-completing-read-tags)))
+#+END_SRC
+
+** org-superstar-mode
+
+[[https://github.com/integral-dw/org-superstar-mode][org-superstar-mode]] Makes pretty Org stars, headers and plain lists.
+
+#+begin_src emacs-lisp :name org-bullets
+  (use-package org-superstar-mode
+    :straight (org-superstar-mode :type git :host github :repo "integral-dw/org-superstar-mode")
+    :hook (org-mode . org-superstar-mode)
+    :config
+     ;; Make leading stars truly invisible, by rendering them as spaces!
+    (setq org-superstar-leading-bullet ?\s
+          org-superstar-leading-fallback ?\s
+          org-hide-leading-stars nil))
+#+end_src
 
 * Software Development Utilites
 
@@ -643,6 +742,271 @@ Show TODOs in Magit status buffer for each file.
   :config
   (magit-todos-mode 1))
 #+END_SRC
+
+* Software Develpment Languages
+
+** C/C++
+
+Mostly for reading/viewing and not development.... I really don't like development in either of these
+languages.
+
+** Common Lisp
+
+** Clojure
+
+** Nim
+
+** Python
+
+** Rust
+
+** Shell - bash/zsh
+
+* Completion
+
+I use both Helm & Counsel because they each have certain behaviors or extensions that I find more 
+desirable than the other in certain situations, e.g. helm-dash & swiper
+
+** Counsel, Av & Swiper
+
+A bunch of really great stuff by abo-abo
+
+We don't install ivy explicitly because it comes along for the ride as a dependency to avy, swiper & counsel.
+
+*** avy
+
+[[https://github.com/abo-abo/avy][avy]] Jump to things in Emacs tree-style
+
+#+begin_src emacs-lisp :name avy
+  (use-package avy
+    :defer t
+    :config
+    (setq avy-all-windows nil
+          avy-background t))
+#+end_src
+
+*** counsel
+
+A collection of ivy-enhanced versions of common Emacs commands.
+
+#+begin_src emacs-lisp :name counsel
+  (use-package counsel
+    :delight
+    :bind (:map ivy-minibuffer-map
+                ([escape] . minibuffer-keyboard-quit))
+    :init
+    (setq counsel-rg-base-command
+          "rg -i -M 120 --no-heading --line-number --color never %s .")
+    :config
+    (counsel-mode 1))
+#+end_src
+
+*** ivy
+
+#+BEGIN_SRC emacs-lisp :name ivy
+  (use-package ivy
+    :delight
+    :config
+    ;; Counsel changes a lot of ivy's state at startup; to control for that, we
+    ;; need to load it as early as possible. Some packages (like `ivy-prescient')
+    ;; require this.
+    (require 'counsel nil t)
+    (setq ivy-height 17
+          ivy-wrap t
+          ivy-fixed-height-minibuffer t
+          projectile-completion-system 'ivy
+          ;; disable magic slash on non-match
+          ivy-magic-slash-non-match-action nil
+          ;; don't show recent files in switch-buffer
+          ivy-use-virtual-buffers nil
+          ;; ...but if that ever changes, show their full path
+          ivy-virtual-abbreviate 'full
+          ;; don't quit minibuffer on delete-error
+          ivy-on-del-error-function #'ignore
+          ;; enable ability to select prompt (alternative to `ivy-immediate-done')
+          ivy-use-selectable-prompt t)
+    (ivy-mode +1))
+#+END_SRC
+
+**** ivy-rich
+
+#+BEGIN_SRC emacs-lisp :name ivy-rich
+  (use-package ivy-rich
+    :after ivy-exit
+    :init
+    ;; replace "/home/username" with "~" in ivy-switch-buffer
+    (setq ivy-rich-path-style 'abbrev)
+    :config
+    (setq ivy-rich-parse-remote-buffer nil)
+
+    (ivy-rich-mode +1))
+#+END_SRC
+
+**** all-the-icons-ivy
+
+[[https://github.com/asok/all-the-icons-ivy][all-the-icons-ivy]] Iconify ivy/counsel
+
+#+begin_src emacs-lisp :name all-the-icons-ivy
+  (use-package all-the-icons-ivy
+    :init 
+    (setq all-the-icons-ivy-file-commands
+     '(counsel-find-file counsel-file-jump counsel-recentf counsel-projectile-find-file counsel-projectile-find-dir))
+    (add-hook 'after-init-hook 'all-the-icons-ivy-setup))
+#+end_src
+
+*** Swiper
+
+[[https://github.com/abo-abo/swiper][swiper]] Swiper - isearch with an overview, and more. Oh, man! https://oremacs.com/swiper/
+
+#+begin_src emacs-lisp :name swiper
+  (use-package swiper
+    :commands swiper
+    :bind (:map ivy-minibuffer-map
+                ("C-w" . ivy-backward-kill-word)
+                ("C-y" . ivy-yank-word)
+                ([escape] . minibuffer-keyboard-quit))
+    :init
+    (setq ivy-wrap t     ; make ivy-next-line & ivy-previous-line cycle around.
+          ivy-height 25  ; make the minibuffer just a little taller.
+          ivy-use-virtual-buffers t
+          ivy-display-style 'fancy
+          ivy-count-format "%d/%d")
+    :config
+    (ivy-mode 1))
+#+end_src
+
+** Helm
+
+[[https://emacs-helm.github.io/helm/][Helm]] Emacs incremental completion and selection narrowing framework
+
+#+BEGIN_SRC emacs-lisp :name Helm
+  (use-package helm
+    :commands (helm-mini helm-M-x helm-scroll-other-window)
+    :bind (:map helm-map
+                ([escape] . helm-keyboard-quit))
+    :init
+    (setq helm-idle-delay                        1.0    ; Update fast sources immediately (doesn't).
+          helm-input-idle-delay                  0.01   ; This actually updates things reeeelatively quickly.
+          helm-quick-update                      t
+          helm-M-x-requires-pattern              nil
+          ;; Remove extraineous helm UI elements
+          helm-display-header-line nil
+          helm-mode-line-string nil
+          helm-ff-auto-update-initial-value nil
+          helm-find-files-doc-header nil
+          ;; Setting this above 100 will slow down fuzzy matching
+          helm-candidate-number-limit 65
+          helm-autoresize-max-height             45     ; Set the max window height to 45% of current frame.
+          helm-mode-fuzzy-match                  t      ; Turn on fuzzy matching for buffers, semantic, recentf
+          helm-completion-in-region-fuzzy-match  t      ; Completion, imenu, apropos, M-x
+          ;; Ignore checking if file exists on remote files and see Tramp messages in helm
+          helm-buffer-skip-remote-checking       t
+          helm-tramp-verbose                     6
+          ;; When calling `helm-semantic-or-imenu', don't immediately jump to
+          ;; symbol at point
+          helm-imenu-execute-action-at-once-if-one nil
+          ;; disable special behavior for left/right, M-left/right keys.
+          helm-ff-lynx-style-map nil
+          helm-ff-skip-boring-files              t)
+    :config
+    (load "helm-autoloads" nil t)
+
+    ;; helm is too heavy for find-file-at-point
+    (after! helm-mode
+      (add-to-list 'helm-completing-read-handlers-alist '(find-file-at-point . nil))))
+#+END_SRC
+
+*** helm-dash
+
+[[https://github.com/dash-docs-el/helm-dash][helm-dash]] - Browse Dash docsets inside emacs.
+
+#+begin_src emacs-lisp :name helm-dash
+(use-package helm-dash
+  :defer t
+  :commands (helm-dash helm-dash-at-point)
+  :init
+  (setq helm-dash-docsets-path (expand-file-name "dash-docsets" deftpunk--emacs-dir))
+  :config
+  (setq helm-dash-common-docsets '("Python_3" "Clojure")))
+        ;; helm-dash-browser-func 'eww-browse-url))
+#+end_src
+
+*** helm-hunks
+
+[[https://github.com/torgeir/helm-hunks.el][helm-hunks]] A helm interface for git hunks - browsing, staging, unstaging and killing.
+
+#+BEGIN_SRC emacs-lisp :name helm-hunks
+(use-package helm-hunks
+  :defer t
+  :config
+  (setq helm-hunks-preview-diffs t))
+(add-hook 'git-gutter:update-hooks 'helm-hunks-refresh-hook)
+#+END_SRC
+
+*** helm-tramp
+
+[[https://github.com/masasam/emacs-helm-tramp][helm-tramp]] Tramp helm interface for ssh server and docker and vagrant
+
+#+BEGIN_SRC emacs-lisp :name helm-tramp
+(use-package helm-tramp
+  :defer t
+  :init (setq tramp-default-method "ssh")
+  :config
+  ;; Speed up tramp & helm-tramp by turning some things off.
+  ;; We turn some other Tramp specific things off in the Tramp section.
+  (add-hook 'helm-tramp-pre-command-hook '(lambda ()
+                                            (global-aggressive-indent-mode 0)
+                                            (projectile-mode 0)))
+  (add-hook 'helm-tramp-quit-hook '(lambda ()
+                                     (global-aggressive-indent-mode 1)
+                                     (projectile-mode 1))))
+
+;; Besides ~/.ssh/config, you can add connections manually.
+;; (setq helm-tramp-custom-connections '(/ssh:domain|sudo:user@localhost:/))
+#+END_SRC
+
+** yasnippets
+
+All of my snippet needs. [[https://github.com/joaotavora/yasnippet][yasnippet]] and [[https://github.com/AndreaCrotti/yasnippet-snippets][yasnippet-snippets]] plus our own.
+
+The yasnippet [[http://joaotavora.github.io/yasnippet/][manual]].
+
+#+begin_src emacs-lisp :name yasnippet
+    (defvar +deftpunk-snippets-dir (expand-file-name "snippets/" deftpunk--etc-dir))
+
+    (use-package yasnippet-snippets)
+
+    (use-package yasnippet
+      :defer t
+      :init
+      ;; Remove default ~/.emacs.d/snippets
+      (defvar yas-snippet-dirs nil)
+
+      (if (daemonp)
+          (after! yasnippet (yas-reload-all))
+        ;; Ensure `yas-reload-all' is called as late as possible. Other modules
+        ;; could have additional configuration for yasnippet. For example,
+        ;; file-templates.
+        (add-transient-hook! 'yas-minor-mode-hook (yas-reload-all)))
+
+      (add-hook! '(text-mode-hook
+                   prog-mode-hook
+                   conf-mode-hook
+                   snippet-mode-hook)
+                 #'yas-minor-mode-on)
+
+      :config
+      (setq yas-verbosity 3)
+
+      ;; Ensure the snippet is properly indented
+      (setq yas-also-auto-indent-first-line t)
+
+      ;; Allow private snippets in DOOMDIR/snippets
+      (add-to-list 'yas-snippet-dirs '+deftpunk-snippets-dir))
+
+    (use-package helm-c-yasnippet
+      :init (setq helm-yas-space-match-any-greedy t))
+#+end_src
 
 * The Prime Evil
 
@@ -992,10 +1356,12 @@ Keychord has a couple of drawbacks
 2. Can't use function keys in keychords
 3. Doesn't work well with internationalization packages.
 
-#+begin_src emacs-lisp :name key-chord
-  (use-package key-chord
-    :init
-    (key-chord-mode 1))
-  (key-chord-define-global "jk" 'hydra-jk/body)
-#+end_src
+Wed Dec 09 2020 15:04:01 - Tried out using `general-chord` but it didn't work with `jk` in normal mode.
 
+#+begin_src emacs-lisp :name jk-binding
+   (use-package key-chord
+     :defer t
+     :init
+     (key-chord-mode 1))
+   (key-chord-define-global "jk" 'hydra-jk/body)
+#+end_src
