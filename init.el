@@ -230,6 +230,9 @@ missing) and shouldn't be deleted.")
   (straight-use-package 'use-package)
   (use-package delight)
 
+  (straight-use-package 'org)
+  (straight-use-package 'org-plus-contrib)
+
     ;;
     ;;; Clean up the UI early.
     ;;; Get rid of the toolbar, scrollbar and startup message nonsense.
