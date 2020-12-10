@@ -487,6 +487,16 @@ dependency for =magit-hl-todos= which toggles in =magit-status=.
   (add-hook 'prog-mode-hook 'hl-todo-mode)
 #+end_src
 
+** paren-face
+
+[[https://github.com/tarsius/paren-face][paren-face]] dim parentheses in lisp modes to reduce visual distraction.
+
+#+begin_src emacs-lisp :name paren-face
+  (use-package paren-face
+    :hook
+    (lispy-mode . paren-face-mode))
+#+end_src
+
 ** Projectile
 
 [[https://github.com/bbatsov/projectile][Projectile]] - Project management for emacs - [[https://docs.projectile.mx/projectile/usage.html][The Manual]]
@@ -508,8 +518,56 @@ dependency for =magit-hl-todos= which toggles in =magit-status=.
     (counsel-projectile-mode))
 #+END_SRC
 
-* Prose
+** smartparens
+** super-save
 
+[[https://github.com/bbatsov/super-save][super-save]] Automatically save your buffers.
+
+#+begin_src emacs-lisp :name super-save
+  (use-package super-save
+    :delight "SS"
+    :init
+    ;; don't save Tramp files.
+    (setq super-save-remote-files nil
+          ;; Save when idle
+          super-save-auto-save-when-idle t
+          ;; Idle timeout
+          super-save-idle-duration 2.5)
+    :config
+    (super-save-mode +1))
+#+end_src
+
+** switch-buffer-functions
+
+The switch-buffer-functions package allows us to update the recentf buffer list as we switch between
+them, so that the list produced by counsel-buffer-or-recentf is shown in the order the buffers have been
+visited, rather than in the order they were opened. Thanks to @tau3000 for the tip.
+
+#+begin_src emacs-lisp :name switch-buffer-functions
+(use-package switch-buffer-functions
+  :after recentf
+  :preface
+  (defun my-recentf-track-visited-file (_prev _curr)
+    (and buffer-file-name
+         (recentf-add-file buffer-file-name)))
+  :init
+  (add-hook 'switch-buffer-functions #'my-recentf-track-visited-file))
+#+end_src
+
+** ws-butler
+
+[[https://github.com/lewang/ws-butler][ws-butler]] Unobtrusively trim spaces from the end of a line.
+
+#+begin_src emacs-lisp :name ws-butler
+  (use-package ws-butler
+    :hook ((text-mode . ws-butler-mode)
+           (prog-mode . ws-butler-mode))
+    :custom
+    (ws-butler-keep-whitespace-before-point nil))
+#+end_src
+
+* Prose
+** Markdown
 ** Org Mode
 
 Use the Org mode we downloaded into src
@@ -599,6 +657,7 @@ Change some of the org-mode mappings that interfere with my evil mode window bin
 
 * Software Development Utilites
 
+** flycheck
 ** Git
 
 *** git-gutter & git-gutter-fringe
@@ -716,6 +775,8 @@ files that have nothing to do with Git.
   (git-timemachine--start #'my-git-timemachine-show-selected-revision))
 #+end_src
 
+** lispy & lispyville
+** lsp-mode
 ** Magit
 
 [[https://magit.vc/][Magit]] - The best git porcelain around.
@@ -778,7 +839,7 @@ Show TODOs in Magit status buffer for each file.
 #+END_SRC
 
 * Software Develpment Languages
-
+** Ansible
 ** C/C++
 
 Mostly for reading/viewing and not development.... I really don't like development in either of these
@@ -788,6 +849,10 @@ languages.
 
 ** Clojure
 
+** Json
+
+Hey, at least it isn't XML.
+
 ** Nim
 
 ** Python
@@ -796,11 +861,16 @@ languages.
 
 ** Shell - bash/zsh
 
+** YAML
+
+"Readable" JSON ... for the most part.
+
 * Completion
 
 I use both Helm & Counsel because they each have certain behaviors or extensions that I find more 
 desirable than the other in certain situations, e.g. helm-dash & swiper
 
+** company
 ** Counsel, Av & Swiper
 
 A bunch of really great stuff by abo-abo
@@ -1042,9 +1112,12 @@ The yasnippet [[http://joaotavora.github.io/yasnippet/][manual]].
       :init (setq helm-yas-space-match-any-greedy t))
 #+end_src
 
+* Shells & Terminals
+** eshell
+** vterm
 * The Prime Evil
 
-** evil dependencies
+** Evil dependencies
 
 *** goto-chg
 
@@ -1102,7 +1175,7 @@ provides the functions goto-last-change and goto-last-change-reverse.
   ;; in the echo-area.
   (advice-add #'undo-tree-save-history :around #'doom-shut-up-a))
 
-** evil
+** Evil
 
 [[https://github.com/emacs-evil/evil][evil]] Using Evil to make the editor part of Emacs even better than vim/neovim.
 
@@ -1168,6 +1241,21 @@ provides the functions goto-last-change and goto-last-change-reverse.
     (evil-collection-init))
 #+end_src
 
+** evil-commentary
+
+[[https://github.com/linktohack/evil-commentary][evil-commentary]] Make it easy to comment out (lines of) code.
+
+The default key bindings use `gc` for the evil-commentary operator command. That means it can be used with
+all available motions and counts, just like other operator commands, such as evil-delete. 
+
+#+begin_src emacs-lisp :name evil-commentary
+  (use-package evil-commentary
+    :defer t
+    :after evil
+    :config
+    (evil-commentary-mode))
+#+end_src
+
 ** evil-goggles
 
 [[https://github.com/edkolev/evil-goggles][evil-goggles]] Display a visual hint when editing with evil.
@@ -1184,6 +1272,7 @@ provides the functions goto-last-change and goto-last-change-reverse.
   (evil-goggles-use-diff-faces))
 #+end_src
 
+** evil-smartparens
 ** evil-visualstar
 
 [[https://github.com/bling/evil-visualstar][evil-visualstar]] Start a * or # search from the visual selection
