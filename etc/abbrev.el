@@ -1,6 +1,7 @@
 ;;-*-coding: utf-8;-*-
 (define-abbrev-table 'global-abbrev-table
   '(
+    ("automaitically" "Automatically" nil :count 1)
     ("bidning" "binding" nil :count 1)
     ("bidnings" "bindings" nil :count 1)
     ("eivil" "evil" nil :count 1)
