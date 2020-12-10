@@ -63,12 +63,13 @@ missing) and shouldn't be deleted.")
 
   ;; I want to know how long it took to load & how many garbage collections. Use
   ;; a hook so the message doesn't get clobbered by other messages.
-  (add-hook 'emacs-startup-hook (lambda ()
-				  (message "Emacs ready in %s with %d garbage collections."
-					   (format "%.2f seconds"
-						   (float-time
-						     (time-subtract after-init-time before-init-time)))
-					   gcs-done)))
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              (message "*** Emacs ready in %s with %d garbage collections ***"
+                       (format "%.2f seconds"
+                               (float-time
+                                (time-subtract after-init-time before-init-time)))
+                       gcs-done)))
 
   (let (file-name-handler-alist)
     (setq user-emacs-directory (file-name-directory load-file-name)))
