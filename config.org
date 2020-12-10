@@ -458,6 +458,22 @@ Make Emacs nicer to use in some way.
     (set-face-attribute 'aw-leading-char-face nil :height 4.0))
 #+end_src
 
+** helpful
+
+   [[https://github.com/Wilfred/helpful][helpful]] Adds a lot more help informatioon to Emacs help/describe buffers.
+
+#+begin_src emacs-lisp :name helpful
+  (use-package helpful
+    :custom
+    (counsel-describe-function-function #'helpful-callable)
+    (counsel-describe-variable-function #'helpful-variable)
+    :bind
+    ([remap describe-function] . counsel-describe-function)
+    ([remap describe-command] . helpful-command)
+    ([remap describe-variable] . counsel-describe-variable)
+    ([remap describe-key] . helpful-key))
+#+end_src
+   
 ** hl-todo
 
 [[https://github.com/tarsius/hl-todo][hl-todo]] - Highlight TODO and similar keywords in comments and strings.
@@ -470,6 +486,27 @@ dependency for =magit-hl-todos= which toggles in =magit-status=.
     (setq hl-todo-highlight-punctuation ":"))
   (add-hook 'prog-mode-hook 'hl-todo-mode)
 #+end_src
+
+** Projectile
+
+[[https://github.com/bbatsov/projectile][Projectile]] - Project management for emacs - [[https://docs.projectile.mx/projectile/usage.html][The Manual]]
+
+#+BEGIN_SRC emacs-lisp :name projectile
+  (use-package projectile
+    :init (setq projectile-project-search-path '("~/WorkStuff/" "~/MyStuff/"))
+    :config
+    (projectile-mode +1))
+#+END_SRC
+
+*** counsel-projectile
+
+[[https://github.com/ericdanan/counsel-projectile][counsel-projectile]] Further ivy integration into Projectile.  The most important is =counsel-projectile=
+
+#+BEGIN_SRC emacs-lisp :name counsel-projectile
+  (use-package counsel-projectile
+    :config
+    (counsel-projectile-mode))
+#+END_SRC
 
 * Prose
 
@@ -1116,6 +1153,8 @@ provides the functions goto-last-change and goto-last-change-reverse.
     (define-key evil-visual-state-map [escape] 'keyboard-quit)
     (define-key evil-insert-state-map [escape] 'evil-normal-state)
     (global-set-key [escape] 'evil-exit-emacs-state))
+    ;; Always Escape
+    (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 #+end_src
 
 ** evil-collection
@@ -1145,13 +1184,17 @@ provides the functions goto-last-change and goto-last-change-reverse.
   (evil-goggles-use-diff-faces))
 #+end_src
 
-* Keybindings
+** evil-visualstar
 
-** Ctrl/Alt/Super
+[[https://github.com/bling/evil-visualstar][evil-visualstar]] Start a * or # search from the visual selection
 
-#+begin_src emacs :name ctrl_alt_super
-  (global-set-key (kbd "C--") 'ace-window)
+#+begin_src emacs-lisp :name evil-visualstar
+  (use-package evil-visualstar
+    :config
+    (global-evil-visualstar-mode 1))
 #+end_src
+
+* Keybindings
 
 ** Hydras
 
@@ -1309,7 +1352,8 @@ Normal state keybindings.
    "U" 'undo-tree-redo
    "Y" "yg_"
    ;; "gd" 'counsel-etags-find-tag-at-point
-   "gs" 'avy-goto-char-2
+   ;;"gs" 'avy-goto-char-2
+   "gs" 'evil-avy-goto-char-timer
    ;; Evil doesn't allow you to overload like Vim/Neovim do.  So this fails because s is not a prefix key.
    ;; But 'v' gets blown away and doesn't fail with the same error???
    ;; "ss" 'deftpunk:split-horizontally-recenter
@@ -1341,8 +1385,26 @@ Normal state keybindings.
 (define-key evil-normal-state-map (kbd "C-h") 'windmove-left)
 (define-key evil-normal-state-map (kbd "C-l") 'windmove-right)
 
+;; Use visual line motions even outside of visual-line-mode buffers
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal)
+
 ;; TODO: modify gx to use - org-open-at-point
+
 #+END_SRC
+
+
+** Ctrl/Alt/Super
+
+#+begin_src emacs-lisp :name ctrl_alt_super
+  (global-set-key (kbd "C--") 'ace-window)
+
+
+
+#+end_src
 
 * keychord
 
