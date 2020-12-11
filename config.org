@@ -519,6 +519,15 @@ dependency for =magit-hl-todos= which toggles in =magit-status=.
 #+END_SRC
 
 ** smartparens
+** so-long
+
+[[https://github.com/hlissner/emacs-so-long][so-long]] Use hlissner's fork.
+
+#+begin_src emacs-lisp :name so-long
+  (use-package so-long
+    :straight (so-long :type git :host github :repo "hlissner/so-long"))
+#+end_src
+
 ** super-save
 
 [[https://github.com/bbatsov/super-save][super-save]] Automatically save your buffers.
@@ -544,14 +553,14 @@ them, so that the list produced by counsel-buffer-or-recentf is shown in the ord
 visited, rather than in the order they were opened. Thanks to @tau3000 for the tip.
 
 #+begin_src emacs-lisp :name switch-buffer-functions
-(use-package switch-buffer-functions
-  :after recentf
-  :preface
-  (defun my-recentf-track-visited-file (_prev _curr)
-    (and buffer-file-name
-         (recentf-add-file buffer-file-name)))
-  :init
-  (add-hook 'switch-buffer-functions #'my-recentf-track-visited-file))
+  (use-package switch-buffer-functions
+    :after recentf
+    :preface
+    (defun my-recentf-track-visited-file (_prev _curr)
+      (and buffer-file-name
+           (recentf-add-file buffer-file-name)))
+    :init
+    (add-hook 'switch-buffer-functions #'my-recentf-track-visited-file))
 #+end_src
 
 ** ws-butler
@@ -560,6 +569,7 @@ visited, rather than in the order they were opened. Thanks to @tau3000 for the t
 
 #+begin_src emacs-lisp :name ws-butler
   (use-package ws-butler
+    :straight (ws-butler :type git :host github :repo "hlissner/ws-butler"))
     :hook ((text-mode . ws-butler-mode)
            (prog-mode . ws-butler-mode))
     :custom
@@ -777,6 +787,13 @@ files that have nothing to do with Git.
 
 ** lispy & lispyville
 ** lsp-mode
+
+ #+begin_src emacs-lisp :name lsp-mode
+
+   ;; support reading large blobs of data
+   (setq read-process-output-max (* 1024 1024))
+ #+end_src
+
 ** Magit
 
 [[https://magit.vc/][Magit]] - The best git porcelain around.
@@ -837,6 +854,11 @@ Show TODOs in Magit status buffer for each file.
   :config
   (magit-todos-mode 1))
 #+END_SRC
+
+** visual-regex-steroids
+
+[[https://github.com/benma/visual-regexp-steroids.el][visual-regex-steroids]]
+
 
 * Software Develpment Languages
 ** Ansible
@@ -1491,7 +1513,8 @@ Normal state keybindings.
 #+begin_src emacs-lisp :name ctrl_alt_super
   (global-set-key (kbd "C--") 'ace-window)
 
-
+  ;; Keep the font window away.
+  (global-unset-key (kbd "s-t"))
 
 #+end_src
 
@@ -1513,3 +1536,9 @@ Wed Dec 09 2020 15:04:01 - Tried out using `general-chord` but it didn't work wi
      (key-chord-mode 1))
    (key-chord-define-global "jk" 'hydra-jk/body)
 #+end_src
+
+* Notes
+** Packages to investigate
+
+ centaur tabs - maybe more like Neovim tabs?
+https://github.com/ema2159/centaur-tabs
