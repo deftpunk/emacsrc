@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+#contributor: Erick Bodine (deftpunk)
+# name: ahx
+# key: ahx
+# --
+(add-hook '$0 '$1)

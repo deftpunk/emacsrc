@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: orgx
+# key: orgx
+# --
+for org in $1config_data[ConfigType.Organizations]:
+    api_key = config_helpers.get_api_key(org)
+    name_or_id = config_helpers.get_name_or_id(org)
+
+    $0

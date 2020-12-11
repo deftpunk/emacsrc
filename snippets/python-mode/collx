@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: collx
+# key: collx
+# --
+coll('$1', 'delete_$2', 'Deleting {} $3'),$0

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+#contributor: Erick Bodine (deftpunk)
+#name: rex
+#key: rex
+# --
+(require '$0)
