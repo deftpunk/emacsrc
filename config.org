@@ -1,4 +1,3 @@
-
 #+TITLE: config.org
 #+AUTHOR: Deftpunk
 #+STARTUP: content
@@ -238,6 +237,19 @@ Currently it recognizes Lisp function, built-in function, macro, faceand variabl
   (custom-set-faces `(ahs-plugin-whole-buffer-face ((t (:box t)))))
   :config
   (add-hook 'prog-mode-hook 'auto-highlight-symbol-mode))
+#+end_src
+
+** minions
+
+[[https://github.com/tarsius/minions][minions]] Hide minor-modes from the modeline by putting them in a menu.
+
+If you want to still see a handful of important minor-modes:
+(push 'flymake-mode minions-direct)
+(push 'overwrite-mode minions-direct)
+
+#+begin_src emacs-lisp :name minions
+  (use-package minions
+    :config (minions-mode 1))
 #+end_src
 
 ** Rainbow Delimiters
@@ -497,6 +509,19 @@ dependency for =magit-hl-todos= which toggles in =magit-status=.
     (lispy-mode . paren-face-mode))
 #+end_src
 
+** persistent-scratch
+
+[[https://github.com/Fanael/persistent-scratch][persistent-scratch]] - Preserves the state of **scratch** buffers across Emacs sessions.  Since I put all
+kinds of stuff into the **scratch** buffer this is really handy.
+
+#+begin_src emacs-lisp :name persistent-scratch
+  (use-package persistent-scratch
+    :init
+    (setq persistent-scratch-save-file (expand-file-name "persistent-scratch" deftpunk--local-dir))
+    :config
+    (persistent-scratch-setup-default))
+#+end_src
+
 ** Projectile
 
 [[https://github.com/bbatsov/projectile][Projectile]] - Project management for emacs - [[https://docs.projectile.mx/projectile/usage.html][The Manual]]
@@ -541,7 +566,7 @@ dependency for =magit-hl-todos= which toggles in =magit-status=.
           ;; Save when idle
           super-save-auto-save-when-idle t
           ;; Idle timeout
-          super-save-idle-duration 2.5)
+          super-save-idle-duration 5)
     :config
     (super-save-mode +1))
 #+end_src
@@ -569,7 +594,7 @@ visited, rather than in the order they were opened. Thanks to @tau3000 for the t
 
 #+begin_src emacs-lisp :name ws-butler
   (use-package ws-butler
-    :straight (ws-butler :type git :host github :repo "hlissner/ws-butler"))
+    :straight (ws-butler :type git :host github :repo "hlissner/ws-butler")
     :hook ((text-mode . ws-butler-mode)
            (prog-mode . ws-butler-mode))
     :custom
@@ -577,8 +602,7 @@ visited, rather than in the order they were opened. Thanks to @tau3000 for the t
 #+end_src
 
 * Prose
-** Markdown
-** Org Mode
+* Org Mode
 
 Use the Org mode we downloaded into src
   ;; Use the latest Org mode.
@@ -665,7 +689,7 @@ Change some of the org-mode mappings that interfere with my evil mode window bin
           org-hide-leading-stars nil))
 #+end_src
 
-* Software Development Utilites
+* Software Utilites
 
 ** flycheck
 ** Git
@@ -860,7 +884,7 @@ Show TODOs in Magit status buffer for each file.
 [[https://github.com/benma/visual-regexp-steroids.el][visual-regex-steroids]]
 
 
-* Software Develpment Languages
+* Languages & Formats
 ** Ansible
 ** C/C++
 
@@ -875,7 +899,16 @@ languages.
 
 Hey, at least it isn't XML.
 
+** Markdown
 ** Nim
+
+** PDF Tools
+
+[[https://github.com/politza/pdf-tools][pdf-tools]] A replacement of DocView for PDF files.
+PDF files are not pre-rendered thru ghostscript or something else but created
+on demand.
+
+TODO: Compilation on Mac is possible - https://github.com/politza/pdf-tools#compiling-on-os-x
 
 ** Python
 
@@ -1542,3 +1575,6 @@ Wed Dec 09 2020 15:04:01 - Tried out using `general-chord` but it didn't work wi
 
  centaur tabs - maybe more like Neovim tabs?
 https://github.com/ema2159/centaur-tabs
+
+beginend - go to the semantic beginning or ending of a mode/file
+https://github.com/DamienCassou/beginend

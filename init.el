@@ -780,8 +780,9 @@ missing) and shouldn't be deleted.")
   (use-package saveplace
     ;; persistent point location in buffers
     :config
+    (setq-default save-place t)
     (setq save-place-file (concat deftpunk--cache-dir "saveplace")
-	  save-place-forget-unreadable-files nil
+          save-place-forget-unreadable-files nil
           save-place-limit 100)
 
     (defadvice! doom--recenter-on-load-saveplace-a (&rest _)
