@@ -14,6 +14,7 @@
     ("shuutdown" "shutdown" nil :count 1)
     ("stuuff" "stuff" nil :count 1)
     ("teh" "the" nil :count 1)
+    ("ussign" "using" nil :count 1)
     ("wiht" "with" nil :count 1)
     ("wondow" "Window" nil :count 1)
    ))
