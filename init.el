@@ -597,7 +597,8 @@ missing) and shouldn't be deleted.")
   ;; middle of a line.
   (setq tabify-regexp "^\t* [ \t]+")
 
-  ;; I want 105 columns, the rest of the world be damned.
+  ;; I want 105 columns, the rest of the world be damned.  If we change it, e.g. code comments, we will
+  ;; do so specifically.
   (setq-default fill-column 105)
 
   ;; Continue wrapped words at whitespace, rather than in the middle of a word.
@@ -605,6 +606,7 @@ missing) and shouldn't be deleted.")
   ;; ...but don't do any wrapping by default. It's expensive. Enable
   ;; `visual-line-mode' if you want soft line-wrapping. `auto-fill-mode' for hard
   ;; line-wrapping.
+  (setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
   (setq-default truncate-lines t)
 
   ;; If enabled (and `truncate-lines' was disabled), soft wrapping no longer
@@ -622,10 +624,6 @@ missing) and shouldn't be deleted.")
   ;; Default to soft line-wrapping in text modes. It is more sensibile for text
   ;; modes, even if hard wrapping is more performant.
   (add-hook 'text-mode-hook #'visual-line-mode)
-
-  ;; Show trailing whitespace - ws-butler will handle deleting it.
-  (add-hook 'prog-mode-hook '(lambda ()
-			       (setq show-trailing-whitespace 1)))
 
   ;;
   ;;; Builtin Packages

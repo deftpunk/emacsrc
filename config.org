@@ -470,6 +470,17 @@ Make Emacs nicer to use in some way.
     (set-face-attribute 'aw-leading-char-face nil :height 4.0))
 #+end_src
 
+** default-text-scale
+
+[[https://github.com/purcell/default-text-scale][default-text-scale]] Increase/Decrease the font size in Emacs frames
+
+#+begin_src emacs-lisp :name default-text-scale
+  (use-package default-text-scale
+    :defer t
+    :bind (("s-+" . default-text-scale-increase)
+           ("s--" . default-text-scale-decrease)))
+#+end_src
+
 ** helpful
 
    [[https://github.com/Wilfred/helpful][helpful]] Adds a lot more help informatioon to Emacs help/describe buffers.
@@ -550,7 +561,7 @@ kinds of stuff into the **scratch** buffer this is really handy.
 
 #+begin_src emacs-lisp :name so-long
   (use-package so-long
-    :straight (so-long :type git :host github :repo "hlissner/so-long"))
+    :straight (so-long :type git :host github :repo "hlissner/emacs-so-long"))
 #+end_src
 
 ** super-save
@@ -646,6 +657,15 @@ Consider using https://github.com/alphapapa/org-web-tools
       ("Tools"
        (("h" helm-org-in-buffer-headings "Org headings"))))
 #+END_SRC
+
+** org-tempo
+
+Bring the Easy templates back.  The "new" way requires more keystrokes and isn't as flexible.
+
+#+begin_src emacs-lisp :name org-temp
+  (require 'org-tempo)
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+#+end_src
 
 ** Org mode bindings
 
@@ -885,6 +905,24 @@ Show TODOs in Magit status buffer for each file.
 
 
 * Languages & Formats
+
+Some general setup that is specific to prog-mode.
+
+#+begin_src emacs-lisp :name prog-mode
+
+  ;; auto-fill comments ONLY.
+  (defun deftpunk/auto-fill-comments ()
+    (setq fill-column 72)
+    (set (make-local-variable 'comment-auto-fill-only-comments) t)
+    (auto-fill-mode t))
+  (add-hook 'prog-mode-hook 'deftpunk/auto-fill-comments)
+
+  ;; Show trailing whitespace - ws-butler will handle deleting it.
+  (add-hook 'prog-mode-hook '(lambda ()
+                               (setq show-trailing-whitespace 1)))
+
+#+end_src
+
 ** Ansible
 ** C/C++
 
@@ -926,6 +964,42 @@ I use both Helm & Counsel because they each have certain behaviors or extensions
 desirable than the other in certain situations, e.g. helm-dash & swiper
 
 ** company
+
+[[http://company-mode.github.io/][company-mode]] Auto completion in Emacs.
+
+#+begin_src emacs-lisp :company
+  (use-package company
+    :custom-face
+    (company-tooltip
+     ((t (:family "Iosevka"))))
+    :config
+    (setq company-idle-delay 0
+          ;; show 10 items in the tooltip
+          company-tooltip-limit 10
+          ;; sow the description of what a snippet expands to.
+          company-tooltip-align-annotations t
+          ;; cycle the list around
+          company-selection-wrap-around t
+          ;; provide the "correct" casing for a completion
+          company-dabbrev-ignore-case nil
+          ;; do not downcase completions by default
+          company-dabbrev-downcase nil
+          ;; Start after 2 characters
+          company-minimum-prefix-length 2)
+
+          ;; company-require-match 'never
+          ;; company-global-modes
+          ;; '(not erc-mode message-mode help-mode gud-mode eshell-mode)
+          ;; company-backends  '(company-capf)
+          ;; company-frontends '(company-pseudo-tooltip-frontend
+                              ;; company-echo-metadata-frontend))
+
+    (make-variable-buffer-local 'company-minimum-prefix-length)
+
+    (global-company-mode 1))
+#+end_src
+
+
 ** Counsel, Av & Swiper
 
 A bunch of really great stuff by abo-abo
