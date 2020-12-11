@@ -561,7 +561,51 @@ kinds of stuff into the **scratch** buffer this is really handy.
 
 #+begin_src emacs-lisp :name so-long
   (use-package so-long
-    :straight (so-long :type git :host github :repo "hlissner/emacs-so-long"))
+    :straight (so-long :type git :host github :repo "hlissner/emacs-so-long")
+    :config
+    ; reduce false positives w/ a larger threshold
+    (setq so-long-threshold 400)
+
+    ;;; More cool Doom stuff
+
+    ;; Don't disable syntax highlighting and line numbers, or make the buffer
+    ;; read-only, in `so-long-minor-mode', so we can have a basic editing
+    ;; experience in them, at least. It will remain off in `so-long-mode',
+    ;; however, because long files have a far bigger impact on Emacs performance.
+    (delq! 'font-lock-mode so-long-minor-modes)
+    (delq! 'display-line-numbers-mode so-long-minor-modes)
+    (delq! 'buffer-read-only so-long-variable-overrides 'assq)
+    ;; ...but at least reduce the level of syntax highlighting
+    (add-to-list 'so-long-variable-overrides '(font-lock-maximum-decoration . 1))
+    ;; ...and insist that save-place not operate in large/long files
+    (add-to-list 'so-long-variable-overrides '(save-place-alist . nil))
+    ;; Text files could possibly be too long too
+    (add-to-list 'so-long-target-modes 'text-mode)
+
+    ;; But disable everything else that may be unnecessary/expensive for large or
+    ;; wide buffers.
+    (appendq! so-long-minor-modes
+              '(flycheck-mode
+                flyspell-mode
+                spell-fu-mode
+                eldoc-mode
+                smartparens-mode
+                highlight-numbers-mode
+                better-jumper-local-mode
+                ws-butler-mode
+                auto-composition-mode
+                undo-tree-mode
+                highlight-indent-guides-mode
+                hl-fill-column-mode))
+    (defun doom-buffer-has-long-lines-p ()
+      ;; HACK Fix #2183: `so-long-detected-long-line-p' tries to parse comment
+      ;;      syntax, but in some buffers comment state isn't initialized, leading
+      ;;      to a wrong-type-argument: stringp error.
+      (unless (bound-and-true-p visual-line-mode)
+        (let ((so-long-skip-leading-comments
+               (bound-and-true-p comment-use-syntax)))
+          (so-long-detected-long-line-p))))
+    (setq so-long-predicate #'doom-buffer-has-long-lines-p))
 #+end_src
 
 ** super-save
@@ -651,25 +695,26 @@ http://ergoemacs.org/emacs/emacs_org_markup.
 Consider using https://github.com/alphapapa/org-web-tools
 
 #+BEGIN_SRC emacs-lisp :name org-mode
-    (defvar org-mode-map--title (with-faicon "book" "Org Mode bindings" 1 -0.05))
-    (major-mode-hydra-define org-mode
-      (:title org-mode-map--title :color blue :separator "=")
-      ("Tools"
-       (("h" helm-org-in-buffer-headings "Org headings"))))
-#+END_SRC
+  (defvar org-mode-map--title (with-faicon "book" "Org Mode bindings" 1 -0.05))
+  (major-mode-hydra-define org-mode
+    (:title org-mode-map--title :color blue :separator "=")
+    ("Tools"
+     (("h" helm-org-in-buffer-headings "Org headings"))))
 
-** Org mode bindings
+  ;;; Make some new org-capture-templates
+  ;(add-to-list 'org-capture-templates
+   ;            '("w" "Work Task" entry
+    ;             (file "~/MyStuff/org_files/netapp_work.org")
+     ;            "* TODO %?" :empty-lines 1))
 
-Change some of the org-mode mappings that interfere with my evil mode window bindings.
-
-#+begin_src emacs-lisp :name org-mode-keybindings
+  ;;; Keys for org-mode-map
   (general-define-key
    :states 'normal
    :keymaps 'org-mode-map
    ;; These 2 interfere with window navigation.
    "C-j" 'nil
    "C-k" 'nil)
-#+end_src
+#+END_SRC
 
 ** helm-org
 
@@ -963,7 +1008,7 @@ desirable than the other in certain situations, e.g. helm-dash & swiper
     :custom-face
     (company-tooltip
      ((t (:family "Iosevka"))))
-    :config
+    :init
     (setq company-idle-delay 0
           ;; show 10 items in the tooltip
           company-tooltip-limit 10
@@ -976,19 +1021,46 @@ desirable than the other in certain situations, e.g. helm-dash & swiper
           ;; do not downcase completions by default
           company-dabbrev-downcase nil
           ;; Start after 2 characters
-          company-minimum-prefix-length 2)
+          company-minimum-prefix-length 2
 
-          ;; company-require-match 'never
+          company-require-match 'never
+
           ;; company-global-modes
           ;; '(not erc-mode message-mode help-mode gud-mode eshell-mode)
-          ;; company-backends  '(company-capf)
-          ;; company-frontends '(company-pseudo-tooltip-frontend
-                              ;; company-echo-metadata-frontend))
 
+          ;; Default backend, all the others will be buffer local.
+          company-backends  '(company-capf)
+          company-frontends '(company-pseudo-tooltip-frontend
+                              company-echo-metadata-frontend))
+
+    :config
     (make-variable-buffer-local 'company-minimum-prefix-length)
+
+    ;; Got this from https://github.com/dawranliou/emacs.d#company
+    ;; I have not seen the issue that this rectifies ... yet.
+    (add-hook 'evil-local-mode-hook
+              (lambda ()
+                ;; Note:
+                ;; Check if `company-emulation-alist' is in
+                ;; `emulation-mode-map-alists', if true, call
+                ;; `company-ensure-emulation-alist' to ensure
+                ;; `company-emulation-alist' is the first item of
+                ;; `emulation-mode-map-alists', thus has a higher
+                ;; priority than keymaps of evil-mode.
+                ;; We raise the priority of company-mode keymaps
+                ;; unconditionally even when completion is not
+                ;; activated. This should not cause problems,
+                ;; because when completion is activated, the value of
+                ;; `company-emulation-alist' is ((t . company-my-keymap)),
+                ;; when completion is not activated, the value is ((t . nil)).
+                (when (memq 'company-emulation-alist emulation-mode-map-alists)
+                  (company-ensure-emulation-alist))))
 
     (global-company-mode 1))
 #+end_src
+
+*** company-posframe
+*** company-presient
 
 ** Counsel, Av & Swiper
 
@@ -1490,23 +1562,24 @@ all available motions and counts, just like other operator commands, such as evi
 *** the jk hydra
 
 #+BEGIN_SRC emacs-lisp :name jk-hydra
-  (defvar hydra-jk--title (with-faicon "cogs" "Control Panel" 1 -0.05))
-  (pretty-hydra-define hydra-jk
-    (:color blue :title hydra-jk--title
-            :post (progn
-                    (message "Thank you, please come again")))
-    ("Tools"
-     (("e" major-mode-hydra "Major Mode Hydra")
-      ("i" helm-mini "Buffers/Recentf")
-      ("s" swiper "Swiper")
-      ("x" helm-M-x "Fuzzy M-x"))
+    (defvar hydra-jk--title (with-faicon "cogs" "Control Panel" 1 -0.05))
+    (pretty-hydra-define hydra-jk
+      (:color blue :title hydra-jk--title
+              :post (progn
+                      (message "Thank you, please come again")))
+      ("Tools"
+       (("c" org-capture "Org Capture")
+        ("e" major-mode-hydra "Major Mode Hydra")
+        ("i" helm-mini "Buffers/Recentf")
+        ("s" swiper "Swiper")
+        ("x" helm-M-x "Fuzzy M-x"))
 
-     "Version Control"
-     (("g" version-control-hydra/body "Git stuff"))
+       "Version Control"
+       (("g" version-control-hydra/body "Git stuff"))
 
-     "Windows"
-     (("-" ace-window "ace-window")
-      ("w" windows-hydra/body "windows hydra"))))
+       "Windows"
+       (("-" ace-window "ace-window")
+        ("w" windows-hydra/body "windows hydra"))))
 #+END_SRC
 
 *** the toggle hydra
