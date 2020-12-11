@@ -506,6 +506,15 @@ This macro accepts, in order:
                    (nreverse forms)
                  forms))))))
 
+(defmacro delq! (elt list &optional fetcher)
+  "`delq' ELT from LIST in-place.
+If FETCHER is a function, ELT is used as the key in LIST (an alist)."
+  `(setq ,list
+         (delq ,(if fetcher
+                    `(funcall ,fetcher ,elt ,list)
+                  elt)
+               ,list)))
+
 (defmacro quiet! (&rest forms)
   "Run FORMS without generating any output.
 
