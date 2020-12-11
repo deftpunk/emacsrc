@@ -658,15 +658,6 @@ Consider using https://github.com/alphapapa/org-web-tools
        (("h" helm-org-in-buffer-headings "Org headings"))))
 #+END_SRC
 
-** org-tempo
-
-Bring the Easy templates back.  The "new" way requires more keystrokes and isn't as flexible.
-
-#+begin_src emacs-lisp :name org-temp
-  (require 'org-tempo)
-  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-#+end_src
-
 ** Org mode bindings
 
 Change some of the org-mode mappings that interfere with my evil mode window bindings.
@@ -998,7 +989,6 @@ desirable than the other in certain situations, e.g. helm-dash & swiper
 
     (global-company-mode 1))
 #+end_src
-
 
 ** Counsel, Av & Swiper
 
