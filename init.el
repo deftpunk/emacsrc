@@ -626,6 +626,26 @@ missing) and shouldn't be deleted.")
   (add-hook 'text-mode-hook #'visual-line-mode)
 
   ;;
+  ;;; Keybinding
+
+  ;; Force command and option to do the right thing.
+  (when IS-MAC
+    (setq mac-command-modifier 'super
+          ns-command-modifier 'super
+          mac-option-modifier 'meta
+          ns-option-modifier 'meta)
+    )
+
+  ;; HACK Fixes Emacs' disturbing inability to distinguish C-i from TAB.
+  (define-key key-translation-map [?\C-i]
+    (cmd! (if (and (not (cl-position 'tab    (this-single-command-raw-keys)))
+                   (not (cl-position 'kp-tab (this-single-command-raw-keys)))
+                   (display-graphic-p))
+              [C-i] [?\C-i])))
+  ;; However, ensure <C-i> falls back to the old keybind if it has no binding.
+  (global-set-key [C-i] [?\C-i])
+
+  ;;
   ;;; Builtin Packages
 
   ;; Auto revert buffers.
