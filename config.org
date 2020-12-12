@@ -1000,7 +1000,6 @@ files that have nothing to do with Git.
 ** lsp-mode
 
  #+begin_src emacs-lisp :name lsp-mode
-
    ;; support reading large blobs of data
    (setq read-process-output-max (* 1024 1024))
  #+end_src
@@ -1744,11 +1743,10 @@ Set up the leader key using general.el
     "r" 'counsel-rg
     "s" 'swiper
     "w" 'save-buffer
-    "y" 'counsel-yank-pop
+    "y" 'helm-show-kill-ring ; like the helm version better than counsel-yank-pop
     "-" 'ace-window
     )
 #+end_src
-
 
 ** State keybindings
 
