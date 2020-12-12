@@ -5,6 +5,8 @@
     ("bidning" "binding" nil :count 1)
     ("bidnings" "bindings" nil :count 1)
     ("ddata" "data" nil :count 1)
+    ("dding" "adding" nil :count 1)
+    ("defualt" "default" nil :count 1)
     ("eivil" "evil" nil :count 1)
     ("furhtier" "Further" nil :count 1)
     ("idel" "idle" nil :count 1)
