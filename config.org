@@ -470,6 +470,20 @@ Make Emacs nicer to use in some way.
     (set-face-attribute 'aw-leading-char-face nil :height 4.0))
 #+end_src
 
+** aggressive-indent-mode
+
+[[https://github.com/Malabarba/aggressive-indent-mode][aggressive-indent-mode]] Indent your code.
+
+#+begin_src emacs-lisp :name aggressive-indent-mode
+  (use-package aggressive-indent-mode
+    :commands (aggressive-indent-mode)
+    :defer 1
+    :config
+    (add-hook! 'emacs-lisp-mode-hook #'aggressive-indent-mode))
+
+  (add-hook! 'clojure-mode-hook #'aggressive-indent-mode)
+#+end_src
+
 ** default-text-scale
 
 [[https://github.com/purcell/default-text-scale][default-text-scale]] Increase/Decrease the font size in Emacs frames
@@ -555,6 +569,70 @@ kinds of stuff into the **scratch** buffer this is really handy.
 #+END_SRC
 
 ** smartparens
+
+[[https://github.com/Fuco1/smartparens][smartparens]] Keep my pairs clean ish.
+
+#+begin_src emacs-lisp :name smartparens
+  (use-package smartparens
+    :config
+    ;; smartparens doesn't recognize the sly-mrepl-mode
+    (add-to-list 'sp-lisp-modes 'sly-mrepl-mode)
+
+    ;; load the default smartparens rules for various languages.
+    (require 'smartparens-config)
+
+    ;; Overlays are too distracting and not terribly helpful. show-parens does
+    ;; this for us already (and is faster), so...
+    (setq sp-highlight-pair-overlay nil
+          sp-highlight-wrap-overlay nil
+          sp-highlight-wrap-tag-overlay nil)
+
+    (with-eval-after-load 'evil
+      ;; But if someone does want overlays enabled, evil users will be stricken
+      ;; with an off-by-one issue where smartparens assumes you're outside the
+      ;; pair when you're really at the last character in insert mode. We must
+      ;; correct this vile injustice.
+      (setq sp-show-pair-from-inside t)
+      ;; ...and stay highlighted until we've truly escaped the pair!
+      (setq sp-cancel-autoskip-on-backward-movement nil))
+
+    ;; The default is 100, because smartparen's scans are relatively expensive
+    ;; (especially with large pair lists for some modes), we reduce it, as a
+    ;; better compromise between performance and accuracy.
+    (setq sp-max-prefix-length 25)
+    ;; No pair has any business being longer than 4 characters; if they must, set
+    ;; it buffer-locally. It's less work for smartparens.
+    (setq sp-max-pair-length 4)
+    ;; This isn't always smart enough to determine when we're in a string or not.
+    ;; See https://github.com/Fuco1/smartparens/issues/783.
+    (setq sp-escape-quotes-after-insert nil)
+
+    ;; Silence some harmless but annoying echo-area spam
+    (dolist (key '(:unmatched-expression :no-matching-tag))
+      (setf (alist-get key sp-message-alist) nil))
+
+    ;; You're likely writing lisp in the minibuffer, therefore, disable these
+    ;; quote pairs, which lisps doesn't use for strings:
+    (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil)
+    (sp-local-pair 'minibuffer-inactive-mode "`" nil :actions nil)
+
+    ;; Smartparens breaks evil-mode's replace state
+    (defvar doom-buffer-smartparens-mode nil)
+    (add-hook! 'evil-replace-state-exit-hook
+      (defun doom-enable-smartparens-mode-maybe-h ()
+        (when doom-buffer-smartparens-mode
+          (turn-on-smartparens-mode)
+          (kill-local-variable 'doom-buffer-smartparens-mode))))
+    (add-hook! 'evil-replace-state-entry-hook
+      (defun doom-disable-smartparens-mode-maybe-h ()
+        (when smartparens-mode
+          (setq-local doom-buffer-smartparens-mode t)
+          (turn-off-smartparens-mode)))))
+
+  (add-hook! 'emacs-lisp-mode-hook 'smartparens-strict-mode)
+#+end_src
+
+
 ** so-long
 
 [[https://github.com/hlissner/emacs-so-long][so-long]] Use hlissner's fork.
@@ -695,25 +773,26 @@ http://ergoemacs.org/emacs/emacs_org_markup.
 Consider using https://github.com/alphapapa/org-web-tools
 
 #+BEGIN_SRC emacs-lisp :name org-mode
-  (defvar org-mode-map--title (with-faicon "book" "Org Mode bindings" 1 -0.05))
-  (major-mode-hydra-define org-mode
-    (:title org-mode-map--title :color blue :separator "=")
-    ("Tools"
-     (("h" helm-org-in-buffer-headings "Org headings"))))
+    (defvar org-mode-map--title (with-faicon "book" "Org Mode bindings" 1 -0.05))
+    (major-mode-hydra-define org-mode
+      (:title org-mode-map--title :color blue :separator "=")
+      ("Tools"
+       (("h" helm-org-in-buffer-headings "Org headings")
+        ("l" org-insert-link "Org insert link"))))
 
-  ;;; Make some new org-capture-templates
-  ;(add-to-list 'org-capture-templates
-   ;            '("w" "Work Task" entry
-    ;             (file "~/MyStuff/org_files/netapp_work.org")
-     ;            "* TODO %?" :empty-lines 1))
+    ;;; Make some new org-capture-templates
+    ;(add-to-list 'org-capture-templates
+     ;            '("w" "Work Task" entry
+      ;             (file "~/MyStuff/org_files/netapp_work.org")
+       ;            "* TODO %?" :empty-lines 1))
 
-  ;;; Keys for org-mode-map
-  (general-define-key
-   :states 'normal
-   :keymaps 'org-mode-map
-   ;; These 2 interfere with window navigation.
-   "C-j" 'nil
-   "C-k" 'nil)
+    ;;; Keys for org-mode-map
+    (general-define-key
+     :states 'normal
+     :keymaps 'org-mode-map
+     ;; These 2 interfere with window navigation.
+     "C-j" 'nil
+     "C-k" 'nil)
 #+END_SRC
 
 ** helm-org
