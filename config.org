@@ -883,52 +883,54 @@ Consider using https://github.com/alphapapa/org-web-tools
 
 [[http://www.flycheck.org/en/latest/][flycheck]] - on the fly syntax checking
 
+TODO: There is a helm-flycheck
+
 #+begin_src emacs-lisp :name flycheck
-  (use-package flycheck
-    :defer 1
-    :commands flycheck-list-errors flycheck-buffer
-    :bind (:map flycheck-error-list-mode-map
-           ("C-n" . flycheck-error-list-next-error)
-           ("C-p" . flycheck-error-list-previous-error)
-           ("j" . flycheck-error-list-next-error)
-           ("k" . flycheck-error-list-previous-error)
-           ("RET" . flycheck-error-list-goto-error)
-           ([return] . flycheck-error-list-goto-error))
-    :init
-    ;; I want these checkers permanently disabled.
-    (setq flycheck-disabled-checkers '(tex-chktex emacs-lisp-checkdoc))
+    (use-package flycheck
+      :defer 1
+      :commands flycheck-list-errors flycheck-buffer
+      :bind (:map flycheck-error-list-mode-map
+             ("C-n" . flycheck-error-list-next-error)
+             ("C-p" . flycheck-error-list-previous-error)
+             ("j" . flycheck-error-list-next-error)
+             ("k" . flycheck-error-list-previous-error)
+             ("RET" . flycheck-error-list-goto-error)
+             ([return] . flycheck-error-list-goto-error))
+      :init
+      ;; I want these checkers permanently disabled.
+      (setq flycheck-disabled-checkers '(tex-chktex emacs-lisp-checkdoc))
 
-    ;; Use the `load-path' of the current Emacs session during syntax checking.
-    (setq flycheck-emacs-lisp-load-path 'inherit)
+      ;; Use the `load-path' of the current Emacs session during syntax checking.
+      (setq flycheck-emacs-lisp-load-path 'inherit)
 
-    ;; I want `next-error', `previous-error' and `first-error' to just navigate errors from
-    ;; compilation modes.
-    (setq flycheck-standard-error-navigation nil)
+      ;; I want `next-error', `previous-error' and `first-error' to just navigate errors from
+      ;; compilation modes.
+      (setq flycheck-standard-error-navigation nil)
 
-    ;; Check only when saving or opening files.
-    (setq flycheck-check-syntax-automatically '(save mode-enabled idle-buffer-switch))
+      ;; Check only when saving or opening files.
+      (setq flycheck-check-syntax-automatically '(save mode-enabled idle-buffer-switch))
 
-    ;; For the above functionality, check syntax in a buffer that you switched to
-    ;; only briefly. This allows "refreshing" the syntax check state for several
-    ;; buffers quickly after e.g. changing a config file.
-    (setq flycheck-buffer-switch-check-intermediate-buffers t)
+      ;; For the above functionality, check syntax in a buffer that you switched to
+      ;; only briefly. This allows "refreshing" the syntax check state for several
+      ;; buffers quickly after e.g. changing a config file.
+      (setq flycheck-buffer-switch-check-intermediate-buffers t)
 
-    ;; Display errors a little quicker (default is 0.9s)
-    (setq flycheck-display-errors-delay 0.25)
+      ;; Display errors a little quicker (default is 0.9s)
+      (setq flycheck-display-errors-delay 0.25)
 
-    ;; Initialize packages in the Emacs Lisp syntax checker.
-    (setq flycheck-lisp-initialize-packages t)
+      ;; Initialize packages in the Emacs Lisp syntax checker.
+      (setq flycheck-lisp-initialize-packages t)
 
-    :config
-    (global-flycheck-mode +1))
+      :config
+      (global-flycheck-mode +1))
 
-(add-to-list 'display-buffer-alist
-             `(,(rx bos "*Flycheck errors*" eos)
-              (display-buffer-reuse-window
-               display-buffer-in-side-window)
-              (side            . bottom)
-              (reusable-frames . visible)
-              (window-height   . 0.33)))
+  (add-to-list 'display-buffer-alist
+               `(,(rx bos "*Flycheck errors*" eos)
+                (display-buffer-reuse-window
+                 display-buffer-in-side-window)
+                (side            . bottom)
+                (reusable-frames . visible)
+                (window-height   . 0.33)))
 #+end_src
 
 ** Git
@@ -1230,6 +1232,8 @@ TODO: Compilation on Mac is possible - https://github.com/politza/pdf-tools#comp
 
 ** Rust
 
+flycheck-rust -> Rust additions and Cargo support
+
 ** Shell - bash/zsh
 
 ** YAML
@@ -1297,6 +1301,13 @@ desirable than the other in certain situations, e.g. helm-dash & swiper
                 ;; when completion is not activated, the value is ((t . nil)).
                 (when (memq 'company-emulation-alist emulation-mode-map-alists)
                   (company-ensure-emulation-alist))))
+
+    (dolist (map (list company-active-map company-search-map))
+      (general-def map "C-d" #'company-show-doc-buffer)
+      (general-def map "C-h" #'evil-delete-backward-char)
+      (general-def map "C-j" #'company-select-next)
+      (general-def map "C-k" #'company-select-previous)
+      (general-def map "C-w" #'evil-delete-backward-word))
 
     (global-company-mode 1))
 #+end_src
