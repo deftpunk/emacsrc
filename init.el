@@ -82,11 +82,17 @@ missing) and shouldn't be deleted.")
 
   ;;
   ;;; Optimizations from Doom Emacs
-  ;;; I copied these wholesale because ... they work!
+  ;;; I copied most of these wholesale because ... they work!
+
+  ;; Some IO related settings.
+  ;; support reading large blobs of data
+  (setq process-adaptive-read-buffering nil)
+  (setq read-process-output-max (* 2048 2048))
 
   ;; Disable bidirectional text rendering for a modest performance boost. I've set
   ;; this to `nil' in the past, but the `bidi-display-reordering's docs say that
   ;; is an undefined state and suggest this to be just as good:
+  (setq bidi-inhibit-bpa t)
   (setq-default bidi-display-reordering 'left-to-right
                 bidi-paragraph-direction 'left-to-right)
 
