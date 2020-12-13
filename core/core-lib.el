@@ -506,6 +506,13 @@ This macro accepts, in order:
                    (nreverse forms)
                  forms))))))
 
+(defmacro cmd! (&rest body)
+  "Returns (lambda () (interactive) ,@body)
+A factory for quickly producing interaction commands, particularly for keybinds
+or aliases."
+  (declare (doc-string 1) (pure t) (side-effect-free t))
+  `(lambda (&rest _) (interactive) ,@body))
+
 (defmacro delq! (elt list &optional fetcher)
   "`delq' ELT from LIST in-place.
 If FETCHER is a function, ELT is used as the key in LIST (an alist)."
