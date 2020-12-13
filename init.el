@@ -880,7 +880,8 @@ missing) and shouldn't be deleted.")
   (defun deftpunk/finalize ()
     "Set the file-name-handler-alist and gc-cons-threshold back."
     ;; If you forget to reset this, you'll get stuttering and random freezes!
-    (setq gc-cons-threshold 16777216
+    ;; We crank the gc-cons-threshold back up to 100MB for lsp-mode
+    (setq gc-cons-threshold 100000000
           gc-cons-percentage 0.1)
     (delete-dups auto-mode-alist) ; cleanup auto-mode-alist if necessary
     t)

@@ -879,6 +879,57 @@ Consider using https://github.com/alphapapa/org-web-tools
 * Software Utilites
 
 ** flycheck
+
+[[http://www.flycheck.org/en/latest/][flycheck]] - on the fly syntax checking
+
+#+begin_src emacs-lisp :name flycheck
+  (use-package flycheck
+    :defer 1
+    :commands flycheck-list-errors flycheck-buffer
+    :bind (:map flycheck-error-list-mode-map
+           ("C-n" . flycheck-error-list-next-error)
+           ("C-p" . flycheck-error-list-previous-error)
+           ("j" . flycheck-error-list-next-error)
+           ("k" . flycheck-error-list-previous-error)
+           ("RET" . flycheck-error-list-goto-error)
+           ([return] . flycheck-error-list-goto-error))
+    :init
+    ;; I want these checkers permanently disabled.
+    (setq flycheck-disabled-checkers '(tex-chktex emacs-lisp-checkdoc))
+
+    ;; Use the `load-path' of the current Emacs session during syntax checking.
+    (setq flycheck-emacs-lisp-load-path 'inherit)
+
+    ;; I want `next-error', `previous-error' and `first-error' to just navigate errors from
+    ;; compilation modes.
+    (setq flycheck-standard-error-navigation nil)
+
+    ;; Check only when saving or opening files.
+    (setq flycheck-check-syntax-automatically '(save mode-enabled idle-buffer-switch))
+
+    ;; For the above functionality, check syntax in a buffer that you switched to
+    ;; only briefly. This allows "refreshing" the syntax check state for several
+    ;; buffers quickly after e.g. changing a config file.
+    (setq flycheck-buffer-switch-check-intermediate-buffers t)
+
+    ;; Display errors a little quicker (default is 0.9s)
+    (setq flycheck-display-errors-delay 0.25)
+
+    ;; Initialize packages in the Emacs Lisp syntax checker.
+    (setq flycheck-lisp-initialize-packages t)
+
+    :config
+    (global-flycheck-mode +1))
+
+(add-to-list 'display-buffer-alist
+             `(,(rx bos "*Flycheck errors*" eos)
+              (display-buffer-reuse-window
+               display-buffer-in-side-window)
+              (side            . bottom)
+              (reusable-frames . visible)
+              (window-height   . 0.33)))
+#+end_src
+
 ** Git
 
 *** git-gutter & git-gutter-fringe
@@ -999,10 +1050,80 @@ files that have nothing to do with Git.
 ** lispy & lispyville
 ** lsp-mode
 
+lsp-find-definition
+lsp-find-refereneces
+
+
  #+begin_src emacs-lisp :name lsp-mode
    ;; support reading large blobs of data
    (setq read-process-output-max (* 1024 1024))
+
+   (use-package lsp-mode
+     :defer 1
+     :hook (prog-mode . lsp-deferred)
+     :init
+     (setq lsp-session-file (expand-file-name "lsp-session" deftpunk--etc-dir))
+
+     ;; Don't prompt the user for the project root every time we open a new
+     ;; lsp-worthy file, instead, try to guess it with projectile.
+     (setq lsp-auto-guess-root t)
+     ;; Auto-kill LSP server after last workspace buffer is killed.
+     (setq lsp-keep-workspace-alive nil)
+     ;; Let `flycheck-check-syntax-automatically' determine this.
+     (setq lsp-flycheck-live-reporting nil)
+     ;; For `lsp-clients'
+     (setq lsp-server-install-dir (concat deftpunk--etc-dir "lsp/"))
+
+     ;; Disable LSP's superfluous, expensive and/or debatably unnecessary features.
+     ;; Some servers implement these poorly. Better to just rely on Emacs' native
+     ;; mechanisms and make these opt-in.
+     (setq lsp-enable-folding nil
+           ;; HACK Fix #2911, until it is resolved upstream. Links come in
+           ;;      asynchronously from the server, but lsp makes no effort to
+           ;;      "select" the original buffer before laying them down, so they
+           ;;      could be rendered in the wrong buffer (like the minibuffer).
+           lsp-enable-links nil
+           ;; Potentially slow
+           lsp-enable-file-watchers nil
+           lsp-enable-text-document-color nil
+           lsp-enable-semantic-highlighting nil
+           ;; Don't modify our code without our permission, we have
+           ;; other/better ways of indenting/formatting.
+           lsp-enable-indentation nil
+           lsp-enable-on-type-formatting nil)
+
+     ;; TODO: this is ugly, add python as well.
+     (add-hook 'clojure-mode-hook #'lsp-deferred)
+     (add-hook 'clojurec-mode-hook #'lsp-deferred)
+     (add-hook 'clojurescript-mode-hook #'lsp-deferred)
+     :config
+     ;; Don't prompt to restart LSP servers while quitting Emacs
+     (add-hook! 'kill-emacs-hook (setq lsp-restart 'ignore)
+
+     (add-to-list 'lsp-language-id-configuration '(clojure-mode . "clojure-mode"))))
  #+end_src
+
+*** lsp-ui
+
+[[https://github.com/emacs-lsp/lsp-ui][lsp-ui]] - UI integrations for lsp-mode
+
+#+begin_src emacs-lisp :name lsp-ui
+  (use-package lsp-ui
+    :commands lsp-ui-mode
+    :config
+    (setq lsp-ui-sideline-ignore-duplicate t
+          lsp-ui-doc-enable t
+          lsp-ui-doc-position 'top
+          lsp-ui-doc-include-signature t
+          lsp-ui-sideline-enable t
+          lsp-ui-imenu-enable t
+          lsp-ui-flycheck-enable t
+          lsp-ui-flycheck-list-position 'bottom
+          lsp-ui-flycheck-live-reporting t
+          lsp-ui-peek-enable t
+          lsp-ui-peek-list-width 60
+          lsp-ui-peek-peek-height 25))
+#+end_src
 
 ** Magit
 
@@ -1150,8 +1271,8 @@ desirable than the other in certain situations, e.g. helm-dash & swiper
           company-dabbrev-ignore-case nil
           ;; do not downcase completions by default
           company-dabbrev-downcase nil
-          ;; Start after 2 characters
-          company-minimum-prefix-length 2
+          ;; Start after 1 character
+          company-minimum-prefix-length 1
 
           company-require-match 'never
 
@@ -1844,3 +1965,17 @@ https://github.com/ema2159/centaur-tabs
 
 beginend - go to the semantic beginning or ending of a mode/file
 https://github.com/DamienCassou/beginend
+
+** Changes to make
+
+Add to the following with ace-window to scrolldown/up a specific window
+
+#+begin_src emacs-lisp
+(defun my-scroll-down-other-window (&optional arg)
+ "Like `scroll-other-window' but takes a prefix argument
+ that indicates which window to scroll."
+  (interactive "p")
+  (save-selected-window
+    (other-window arg)
+    (scroll-down)))
+#+end_src
