@@ -94,6 +94,8 @@ Emacs.  The result is a pretty fast initial startup given the amount of stuff.
 I also copy some ideas and code from [[http://spacemacs.org/][spacemacs]], [[https://seagle0128.github.io/.emacs.d/][centaur emacs]] and others - full
 props and credit to the authors of those fantastic configurations.
 
+https://github.com/geza-herman/emacs
+
 * Libraries
 
 #+begin_src emacs-lisp :name crux
@@ -684,7 +686,6 @@ kinds of stuff into the **scratch** buffer this is really handy.
   (add-hook! 'emacs-lisp-mode-hook 'smartparens-strict-mode)
 #+end_src
 
-
 ** so-long
 
 [[https://github.com/hlissner/emacs-so-long][so-long]] Use hlissner's fork.
@@ -1050,14 +1051,15 @@ files that have nothing to do with Git.
 ** lispy & lispyville
 ** lsp-mode
 
+[[https://emacs-lsp.github.io/lsp-mode/][lsp-mode]] Language Server Protocol Support
+
+TODO: Make bindings for lsp-mode functions.
+
 lsp-find-definition
 lsp-find-refereneces
 
 
  #+begin_src emacs-lisp :name lsp-mode
-   ;; support reading large blobs of data
-   (setq read-process-output-max (* 1024 1024))
-
    (use-package lsp-mode
      :defer 1
      :hook (prog-mode . lsp-deferred)
@@ -1136,6 +1138,7 @@ https://emacsair.me/2017/09/01/the-magical-git-interface/
 #+begin_src emacs-lisp :name magit
   (use-package magit
     :defer t
+    :custom (magit-git-executable "/usr/local/bin/git")
     :init
     ;; Prevent ~/.emacs.d/transient from being created
     (setq transient-levels-file (concat deftpunk--local-dir "transient/levels")
@@ -1149,22 +1152,10 @@ https://emacsair.me/2017/09/01/the-magical-git-interface/
 
     (setq magit-revision-show-gravatars '("^Author:     " . "^Commit:     ")
           magit-diff-refine-hunk t ; show granular diffs in selected hunk
-	  ;; Don't autosave repo buffers. This is too magical, and saving can
-	  ;; trigger a bunch of unwanted side-effects, like save hooks and
-	  ;; formatters. Trust us to know what we're doing.
-	  magit-save-repository-buffers nil)
-
-   ;; TODO: switching buffers, cleaning up, doom autoloads (modules/tools/magit/autoload.el)
-  ; (defadvice! +magit-revert-repo-buffers-deferred-a (&rest _)
-  ;   :after '(magit-checkout magit-branch-and-checkout)
-  ;   ;; Since the project likely now contains new files, best we undo the
-  ;   ;; projectile cache so it can be regenerated later.
-  ;   (projectile-invalidate-cache nil)
-  ;   ;; Use a more efficient strategy to auto-revert buffers whose git state has
-  ;   ;; changed: refresh the visible buffers immediately...
-  ;   (+magit-mark-stale-buffers-h))
-  ; ;; ...then refresh the rest only when we switch to them, not all at once.
-  ; (add-hook 'doom-switch-buffer-hook #'+magit-revert-buffer-maybe-h)
+      ;; Don't autosave repo buffers. This is too magical, and saving can
+      ;; trigger a bunch of unwanted side-effects, like save hooks and
+      ;; formatters. Trust us to know what we're doing.
+      magit-save-repository-buffers nil)
 
     (after! evil
       ;; Switch to emacs state only while in `magit-blame-mode', then back when
@@ -1451,6 +1442,9 @@ A collection of ivy-enhanced versions of common Emacs commands.
           ;; When calling `helm-semantic-or-imenu', don't immediately jump to
           ;; symbol at point
           helm-imenu-execute-action-at-once-if-one nil
+          ;; With original setting, helm calls constant (and unnecessary)
+          ;; forced mode-line updates
+          helm-ff-keep-cached-candidates nil
           ;; disable special behavior for left/right, M-left/right keys.
           helm-ff-lynx-style-map nil
           helm-ff-skip-boring-files              t)
