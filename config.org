@@ -185,17 +185,14 @@ Currently it recognizes Lisp function, built-in function, macro, faceand variabl
 [[https://github.com/DarthFennec/highlight-indent-guides][highlight-indent-guides]] Highlight indentation levels.
 
 #+begin_src emacs-lisp :name highlight-indent-guides
-(use-package highlight-indent-guides
-  :defer t
-  :delight highlight-indent-guides-mode
-  :init
-  (setq highlight-indent-guides-method 'character
-        ;; default is \x2502 but it is very slow on Mac
-        highlight-indent-guides-character ?\xFFE8
-        highlight-indent-guides-responsive 'top)
-  :config
-  ;; only in Python
-  (add-hook 'python-mode-hook 'highlight-indent-guides-mode))
+  (use-package highlight-indent-guides
+    :defer t
+    :delight highlight-indent-guides-mode
+    :init
+    (setq highlight-indent-guides-method 'character
+          ;; default is \x2502 but it is very slow on Mac
+          highlight-indent-guides-character ?\xFFE8
+          highlight-indent-guides-responsive 'top))
 #+end_src
 
 *** highlight numbers
@@ -826,26 +823,31 @@ http://ergoemacs.org/emacs/emacs_org_markup.
 Consider using https://github.com/alphapapa/org-web-tools
 
 #+BEGIN_SRC emacs-lisp :name org-mode
-    (defvar org-mode-map--title (with-faicon "book" "Org Mode bindings" 1 -0.05))
-    (major-mode-hydra-define org-mode
-      (:title org-mode-map--title :color blue :separator "=")
-      ("Tools"
-       (("h" helm-org-in-buffer-headings "Org headings")
-        ("l" org-insert-link "Org insert link"))))
+  (defvar org-mode-map--title (with-faicon "book" "Org Mode bindings" 1 -0.05))
+  (major-mode-hydra-define org-mode
+    (:title org-mode-map--title :color blue :separator "=")
+    ("Tools"
+     (("h" helm-org-in-buffer-headings "Org headings")
+      ("l" org-insert-link "Org insert link"))))
 
-    ;;; Make some new org-capture-templates
-    ;(add-to-list 'org-capture-templates
-     ;            '("w" "Work Task" entry
-      ;             (file "~/MyStuff/org_files/netapp_work.org")
-       ;            "* TODO %?" :empty-lines 1))
+  ;;; Make some new org-capture-templates
+  ;(add-to-list 'org-capture-templates
+   ;            '("w" "Work Task" entry
+    ;             (file "~/MyStuff/org_files/netapp_work.org")
+     ;            "* TODO %?" :empty-lines 1))
 
-    ;;; Keys for org-mode-map
-    (general-define-key
-     :states 'normal
-     :keymaps 'org-mode-map
-     ;; These 2 interfere with window navigation.
-     "C-j" 'nil
-     "C-k" 'nil)
+  ;;; Keys for org-mode-map
+  (general-define-key
+   :states 'normal
+   :keymaps 'org-mode-map
+   ;; These 2 interfere with window navigation.
+   "C-j" 'nil
+   "C-k" 'nil)
+
+  ;; org-mode has completion, enable company completion to work also with org
+  (defun add-pcomplete-to-capf ()
+    (add-hook 'completion-at-point-functions 'pcomplete-completions-at-point nil t))
+  (add-hook 'org-mode-hook #'add-pcomplete-to-capf)
 #+END_SRC
 
 ** helm-org
@@ -1204,6 +1206,12 @@ Some general setup that is specific to prog-mode.
 #+end_src
 
 ** Ansible
+
+Because I actually have to write some Ansible every now and then.
+
+company-ansible backend
+
+
 ** C/C++
 
 Mostly for reading/viewing and not development.... I really don't like development in either of these
@@ -1212,6 +1220,14 @@ languages.
 ** Common Lisp
 
 ** Clojure
+
+** Emacs Lisp
+
+#+begin_src emacs-lisp :name elisp
+  (defun deftpunk/elisp-backends ()
+    (set-local company-backends '((company-capf company-dabbrev-code company-dabbrev :with company-yasnippet))))
+  (add-hook 'emacs-lisp-mode-hook 'deftpunk/elisp-backend)
+#+end_src
 
 ** Json
 
@@ -1230,11 +1246,73 @@ TODO: Compilation on Mac is possible - https://github.com/politza/pdf-tools#comp
 
 ** Python
 
+#+begin_src emacs-lisp :name python
+  (defun deftpunk/python-mode-hook ()
+    (setq fill-column 105)
+    (highlight-indent-guides-mode)
+    (display-line-numbers-mode 1)
+    (display-fill-column-indicator-mode))
+  (add-hook 'python-mode-hook 'deftpunk/python-mode-hook)
+#+end_src
+
+
+*** conda
+
+[[https://github.com/necaris/conda.el][conda.el]] - I prefer to use miniconda at all times, it is a much cleaner virtual environment
+
+#+begin_src emacs-lisp :name conda
+  (use-package conda
+    :defer 1
+    :after python
+    :config
+    ;; The location of your anaconda home will be guessed from a list of common
+    ;; possibilities, starting with `conda-anaconda-home''s default value (which
+    ;; will consult a ANACONDA_HOME envvar, if it exists).
+    ;;
+    ;; If none of these work for you, `conda-anaconda-home' must be set
+    ;; explicitly. Afterwards, run M-x `conda-env-activate' to switch between
+    ;; environments
+    (or (cl-loop for dir in (list conda-anaconda-home
+                                  "~/.anaconda"
+                                  "~/.miniconda"
+                                  "~/.miniconda3"
+                                  "~/anaconda3"
+                                  "~/miniconda3"
+                                  "~/opt/miniconda3"
+                                  "/usr/bin/anaconda3"
+                                  "/usr/local/anaconda3"
+                                  "/usr/local/miniconda3"
+                                  "/usr/local/Caskroom/miniconda/base")
+                 if (file-directory-p dir)
+                 return (setq conda-anaconda-home (expand-file-name dir)
+                              conda-env-home-directory (expand-file-name dir)))
+        (message "Cannot find Anaconda installation"))
+
+    ;; integration with term/eshell
+    (conda-env-initialize-interactive-shells)
+    (after! eshell (conda-env-initialize-eshell))
+
+    (add-to-list 'global-mode-string
+                 '(conda-env-current-name (" conda:" conda-env-current-name " "))
+                 'append))
+#+end_src
+
+*** pyvenv
+
+[[https://github.com/jorgenschaefer/pyvenv][pyvenv-mode]] - because sometimes I have to interactive with code bases that use virtualenv
+
+#+begin_src emacs-lisp :name pyvenv
+  (use-package pyvenv
+    :commands (pyvenv-activate pyvenv-workon))
+#+end_src
+
 ** Rust
 
 flycheck-rust -> Rust additions and Cargo support
 
 ** Shell - bash/zsh
+
+company-shell backend
 
 ** YAML
 
@@ -1249,6 +1327,11 @@ desirable than the other in certain situations, e.g. helm-dash & swiper
 
 [[http://company-mode.github.io/][company-mode]] Auto completion in Emacs.
 
+There is a company-fuzzy but it combines all backends into one, not really what we want.
+
+TODO: Investigate using helm-company to narrow company candidates.
+TODO: Investigate using company-prescient for filtering/sorting
+
 #+begin_src emacs-lisp :company
   (use-package company
     :custom-face
@@ -1256,8 +1339,8 @@ desirable than the other in certain situations, e.g. helm-dash & swiper
      ((t (:family "Iosevka"))))
     :init
     (setq company-idle-delay 0
-          ;; show 10 items in the tooltip
-          company-tooltip-limit 10
+          ;; show 20 items in the tooltip
+          company-tooltip-limit 20
           ;; sow the description of what a snippet expands to.
           company-tooltip-align-annotations t
           ;; cycle the list around
@@ -1313,7 +1396,6 @@ desirable than the other in certain situations, e.g. helm-dash & swiper
 #+end_src
 
 *** company-posframe
-*** company-presient
 
 ** Counsel, Av & Swiper
 
