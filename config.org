@@ -331,7 +331,13 @@ A child frame at point connected to the root window's buffer.  I use this with
 hydra/major-mode-hydra/pretty-hydra for convenience.
 
 #+begin_src emacs-lisp :name posframe
-  (use-package posframe)
+  (use-package posframe
+    :straight t
+    :config
+    (defun jp-frame-bottom-poshandler (info)
+      (let ((pos (posframe-poshandler-frame-center info)))
+        (cons (car pos) (+ (cdr pos) 100)))))
+
 #+end_src
 
 ** The General
@@ -366,10 +372,17 @@ that evil-collection and others don't override bindings that I want.
 
 ** major-mode-hydra (includes pretty-hydra)
 
-pretty-hydra saves us the trouble of formating the docstring using classic hydra (can be a pain).
+[[https://github.com/jerrypnz/major-mode-hydra.el][major-mode-hydra]] - Major Mode Hydra & Pretty Mode Hydra
+
+- pretty-hydra provides a macro pretty-hydra-define to make it easy to create
+  hydras with a pretty table layout with some other bells and whistles
+- Based on pretty-hydra, major-mode-hydra allows you to create pretty hydras
+  with a similar API and summon them with the same key across different major
+  modes.
 
 #+BEGIN_SRC emacs-lisp :name majore-mode-hydra
   (use-package major-mode-hydra
+    :straight (major-mode-hydra :type git :host github :repo "jerrypnz/major-mode-hydra.el")
     :init
     ;; Set the major-mode-hydra title using all-the-icons icon for the major mode
     (setq major-mode-hydra-title-generator
@@ -409,10 +422,23 @@ pretty-hydra saves us the trouble of formating the docstring using classic hydra
 ** hydra-posframe
 
 #+BEGIN_SRC emacs-lisp :name hydra-posframe
+  ;; (use-package hydra-posframe
+  ;;   :defer t
+  ;;   :straight (hydra-posframe :type git :host github :repo "Ladicle/hydra-posframe")
+  ;;   :hook (after-init . hydra-posframe-mode)) ; was hydra-posframe-enable
+
+  ;; The bottom of my hydra-posframe always seems to be be cut off. This
+  ;; is because of how pos-frame is using fit-frame-to-buffer
+  ;; Wed Dec 16 16:45:52 2020 - Trying out the fork jerrypnz/hydra-posframe
   (use-package hydra-posframe
-    :defer t
-    :straight (hydra-posframe :type git :host github :repo "Ladicle/hydra-posframe")
-    :hook (after-init . hydra-posframe-mode)) ; was hydra-posframe-enable
+    :straight (:host github :repo "Ladicle/hydra-posframe"
+               :fork (:host github :repo "jerrypnz/hydra-posframe"))
+    :hook (after-init . hydra-posframe-enable)
+    :config
+    (setq hydra-posframe-poshandler 'jp-frame-bottom-poshandler)
+    (setq hydra-posframe-parameters '((alpha 100 100)
+                                      (left-fringe . 10)
+                                      (right-fringe . 10))))
 #+END_SRC
 
 ** which-key
@@ -489,7 +515,7 @@ Make Emacs nicer to use in some way.
 
 #+begin_src emacs-lisp :name better-jumper
   (use-package better-jumper
-    :commands doom-set-jump-a doom-set-jump-maybe-a doom-set-jump-h
+    ;; :commands doom-set-jump-a doom-set-jump-maybe-a doom-set-jump-h
     :preface
     ;; REVIEW Suppress byte-compiler warning spawning a *Compile-Log* buffer at
     ;; startup. This can be removed once gilbertw1/better-jumper#2 is merged.
@@ -532,7 +558,9 @@ Make Emacs nicer to use in some way.
     (advice-add #'kill-current-buffer :around #'doom-set-jump-a)
 
     ;; Create a jump point before jumping with imenu.
-    (advice-add #'imenu :around #'doom-set-jump-a))
+    (advice-add #'imenu :around #'doom-set-jump-a)
+
+    (better-jumper-mode +1))
 #+end_src
 
 ** default-text-scale
@@ -573,6 +601,14 @@ dependency for =magit-hl-todos= which toggles in =magit-status=.
     :init
     (setq hl-todo-highlight-punctuation ":"))
   (add-hook 'prog-mode-hook 'hl-todo-mode)
+#+end_src
+
+** origami-mode
+
+[[https://github.com/gregsexton/origami.el][origami.el]] - "Better" folding
+
+#+begin_src emacs-lisp :name origami-mode
+  (use-package origami)
 #+end_src
 
 ** paren-face
@@ -828,7 +864,8 @@ Consider using https://github.com/alphapapa/org-web-tools
     (:title org-mode-map--title :color blue :separator "=")
     ("Tools"
      (("h" helm-org-in-buffer-headings "Org headings")
-      ("l" org-insert-link "Org insert link"))))
+      ("l" org-insert-link "Org insert link")
+      ("o" ace-link-org "Open links"))))
 
   ;;; Make some new org-capture-templates
   ;(add-to-list 'org-capture-templates
@@ -1247,12 +1284,49 @@ TODO: Compilation on Mac is possible - https://github.com/politza/pdf-tools#comp
 ** Python
 
 #+begin_src emacs-lisp :name python
+  ;; Stop the spam!
+  (setq python-indent-guess-indent-offset-verbose nil)
+
   (defun deftpunk/python-mode-hook ()
-    (setq fill-column 105)
-    (highlight-indent-guides-mode)
-    (display-line-numbers-mode 1)
-    (display-fill-column-indicator-mode))
-  (add-hook 'python-mode-hook 'deftpunk/python-mode-hook)
+      (setq-local fill-column 105)
+      (origami-mode)
+      (highlight-indent-guides-mode)
+      (display-line-numbers-mode 1)
+      (display-fill-column-indicator-mode))
+    (add-hook 'python-mode-hook 'deftpunk/python-mode-hook)
+
+    (defvar python-mode-map--title (with-faicon "book" "Python mode bindings" 1 -0.05))
+    (major-mode-hydra-define python-mode
+        (:title python-mode-map--title :color blue :separator "=")
+        ("Tools"
+         (("a" conda-env-activate "Conda Activate")
+          ("d" conda-env-deactivate "Conda Deactivate"))))
+
+  (add-hook! 'python-mode-hook
+      (defun +python-use-correct-flycheck-executables-h ()
+        "Use the correct Python executables for Flycheck."
+        (let ((executable python-shell-interpreter))
+          (save-excursion
+            (goto-char (point-min))
+            (save-match-data
+              (when (or (looking-at "#!/usr/bin/env \\(python[^ \n]+\\)")
+                        (looking-at "#!\\([^ \n]+/python[^ \n]+\\)"))
+                (setq executable (substring-no-properties (match-string 1))))))
+          ;; Try to compile using the appropriate version of Python for
+          ;; the file.
+          (setq-local flycheck-python-pycompile-executable executable)
+          ;; We might be running inside a virtualenv, in which case the
+          ;; modules won't be available. But calling the executables
+          ;; directly will work.
+          ;; I use pylint at work and flake8 for my own things.
+          (setq-local flycheck-python-pylint-executable "pylint")
+          (setq-local flycheck-python-flake8-executable "flake8"))))
+
+  ; (define-key python-mode-map (kbd "DEL") nil) ; interferes with smartparens
+  (sp-local-pair 'python-mode "'" nil
+                  :unless '(sp-point-before-word-p
+                           sp-point-after-word-p
+                           sp-point-before-same-p))
 #+end_src
 
 
@@ -1317,6 +1391,10 @@ company-shell backend
 ** YAML
 
 "Readable" JSON ... for the most part.
+
+#+begin_src emacs-lisp :name yaml-mode
+  (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-mode))
+#+end_src
 
 * Completion
 
@@ -1490,6 +1568,7 @@ A collection of ivy-enhanced versions of common Emacs commands.
 
 #+begin_src emacs-lisp :name swiper
   (use-package swiper
+    :defer t
     :commands swiper
     :bind (:map ivy-minibuffer-map
                 ("C-w" . ivy-backward-kill-word)
@@ -1503,6 +1582,11 @@ A collection of ivy-enhanced versions of common Emacs commands.
           ivy-count-format "%d/%d")
     :config
     (ivy-mode 1))
+
+  (defun deftpunk/recenter-swiper ()
+    (interactive)
+    (swiper)
+    (recenter (1- (max 1 scroll-margin))))
 #+end_src
 
 ** Helm
@@ -1779,8 +1863,6 @@ all available motions and counts, just like other operator commands, such as evi
 
 #+begin_src emacs-lisp :name evil-commentary
   (use-package evil-commentary
-    :defer t
-    :after evil
     :config
     (evil-commentary-mode))
 #+end_src
@@ -1949,7 +2031,7 @@ Set up the leader key using general.el
     "p" 'counsel-projectile
     "q" 'save-buffers-kill-terminal
     "r" 'counsel-rg
-    "s" 'swiper
+    "s" 'deftpunk/recenter-swiper
     "w" 'save-buffer
     "y" 'helm-show-kill-ring ; like the helm version better than counsel-yank-pop
     "-" 'ace-window
