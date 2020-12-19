@@ -249,6 +249,9 @@ If you want to still see a handful of important minor-modes:
 #+begin_src emacs-lisp :name minions
   (use-package minions
     :config (minions-mode 1))
+
+  ;; Keep Projectile info on the modeline.
+  (push 'projectile-mode minions-direct)
 #+end_src
 
 ** Rainbow Delimiters
@@ -380,7 +383,9 @@ that evil-collection and others don't override bindings that I want.
   with a similar API and summon them with the same key across different major
   modes.
 
-#+BEGIN_SRC emacs-lisp :name majore-mode-hydra
+unicode box characters: https://en.wikipedia.org/wiki/Box-drawing_character
+
+#+BEGIN_SRC emacs-lisp :name major-mode-hydra
     (use-package major-mode-hydra
       :straight (major-mode-hydra :type git :host github :repo "jerrypnz/major-mode-hydra.el")
       :init
@@ -1334,9 +1339,9 @@ Golang
       (display-fill-column-indicator-mode))
     (add-hook 'python-mode-hook 'deftpunk/python-mode-hook)
 
-    (defvar python-mode-map--title (with-faicon "book" "Python mode bindings" 1 -0.05))
+    (defvar python-mode-map--title (with-mode-icon 'python-mode "Python Mode" 1 -0.05))
     (major-mode-hydra-define python-mode
-        (:title python-mode-map--title :color blue :separator "=")
+        (:title python-mode-map--title :color blue :separator "─")
         ("Tools"
          (("a" conda-env-activate "Conda Activate")
           ("d" conda-env-deactivate "Conda Deactivate"))))
@@ -1712,6 +1717,23 @@ A collection of ivy-enhanced versions of common Emacs commands.
 ;; Besides ~/.ssh/config, you can add connections manually.
 ;; (setq helm-tramp-custom-connections '(/ssh:domain|sudo:user@localhost:/))
 #+END_SRC
+
+*** helm-make
+
+[[https://github.com/abo-abo/helm-make][helm-make]] Get a selection of Makefile targets using helm.
+
+#+begin_src emacs-lisp :name helm-make
+  (use-package helm-make
+    :init
+    (setq helm-make-do-save t ; save files before running make
+          ;; Cache the targets.
+          helm-make-cache-targets t
+          ;; Name make buffers so that we can run multiple targets at once
+          helm-make-named-buffer t
+          ;; Make it fuzzy - bad pun
+          helm-make-fuzzy-matching t))
+#+end_src
+
 
 ** yasnippets
 
