@@ -1863,8 +1863,20 @@ all available motions and counts, just like other operator commands, such as evi
 
 #+begin_src emacs-lisp :name evil-commentary
   (use-package evil-commentary
-    :config
+   :config
     (evil-commentary-mode))
+#+end_src
+
+** evil-exchange
+
+[[https://github.com/Dewdrops/evil-exchange][evil-exchange]] - A text exchange operator
+
+#+begin_src emacs-lisp :name evil-exchange
+  (use-package evil-exchange
+    :init
+    (setq evil-exhange-key (kbd "ge"))
+    :config
+    (evil-exchange-install))
 #+end_src
 
 ** evil-goggles
