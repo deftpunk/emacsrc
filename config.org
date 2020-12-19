@@ -1225,7 +1225,43 @@ Show TODOs in Magit status buffer for each file.
 [[https://github.com/benma/visual-regexp-steroids.el][visual-regex-steroids]]
 
 
-* Languages & Formats
+* Languages & File Types
+
+I end up looking at or programming in a lot of different languages, formats and file types for work and pleasure.
+
+** File Types & Formats
+
+*** Ansible
+
+Because I actually have to write some Ansible every now and then.
+
+company-ansible backend
+
+*** Json
+
+Hey, at least it isn't XML.
+
+*** PDF
+
+[[https://github.com/politza/pdf-tools][pdf-tools]] A replacement of DocView for PDF files.
+PDF files are not pre-rendered thru ghostscript or something else but created
+on demand.
+
+TODO: Compilation on Mac is possible - https://github.com/politza/pdf-tools#compiling-on-os-x
+
+*** YAML
+
+"Readable" JSON ... for the most part.
+
+#+begin_src emacs-lisp :name yaml-mode
+  (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-mode))
+#+end_src
+
+*** Markdown
+
+** Languages
+
+*** prog-mode
 
 Some general setup that is specific to prog-mode.
 
@@ -1244,23 +1280,16 @@ Some general setup that is specific to prog-mode.
 
 #+end_src
 
-** Ansible
-
-Because I actually have to write some Ansible every now and then.
-
-company-ansible backend
-
-
-** C/C++
+*** C/C++
 
 Mostly for reading/viewing and not development.... I really don't like development in either of these
 languages.
 
-** Common Lisp
+*** Common Lisp
 
-** Clojure
+*** Clojure
 
-** Emacs Lisp
+*** Emacs Lisp
 
 #+begin_src emacs-lisp :name elisp
   (defun deftpunk/elisp-backends ()
@@ -1285,22 +1314,13 @@ languages.
       ("i" info-lookup-symbol "info lookup"))))
 #+end_src
 
-** Json
+*** Golang
 
-Hey, at least it isn't XML.
+Golang
 
-** Markdown
-** Nim
+*** Nim
 
-** PDF Tools
-
-[[https://github.com/politza/pdf-tools][pdf-tools]] A replacement of DocView for PDF files.
-PDF files are not pre-rendered thru ghostscript or something else but created
-on demand.
-
-TODO: Compilation on Mac is possible - https://github.com/politza/pdf-tools#compiling-on-os-x
-
-** Python
+*** Python
 
 #+begin_src emacs-lisp :name python
   ;; Stop the spam!
@@ -1399,21 +1419,13 @@ TODO: Compilation on Mac is possible - https://github.com/politza/pdf-tools#comp
     :commands (pyvenv-activate pyvenv-workon))
 #+end_src
 
-** Rust
+*** Rust
 
 flycheck-rust -> Rust additions and Cargo support
 
-** Shell - bash/zsh
+*** Shell - bash/zsh
 
 company-shell backend
-
-** YAML
-
-"Readable" JSON ... for the most part.
-
-#+begin_src emacs-lisp :name yaml-mode
-  (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-mode))
-#+end_src
 
 * Completion
 
