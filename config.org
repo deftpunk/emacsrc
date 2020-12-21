@@ -1272,9 +1272,9 @@ Some general setup that is specific to prog-mode.
 
 #+begin_src emacs-lisp :name prog-mode
 
-  ;; auto-fill comments ONLY.
+  ;; auto-fill comments ONLY and make them only 72 characters.
   (defun deftpunk/auto-fill-comments ()
-    (setq fill-column 72)
+    (setq-default comment-column 72)
     (set (make-local-variable 'comment-auto-fill-only-comments) t)
     (auto-fill-mode t))
   (add-hook 'prog-mode-hook 'deftpunk/auto-fill-comments)
@@ -1374,7 +1374,7 @@ Golang
 #+end_src
 
 
-*** conda
+**** conda
 
 [[https://github.com/necaris/conda.el][conda.el]] - I prefer to use miniconda at all times, it is a much cleaner virtual environment
 
@@ -1415,7 +1415,7 @@ Golang
                  'append))
 #+end_src
 
-*** pyvenv
+**** pyvenv
 
 [[https://github.com/jorgenschaefer/pyvenv][pyvenv-mode]] - because sometimes I have to interactive with code bases that use virtualenv
 
@@ -1427,6 +1427,43 @@ Golang
 *** Rust
 
 flycheck-rust -> Rust additions and Cargo support
+
+#+begin_src emacs-lisp :name rust
+  ;; Using rustic
+  (use-package rustic
+    :mode ("\\.rs$" . rustic-mode)
+    :config
+    (setq-default rustic-format-trigger 'on-save)
+    (setq rustic-rustfmt-bin "~/.cargo/bin/rustfmt"))
+
+  (use-package flycheck-rust
+    :hook (flycheck-mode . flycheck-rust-setup))
+#+end_src
+
+**** cargo
+
+[[https://github.com/kwrooijen/cargo.el][cargo.el]] Perform cargo tasks in Emacs
+
+#+begin_src emacs-lisp :name cargo
+  (use-package cargo
+    :defer t
+    :after rustic-mode
+    :config
+    ;; Enable backtraces in Cargo processes started by Emacs.
+    (setenv "RUST_BACKTRACE" "1"))
+#+end_src
+
+**** toml mode
+
+[[https://github.com/dryman/toml-mode.el][toml-mode]] Syntax highlighting for toml files.
+
+#+begin_src emacs-lisp :name toml-mode
+  (use-package toml-mode
+    :defer t
+    :mode (("\\.toml\\'" . toml-mode)
+           ("\\.Cargo\\.lock\\'" . toml-mode)
+           ("\\.cargo/config\\'" . toml-mode)))
+#+end_src
 
 *** Shell - bash/zsh
 
