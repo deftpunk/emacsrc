@@ -98,6 +98,8 @@ https://github.com/geza-herman/emacs
 
 * Libraries
 
+The Crux set of libraries
+
 #+begin_src emacs-lisp :name crux
 (use-package crux)
 #+end_src
