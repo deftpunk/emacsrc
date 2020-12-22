@@ -647,11 +647,102 @@ kinds of stuff into the **scratch** buffer this is really handy.
 
 [[https://github.com/bbatsov/projectile][Projectile]] - Project management for emacs - [[https://docs.projectile.mx/projectile/usage.html][The Manual]]
 
+Prerequisites:
+- fd
+
 #+BEGIN_SRC emacs-lisp :name projectile
+  ;; I re-arranged the order since i spend very little time on ubuntu & co.
+  (defvar doom-projectile-fd-binary
+    (cl-find-if #'executable-find (list "fd" "fdfind"))
+    "The filename of the `fd' executable. On some distros it's 'fdfind' (ubuntu,
+  debian, and derivatives). On most it's 'fd'.")
+
   (use-package projectile
-    :init (setq projectile-project-search-path '("~/WorkStuff/" "~/MyStuff/"))
+    :init
+    (setq projectile-project-search-path '("~/WorkStuff/" "~/MyStuff/")
+          projectile-cache-file (concat deftpunk--cache-dir "projectile.cache")
+          projectile-globally-ignored-files '(".DS_Store" "TAGS")
+          projectile-globally-ignored-file-suffixes '(".elc" ".pyc" ".o")
+          projectile-known-projects-file (concat deftpunk--cache-dir "projectile.projects")
+          projectile-ignored-projects '("~/" "/tmp")
+          )
     :config
-    (projectile-mode +1))
+    (projectile-mode +1)
+
+    ;; TODO: There are some more Doom optimizations for Projectile from the following that
+    ;; I haven't incoporated yet:
+    ;; https://github.com/hlissner/doom-emacs/blob/742ff5629c5c26a4904cb8a7b3cdc3aebb9c951c/core/core-projects.el
+
+    ;; Got the following from Doom to speed up Projectile and optimize the project discovery
+    ;; progess.
+    ;;
+    ;; Projectile runs four functions to determine the root (in this order):
+    ;;
+    ;; + `projectile-root-local' -> checks the `projectile-project-root' variable
+    ;;    for an explicit path.
+    ;; + `projectile-root-bottom-up' -> searches from / to your current directory
+    ;;   for the paths listed in `projectile-project-root-files-bottom-up'. This
+    ;;   includes .git and .project
+    ;; + `projectile-root-top-down' -> searches from the current directory down to
+    ;;   / the paths listed in `projectile-root-files', like package.json,
+    ;;   setup.py, or Cargo.toml
+    ;; + `projectile-root-top-down-recurring' -> searches from the current
+    ;;   directory down to / for a directory that has one of
+    ;;   `projectile-project-root-files-top-down-recurring' but doesn't have a
+    ;;   parent directory with the same file.
+    ;;
+    ;; In the interest of performance, we reduce the number of project root marker
+    ;; files/directories projectile searches for when resolving the project root.
+    (setq projectile-project-root-files-bottom-up
+          (append '(".projectile"  ; projectile's root marker
+                    ".git"))        ; Git VCS root dir
+          ;; This will be filled by other modules. We build this list manually so
+          ;; projectile doesn't perform so many file checks every time it resolves
+          ;; a project's root -- particularly when a file has no project.
+          projectile-project-root-files '()
+          projectile-project-root-files-top-down-recurring '("Makefile"))
+
+    (push (abbreviate-file-name deftpunk--local-dir) projectile-globally-ignored-directories)
+
+    ;; Per-project compilation buffers
+    (setq compilation-buffer-name-function #'projectile-compilation-buffer-name
+          compilation-save-buffers-predicate #'projectile-current-project-buffer-p)
+
+    ;; Disable commands that have better alternatives.
+    (put 'projectile-ag 'disabled "Use ivy/helm instead")
+    (put 'projectile-ripgrep 'disabled "Use ivy/helm instead")
+    (put 'projectile-grep 'disabled "Use ivy/helm nstead")
+
+    ;; TODO: Figure out how to incorporate this.
+    ;; Accidentally indexing big directories like $HOME or / will massively bloat
+    ;; projectile's cache (into the hundreds of MBs). This purges those entries
+    ;; when exiting Emacs to prevent slowdowns/freezing when cache files are
+    ;; loaded or written to.
+  ;;   (add-hook! 'kill-emacs-hook
+  ;;     (defun doom-cleanup-project-cache-h ()
+  ;;       "Purge projectile cache entries that:
+  ;; a) have too many files (see `doom-projectile-cache-limit'),
+  ;; b) represent blacklisted directories that are too big, change too often or are
+  ;;    private. (see `doom-projectile-cache-blacklist'),
+  ;; c) are not valid projectile projects."
+  ;;       (when (and (bound-and-true-p projectile-projects-cache)
+  ;;                  projectile-enable-caching
+  ;;                  doom-interactive-p)
+  ;;         (projectile-cleanup-known-projects)
+  ;;         (cl-loop with blacklist = (mapcar #'file-truename doom-projectile-cache-blacklist)
+  ;;                  for proot in (hash-table-keys projectile-projects-cache)
+  ;;                  if (or (not (stringp proot))
+  ;;                         (>= (length (gethash proot projectile-projects-cache))
+  ;;                             doom-projectile-cache-limit)
+  ;;                         (member (substring proot 0 -1) blacklist)
+  ;;                         (and doom-projectile-cache-purge-non-projects
+  ;;                              (not (doom-project-p proot))))
+  ;;                  do (doom-log "Removed %S from projectile cache" proot)
+  ;;                  and do (remhash proot projectile-projects-cache)
+  ;;                  and do (remhash proot projectile-projects-cache-time)
+  ;;                  and do (remhash proot projectile-project-type-cache))
+  ;;         (projectile-serialize-cache))))
+    )
 #+END_SRC
 
 *** counsel-projectile
