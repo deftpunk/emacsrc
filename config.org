@@ -1414,25 +1414,6 @@ TODO: Compilation on Mac is possible - https://github.com/politza/pdf-tools#comp
 
 ** Languages
 
-*** prog-mode
-
-Some general setup that is specific to prog-mode.
-
-#+begin_src emacs-lisp :name prog-mode
-
-  ;; auto-fill comments ONLY and make them only 72 characters.
-  (defun deftpunk/auto-fill-comments ()
-    (setq-default comment-column 72)
-    (set (make-local-variable 'comment-auto-fill-only-comments) t)
-    (auto-fill-mode t))
-  (add-hook 'prog-mode-hook 'deftpunk/auto-fill-comments)
-
-  ;; Show trailing whitespace - ws-butler will handle deleting it.
-  (add-hook 'prog-mode-hook '(lambda ()
-                               (setq show-trailing-whitespace 1)))
-
-#+end_src
-
 *** C/C++
 
 Mostly for reading/viewing and not development.... I really don't like development in either of these
