@@ -1995,6 +1995,14 @@ The yasnippet [[http://joaotavora.github.io/yasnippet/][manual]].
 
 * Shells & Terminals
 ** eshell
+
+Using Emacs shell - eshell
+
+#+begin_src emacs-lisp :name eshell
+(defvar eshell-directory-name (concat deftpunk--etc-dir "eshell")
+  "Where to store temporary/data files, as opposed to `eshell-config-dir'")
+#+end_src
+
 ** vterm
 * The Prime Evil
 
