@@ -1323,9 +1323,46 @@ Show TODOs in Magit status buffer for each file.
 [[https://github.com/benma/visual-regexp-steroids.el][visual-regex-steroids]]
 
 
-* Languages & File Types
+* Software Languages & File Types
 
 I end up looking at or programming in a lot of different languages, formats and file types for work and pleasure.
+
+** Related modes
+
+*** compilation mode
+
+I use helm-make to run targets that output into compilation mode.
+
+#+begin_src emacs-lisp :name compilation-mode
+  (setq compilation-auto-jump-to-first-error t)
+
+  ;; Define the major-mode-hydra for compilation-mode.
+  (defvar compilation-mode--title (with-mode-icon 'emacs-lisp-mode "Compilation Mode"))
+  (major-mode-hydra-define compilation-mode
+    (:title compilation-mode--title :color blue :separator "─")
+    ("Tools"
+     (("j" next-error "next error")
+      ("k" previous-error "previous error"))))
+#+end_src
+
+*** prog-mode
+
+Some general setup that is specific to prog-mode.
+
+#+begin_src emacs-lisp :name prog-mode
+
+  ;; auto-fill comments ONLY and make them only 72 characters.
+  (defun deftpunk/auto-fill-comments ()
+    (setq-default comment-column 72)
+    (set (make-local-variable 'comment-auto-fill-only-comments) t)
+    (auto-fill-mode t))
+  (add-hook 'prog-mode-hook 'deftpunk/auto-fill-comments)
+
+  ;; Show trailing whitespace - ws-butler will handle deleting it.
+  (add-hook 'prog-mode-hook '(lambda ()
+                               (setq show-trailing-whitespace 1)))
+
+#+end_src
 
 ** File Types & Formats
 
