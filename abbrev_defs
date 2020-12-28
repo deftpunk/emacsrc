@@ -226,6 +226,7 @@
     ("redeploy" "re-deploy" nil 1)
     ("redploy" "redeploy" nil 1)
     ("refressh" "refresh" nil 1)
+    ("removign" "removing" nil 1)
     ("remving" "removing" nil 1)
     ("resutl" "result" nil 1)
     ("retrun" "return" nil 7)
@@ -277,6 +278,8 @@
    ))
 
 (define-abbrev-table 'gnus-group-mode-abbrev-table '())
+
+(define-abbrev-table 'go-dot-mod-mode-abbrev-table '())
 
 (define-abbrev-table 'go-mode-abbrev-table '())
 
@@ -366,6 +369,8 @@
 
 (define-abbrev-table 'magit-revision-mode-abbrev-table '())
 
+(define-abbrev-table 'magit-section-mode-abbrev-table '())
+
 (define-abbrev-table 'magit-stash-mode-abbrev-table '())
 
 (define-abbrev-table 'magit-stashes-mode-abbrev-table '())
@@ -422,9 +427,7 @@
     ("sysx" "import sys; sys.exit(-1)" nil 1)
    ))
 
-(define-abbrev-table 'python-mode-skeleton-abbrev-table
-  '(
-   ))
+(define-abbrev-table 'python-mode-skeleton-abbrev-table '())
 
 (define-abbrev-table 'reb-lisp-mode-abbrev-table '())
 
@@ -443,6 +446,24 @@
 (define-abbrev-table 'sgml-mode-abbrev-table '())
 
 (define-abbrev-table 'shell-mode-abbrev-table '())
+
+(define-abbrev-table 'sldb-mode-abbrev-table '())
+
+(define-abbrev-table 'slime-compiler-notes-mode-abbrev-table '())
+
+(define-abbrev-table 'slime-connection-list-mode-abbrev-table '())
+
+(define-abbrev-table 'slime-fuzzy-completions-mode-abbrev-table '())
+
+(define-abbrev-table 'slime-inspector-mode-abbrev-table '())
+
+(define-abbrev-table 'slime-thread-control-mode-abbrev-table '())
+
+(define-abbrev-table 'slime-trace-dialog--detail-mode-abbrev-table '())
+
+(define-abbrev-table 'slime-trace-dialog-mode-abbrev-table '())
+
+(define-abbrev-table 'slime-xref-mode-abbrev-table '())
 
 (define-abbrev-table 'snippet-mode-abbrev-table '())
 

@@ -2176,6 +2176,7 @@ https://github.com/emacs-helm/helm-ls-hg
     :config
 
     ;; (push '("^\\*Flycheck.+\\*$" :regexp t :dedicated t :position bottom :stick t :noselect t) popwin:special-display-config)
+    (global-flycheck-mode +1)
     )
 
   ;; so that linting and type errors don't mess with eldoc
@@ -2818,11 +2819,14 @@ Check spelling on the fly.  Uses ispell under the hood.
 #+BEGIN_SRC emacs-lisp :name flyspell
 (use-package flyspell
   :defer 1
-  :custom
-  (flyspell-abbrev-p t) ; Correct spelling errors & add them to abbrev_defs at the same time.
-  (flyspell-issue-message-flag nil)
-  (flyspell-issue-welcome-flag nil)
-  (flyspell-mode 1)
+  :init
+  ;; Correct spelling errors & add them to abbrev_defs at the same time.
+  (setq flyspell-abbrev-p t)
+
+  ;; Speed up flyspell a bit.
+  (setq flyspell-issue-message-flag nil
+        flyspell-issue-welcome-flag nil)
+
   :config
   (add-hook 'text-mode-hook #'flyspell-mode)
   ;; Turn on flyspell for programming modes, then we can turn flyspell off selectively.
@@ -3476,6 +3480,7 @@ starting with the [[https://github.com/noctuid/evil-guide#keymap-precedence][Key
  "U" 'undo-tree-redo
  "Y" "yg_"
  "gd" 'counsel-etags-find-tag-at-point
+ "gs" 'avy-goto-char-2
  ;; Evil doesn't allow you to overload like Vim/Neovim do.  So this fails because s is not a prefix key.
  ;; But 'v' gets blown away and doesn't fail with the same error???
  ;; "ss" 'deftpunk:split-horizontally-recenter
@@ -3576,15 +3581,11 @@ the deftpunk/hydra-major-mode-hack for buffer specific bindings via hydras.
 
 * Notes
 ** New plugins to Investigate
-*** flyspell-correct
-*** pcre2el
-;; pcre2el
-;; https://github.com/joddie/pcre2el/tree/0b5b2a2c173aab3fd14aac6cf5e90ad3bf58fa7d
-;; Work with regex in emacs.
-;(use-package pcre2el
-;  :commands rxt-quote-pcre)
+emacs-lsp/dap-mode -> https://github.com/emacs-lsp/dap-mode
+counsel-projectile -> https://github.com/ericdanan/counsel-projectile
+flyspell-correct
 
-*** List of "good" configurations:
+** List of "good" configurations:
 https://github.com/caisah/emacs.dz
 
 ** Fixes, workarounds and improvements
