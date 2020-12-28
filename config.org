@@ -1483,7 +1483,8 @@ Golang
         (:title python-mode-map--title :color blue :separator "─")
         ("Tools"
          (("a" conda-env-activate "Conda Activate")
-          ("d" conda-env-deactivate "Conda Deactivate"))))
+          ("d" conda-env-deactivate "Conda Deactivate")
+          ("w" pyvenv-workon "PyvEnv Workon (Conda too)"))))
 
   (add-hook! 'python-mode-hook
       (defun +python-use-correct-flycheck-executables-h ()
@@ -1560,10 +1561,30 @@ Golang
 
 #+begin_src emacs-lisp :name pyvenv
   (use-package pyvenv
-    :commands (pyvenv-activate pyvenv-workon))
+    :defer t
+    :commands (pyvenv-activate pyvenv-workon)
+    :config
+    (setenv "WORKON_HOME" (expand-file-name "~/miniconda3/envs/"))
+    ;; Menu bar ... why??
+    (setq pyvenv-menu nil)
+    ;; Restart the python process when switching environments
+    (add-hook 'pyvenv-post-activate-hooks (lambda ()
+                        (pyvenv-restart-python)))
+    :hook (python-mode-hook . pyvenv-mode))
 #+end_src
 
 *** Rust
+
+
+Prerequisites:
+[[https://github.com/killercup/cargo-edit][cargo-edit]] Extends Cargo to allow you to add, remove, and upgrade dependencies by modifying your Cargo.toml file from the command line
+
+Currently available subcommands:
+- cargo add
+- cargo rm
+- cargo upgrade
+
+=cargo install cargo-edit=
 
 flycheck-rust -> Rust additions and Cargo support
 
