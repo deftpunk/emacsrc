@@ -2307,54 +2307,64 @@ Set up the leader key using general.el
 Normal state keybindings.
 
 #+BEGIN_SRC emacs-lisp :name normal-state
-  (general-define-key
-   :states 'normal
-   ;; run the macro in the q register
-   "Q" "@q"
-   "U" 'undo-tree-redo
-   "Y" "yg_"
-   ;; "gd" 'counsel-etags-find-tag-at-point
-   ;;"gs" 'avy-goto-char-2
-   "gs" 'evil-avy-goto-char-timer
-   ;; Evil doesn't allow you to overload like Vim/Neovim do.  So this fails because s is not a prefix key.
-   ;; But 'v' gets blown away and doesn't fail with the same error???
-   ;; "ss" 'deftpunk:split-horizontally-recenter
-   ;; "vv" 'deftpunk:split-vertically-recenter
-   )
+        (general-define-key
+         :states 'normal
+         ;; run the macro in the q register
+         "Q" "@q"
+         "U" 'undo-tree-redo
+         "Y" "yg_"
+         ;; "gd" 'counsel-etags-find-tag-at-point
+         "gs" 'evil-avy-goto-char-timer
 
-;; Add some bindings to the window "C-w <something" map.
-;; Thu Nov 22 22:54:18 2018 - we have to bind evil-window-map this way, as
-;; opposed to using general.el
-(define-key evil-window-map "b" 'balance-windows)          ; replaces evil-window-bottom-right.
-(define-key evil-window-map "d" 'ace-delete-window)        ; was unused
-;; (define-key evil-window-map "e" 'hydra-window-sizing/body) ; was unused
-(define-key evil-window-map "f" 'make-frame)               ; was unused
-(define-key evil-window-map "i" 'ace-maximize-window)      ; was unused
-;; (define-key evil-window-map "m" 'doom/toggle-fullscreen)   ; was unused
-(define-key evil-window-map "r" 'winner-redo)              ; replaces evil-window-rotate-downwards
-(define-key evil-window-map "u" 'winner-undo)              ; was unused
-(define-key evil-window-map "-" 'ace-window)               ; was unused
+         ;; Evil doesn't allow you to overload like Vim/Neovim do.  So this fails because s is not a prefix key.
+         ;; But 'v' gets blown away and doesn't fail with the same error???
+         ;; "ss" 'deftpunk:split-horizontally-recenter
+         ;; "vv" 'deftpunk:split-vertically-recenter
 
-;; Some easy window moving keys
-;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order toxtxt
-;; get this to work(?)
-(global-unset-key  (kbd "C-j"))
-(global-unset-key  (kbd "C-k"))
-(global-unset-key  (kbd "C-l"))
-;; (global-unset-key (kbd "C-h"))
-(define-key evil-normal-state-map (kbd "C-j") 'windmove-down)
-(define-key evil-normal-state-map (kbd "C-k") 'windmove-up)
-(define-key evil-normal-state-map (kbd "C-h") 'windmove-left)
-(define-key evil-normal-state-map (kbd "C-l") 'windmove-right)
+         ;; Using major-mode-hydra to create local-leader using ';'
+         ;; ";" 'major-mode-hydra
+         )
 
-;; Use visual line motions even outside of visual-line-mode buffers
-  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+      (general-create-definer deftpunk-local-leader
+        :states '(normal)
+        :prefix ";")
+      (deftpunk-local-leader
+        :keymaps 'org-mode-map
+        "c" '(counsel-org-goto :which-key "Org Headers"))
 
-  (evil-set-initial-state 'messages-buffer-mode 'normal)
-  (evil-set-initial-state 'dashboard-mode 'normal)
+      ;; Add some bindings to the window "C-w <something" map.
+      ;; Thu Nov 22 22:54:18 2018 - we have to bind evil-window-map this way, as
+      ;; opposed to using general.el
+      (define-key evil-window-map "b" 'balance-windows)          ; replaces evil-window-bottom-right.
+      (define-key evil-window-map "d" 'ace-delete-window)        ; was unused
+      ;; (define-key evil-window-map "e" 'hydra-window-sizing/body) ; was unused
+      (define-key evil-window-map "f" 'make-frame)               ; was unused
+      (define-key evil-window-map "i" 'ace-maximize-window)      ; was unused
+      ;; (define-key evil-window-map "m" 'doom/toggle-fullscreen)   ; was unused
+      (define-key evil-window-map "r" 'winner-redo)              ; replaces evil-window-rotate-downwards
+      (define-key evil-window-map "u" 'winner-undo)              ; was unused
+      (define-key evil-window-map "-" 'ace-window)               ; was unused
 
-;; TODO: modify gx to use - org-open-at-point
+      ;; Some easy window moving keys
+      ;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order toxtxt
+      ;; get this to work(?)
+      (global-unset-key  (kbd "C-j"))
+      (global-unset-key  (kbd "C-k"))
+      (global-unset-key  (kbd "C-l"))
+      ;; (global-unset-key (kbd "C-h"))
+      (define-key evil-normal-state-map (kbd "C-j") 'windmove-down)
+      (define-key evil-normal-state-map (kbd "C-k") 'windmove-up)
+      (define-key evil-normal-state-map (kbd "C-h") 'windmove-left)
+      (define-key evil-normal-state-map (kbd "C-l") 'windmove-right)
+
+      ;; Use visual line motions even outside of visual-line-mode buffers
+        (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+        (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+
+        (evil-set-initial-state 'messages-buffer-mode 'normal)
+        (evil-set-initial-state 'dashboard-mode 'normal)
+
+      ;; TODO: modify gx to use - org-open-at-point
 
 #+END_SRC
 
