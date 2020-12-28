@@ -1372,6 +1372,24 @@ Because I actually have to write some Ansible every now and then.
 
 company-ansible backend
 
+*** Docker and Dockerfiles
+
+Deal with Dockerfiles and manipulate Docker
+
+#+begin_src emacs-lisp :name docker_dockerfile
+  (use-package dockerfile-mode
+    :commands (dockerfile-mode
+               dockerfile-build-buffer
+               dockerfile-build-no-cache-buffer
+               dockerfile-test-function)
+    :mode (("Dockerfile\\'" . dockerfile-mode)))
+    ;; :config
+    ;; (rk-local-leader-def :keymaps 'dockerfile-mode-map
+    ;;   "b" '(dockerfile-build-buffer :wk "build")
+    ;;   "B" '(dockerfile-build-no-cache-buffer :wk "build w/o cache")
+    ;;   "t" '(dockerfile-test-function :wk "test")))
+#+end_src
+
 *** Json
 
 Hey, at least it isn't XML.
