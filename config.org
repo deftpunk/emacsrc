@@ -1431,13 +1431,22 @@ languages.
     (set-local company-backends '((company-capf company-dabbrev-code company-dabbrev :with company-yasnippet))))
   (add-hook 'emacs-lisp-mode-hook 'deftpunk/elisp-backend)
 
+    (defun rk-elisp--message-on-eval-buffer (&rest _)
+      (when (called-interactively-p nil)
+        (message "Buffer evaluated.")))
+
+  ;  (:keymaps 'emacs-lisp-mode-map :states '(normal motion)
+   ;           "gd" #'xref-find-definitions)
+    (advice-add #'eval-buffer :after #'rk-elisp--message-on-eval-buffer)
+
   ;; Define the major-mode-hydra for emacs-lisp
   (defvar emacs-lisp-mode--title (with-mode-icon 'emacs-lisp-mode "Emacs Lisp Mode"))
   (major-mode-hydra-define emacs-lisp-mode
     (:title emacs-lisp-mode--title :color blue :separator "─")
     ("Eval"
      (("b" eval-buffer "buffer")
-      ("e" eval-defun "defun")
+      ("d" eval-defun "defun")
+      ("e" eval-expression "expression")
       ("r" eval-region "region")
       ("x" eval-last-sexp "sexp"))
      "Tools"
