@@ -921,6 +921,98 @@ visited, rather than in the order they were opened. Thanks to @tau3000 for the t
 #+end_src
 
 * Prose
+
+TODO: Good offline thesaurus
+
+
+** Webster 1913 Dictionary
+
+From https://github.com/hrs/dotfiles/blob/main/emacs/dot-emacs.d/configuration.org
+Look up word definitions using `sdcv` and the awesome 1913 edition of Webster's dictionary.
+
+There is some setup required to make this work.
+
+Install [[http://dushistov.github.io/sdcv/][sdcv]] - a cmdline tool that uses dictionaries that are in the DICT format.
+
+- brew install sdcv
+
+Get the DICT format of the Webster's 1913 edition.  I am using slightly
+modified instructions from here:
+https://cafebedouin.org/2019/01/29/websters-revised-unabridged-dictionary-1913-on-stardict-on-ubuntu-debian/
+
+- wget https://s3.amazonaws.com/jsomers/dictionary.zip
+- unzip dictionary.zip
+- cd dictionary
+- tar -xvjf stardict-dictd-web1913-2.4.2.tar.bz2
+- mkdir -p $HOME/Documents/stardict/dic
+- cd cd stardict-dictd-web1913-2.4.2/
+- mv * $HOME/Documents/stardict/dic
+
+#+begin_src emacs-lisp :name websters
+  (defun hrs/dictionary-prompt ()
+    (read-string
+     (format "Word (%s): " (or (hrs/region-or-word) ""))
+     nil
+     nil
+     (hrs/region-or-word)))
+
+  (defun hrs/dictionary-define-word ()
+    (interactive)
+    (let* ((word (hrs/dictionary-prompt))
+           (buffer-name (concat "Definition: " word)))
+      (with-output-to-temp-buffer buffer-name
+        (shell-command (format "sdcv -n %s" word) buffer-name))))
+
+  (define-key global-map (kbd "C-x w") 'hrs/dictionary-define-word)
+#+end_src
+
+** Markdown
+
+*** Markdown mode
+
+[[http://jblevins.org/projects/markdown-mode/][Markdown Mode]] - Major mode for editing [[http://daringfireball.net/projects/markdown/][Markdown]] formatted text.
+
+#+begin_src emacs-lisp :name markdown
+  (use-package markdown-mode
+    :defer t
+    :commands (markdown-mode gfm-mode)
+    :mode (("README\\.md\\'" . gfm-mode)
+           ("\\.md\\'"       . markdown-mode)
+           ("\\.markdown\\'" . markdown-mode))
+    :init (setq markdown-command "multimarkdown")
+    :config
+    (defun flex-emacs:markdown ()
+      (interactive)
+      (smartparens-mode -1))
+    (add-hook 'markdown-mode #'flex-emacs:markdown))
+#+end_src
+
+*** Pandoc
+
+[[http://joostkremers.github.io/pandoc-mode/][Pandoc]] - Convert text written in one markup language into another markup language.
+
+It is possible to create different output profiles for a single input file, so that you
+can, for example, write your text in Markdown and then translate it to HTML for online
+reading, PDF for offline reading and Texinfo for reading in Emacs
+
+#+begin_src emacs-lisp :name Pandoc
+    (use-package pandoc-mode
+      :defer t)
+#+end_src
+
+*** vmd-mode
+
+[[https://github.com/blak3mill3r/vmd-mode][vmd-mode]] - Fast Github-flavored Markdown previews synchronized with changes to an
+           emacs buffer (no need to save).
+Dependencies: Node.js & vmd
+
+[[https://github.com/yoshuawuyts/vmd][vmd]] - can be installed with ```npm install -g vmd```
+
+#+begin_src emacs-lisp :name vmd-mode
+  (use-package vmd-mode
+    :defer t)
+#+end_src
+
 * Org Mode
 
 Use the Org mode we downloaded into src
