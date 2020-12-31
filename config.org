@@ -1604,7 +1604,6 @@ Golang
                            sp-point-before-same-p))
 #+end_src
 
-
 **** conda
 
 [[https://github.com/necaris/conda.el][conda.el]] - I prefer to use miniconda at all times, it is a much cleaner virtual environment
@@ -1660,7 +1659,7 @@ Golang
     (setq pyvenv-menu nil)
     ;; Restart the python process when switching environments
     (add-hook 'pyvenv-post-activate-hooks (lambda ()
-                        (pyvenv-restart-python)))
+                                            (pyvenv-restart-python)))
     :hook (python-mode-hook . pyvenv-mode))
 #+end_src
 
@@ -2072,7 +2071,7 @@ The yasnippet [[http://joaotavora.github.io/yasnippet/][manual]].
 Using Emacs shell - eshell
 
 #+begin_src emacs-lisp :name eshell
-(defvar eshell-directory-name (concat deftpunk--etc-dir "eshell")
+(defvar eshell-directory-name (concat deftpunk--cache-dir "eshell")
   "Where to store temporary/data files, as opposed to `eshell-config-dir'")
 #+end_src
 
