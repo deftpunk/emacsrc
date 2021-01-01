@@ -1670,7 +1670,6 @@ Golang
 
 *** Rust
 
-
 Prerequisites:
 [[https://github.com/killercup/cargo-edit][cargo-edit]] Extends Cargo to allow you to add, remove, and upgrade dependencies by modifying your Cargo.toml file from the command line
 
@@ -1683,6 +1682,13 @@ Currently available subcommands:
 
 flycheck-rust -> Rust additions and Cargo support
 
+**** rustic-mode
+
+Using [[https://github.com/brotzeit/rustic][rustic]] instead of rust-mode.
+
+It integrates some additional cargo commands (so that we no longer need to include the cargo plugin),
+lsp-mode & flycheck integration.
+
 #+begin_src emacs-lisp :name rust
   ;; Using rustic
   (use-package rustic
@@ -1693,19 +1699,6 @@ flycheck-rust -> Rust additions and Cargo support
 
   (use-package flycheck-rust
     :hook (flycheck-mode . flycheck-rust-setup))
-#+end_src
-
-**** cargo
-
-[[https://github.com/kwrooijen/cargo.el][cargo.el]] Perform cargo tasks in Emacs
-
-#+begin_src emacs-lisp :name cargo
-  (use-package cargo
-    :defer t
-    :after rustic-mode
-    :config
-    ;; Enable backtraces in Cargo processes started by Emacs.
-    (setenv "RUST_BACKTRACE" "1"))
 #+end_src
 
 **** toml mode
