@@ -1141,6 +1141,11 @@ TODO: There is a helm-flycheck
       ;; Check only when saving or opening files.
       (setq flycheck-check-syntax-automatically '(save mode-enabled idle-buffer-switch))
 
+      ;; Rerunning checks on every newline is a mote excessive.
+      (delq 'new-line flycheck-check-syntax-automatically)
+      ;; And don't recheck on idle as often
+      (setq flycheck-idle-change-delay 1.0)
+
       ;; For the above functionality, check syntax in a buffer that you switched to
       ;; only briefly. This allows "refreshing" the syntax check state for several
       ;; buffers quickly after e.g. changing a config file.
