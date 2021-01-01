@@ -2189,7 +2189,30 @@ provides the functions goto-last-change and goto-last-change-reverse.
     (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 #+end_src
 
-** evil-collection
+*** evil-args
+
+[[https://github.com/wcsmith/evil-args][evil-args]] Motions and text objects for delimited (, & ;) arguments
+
+#+begin_src emacs-lisp :name evil-args
+  (use-package evil-args
+    :after evil
+    :config
+    ; bind evil-args text objects
+    (define-key evil-inner-text-objects-map "a" 'evil-inner-arg)
+    (define-key evil-outer-text-objects-map "a" 'evil-outer-arg)
+
+    ;; TODO: Perhaps there is a way to integrate this with f/t & F/T
+    ;; ;; bind evil-forward/backward-args
+    ;; (define-key evil-normal-state-map "L" 'evil-forward-arg)
+    ;; (define-key evil-normal-state-map "H" 'evil-backward-arg)
+    ;; (define-key evil-motion-state-map "L" 'evil-forward-arg)
+    ;; (define-key evil-motion-state-map "H" 'evil-backward-arg)
+
+    ;; bind evil-jump-out-args
+    (define-key evil-normal-state-map "K" 'evil-jump-out-args))
+#+end_src
+
+*** evil-collection
 
 [[https://github.com/emacs-evil/evil-collection][evil-collection]] A collection of Evil bindings.
 
@@ -2200,7 +2223,7 @@ provides the functions goto-last-change and goto-last-change-reverse.
     (evil-collection-init))
 #+end_src
 
-** evil-commentary
+*** evil-commentary
 
 [[https://github.com/linktohack/evil-commentary][evil-commentary]] Make it easy to comment out (lines of) code.
 
@@ -2213,7 +2236,7 @@ all available motions and counts, just like other operator commands, such as evi
     (evil-commentary-mode))
 #+end_src
 
-** evil-exchange
+*** evil-exchange
 
 [[https://github.com/Dewdrops/evil-exchange][evil-exchange]] - A text exchange operator
 
@@ -2225,7 +2248,7 @@ all available motions and counts, just like other operator commands, such as evi
     (evil-exchange-install))
 #+end_src
 
-** evil-goggles
+*** evil-goggles
 
 [[https://github.com/edkolev/evil-goggles][evil-goggles]] Display a visual hint when editing with evil.
 
@@ -2241,8 +2264,51 @@ all available motions and counts, just like other operator commands, such as evi
   (evil-goggles-use-diff-faces))
 #+end_src
 
-** evil-smartparens
-** evil-visualstar
+*** evil-matchit
+
+[[https://github.com/redguardtoo/evil-matchit][evil-matchit]] Press “%” to jump between matched tags in Emacs.  It can also match character pairs &
+inner/outer text objects.
+
+#+begin_src emacs-lisp :name evil-matchit
+  (use-package evil-matchit
+    :after evil
+    :config
+    (global-evil-matchit-mode 1))
+#+end_src
+
+*** evil-smartparens
+
+[[https://github.com/expez/evil-smartparens][evil-smartparens]] - Makes Evil play nice with smartparens
+
+#+begin_src emacs-lisp :name evil-smart
+  (use-package evil-smartparens
+    :after evil
+    :config
+    (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode))
+#+end_src
+
+*** evil-surround
+
+[[https://github.com/emacs-evil/evil-surround][evil-surround]] - emulate surround.vim by Tim Pope
+
+Change surrounding
+`cs<old-textobject><new-textobject>`
+
+Delete surrounding
+`ds<textobject>`
+
+Add surrounding
+You can surround in visual-state with `S<textobject>` or `gS<textobject>`.
+Or in normal-state with `ys<textobject>` or `yS<textobject>`
+
+#+begin_src emacs-lisp :name evil-surround
+  (use-package evil-surround
+    :after evil
+    :config
+    (global-evil-surround-mode 1))
+#+end_src
+
+*** evil-visualstar
 
 [[https://github.com/bling/evil-visualstar][evil-visualstar]] Start a * or # search from the visual selection
 
