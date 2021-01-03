@@ -1362,7 +1362,7 @@ lsp-find-refereneces
           lsp-ui-flycheck-live-reporting t
           lsp-ui-peek-enable t
           lsp-ui-peek-list-width 60
-          lsp-ui-peek-peek-height 25))
+          lsp-ui-peek-peek-height 40))
 #+end_src
 
 ** Magit
