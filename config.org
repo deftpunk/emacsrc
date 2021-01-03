@@ -1697,6 +1697,14 @@ lsp-mode & flycheck integration.
     (setq-default rustic-format-trigger 'on-save)
     (setq rustic-rustfmt-bin "~/.cargo/bin/rustfmt"))
 
+  (defun deftpunk/rustic-mode-hook ()
+    (setq-local fill-column 80)
+    (origami-mode)
+    (display-line-numbers-mode 1)
+    (display-fill-column-indicator-mode))
+
+  (add-hook 'rustic-mode-hook 'deftpunk/rustic-mode-hook)
+
   (use-package flycheck-rust
     :hook (flycheck-mode . flycheck-rust-setup))
 #+end_src
