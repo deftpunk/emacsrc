@@ -2280,6 +2280,9 @@ inner/outer text objects.
 #+begin_src emacs-lisp :name evil-matchit
   (use-package evil-matchit
     :after evil
+    :init
+    ;; We want 3% to jump 3 times, not jump 3% down the file.
+    (setq evilmi-may-jump-by-percentage nil)
     :config
     (global-evil-matchit-mode 1))
 #+end_src
