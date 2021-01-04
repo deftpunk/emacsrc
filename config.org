@@ -872,6 +872,15 @@ Prerequisites:
     (setq so-long-predicate #'doom-buffer-has-long-lines-p))
 #+end_src
 
+** sudo-edit
+
+[[https://github.com/nflath/sudo-edit][sudo-edit]] Because it is strange that editing files as root in Emacs is so hard
+
+#+begin_src emacs-lisp :name sudo-edit
+  (use-package sudo-edit
+    :defer 2)
+#+end_src
+
 ** super-save
 
 [[https://github.com/bbatsov/super-save][super-save]] Automatically save your buffers.
