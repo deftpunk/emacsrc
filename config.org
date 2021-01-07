@@ -1448,7 +1448,6 @@ Show TODOs in Magit status buffer for each file.
 
 [[https://github.com/benma/visual-regexp-steroids.el][visual-regex-steroids]]
 
-
 * Software Languages & File Types
 
 I end up looking at or programming in a lot of different languages, formats and file types for work and pleasure.
@@ -1722,6 +1721,10 @@ Golang
                  '(conda-env-current-name (" conda:" conda-env-current-name " "))
                  'append))
 #+end_src
+
+**** lsp-pyright
+
+Trying out the pyright lsp client
 
 **** pyvenv
 
@@ -2633,6 +2636,8 @@ Normal state keybindings.
   ;; Keep the font window away.
   (global-unset-key (kbd "s-t"))
 
+  ;; Make sure the s-w only kills the current buffer.
+  (global-set-key (kbd "s-w") #'kill-this-buffer)
 #+end_src
 
 * keychord
