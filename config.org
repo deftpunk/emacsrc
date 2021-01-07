@@ -2134,7 +2134,17 @@ Using Emacs shell - eshell
   "Where to store temporary/data files, as opposed to `eshell-config-dir'")
 #+end_src
 
+*** eshell-syntax-highlighting
+
+#+begin_src emacs-lisp :name eshell-syntax-highlighting
+  (use-package eshell-syntax-highlighting
+    :after esh-mode
+    :config
+    (eshell-syntax-highlighting-global-mode +1))
+#+end_src
+
 ** vterm
+
 * The Prime Evil
 
 ** Evil dependencies
