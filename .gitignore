@@ -29,3 +29,7 @@ config.el
 
 projectile-bookmarks.eld
 logview-cache.extmap
+.org-id-locations
+loaddefs.el
+src/
+loaddefs.el~

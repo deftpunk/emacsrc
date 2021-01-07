@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sysx
+# key: sysx
+# --
+import sys; sys.exit(-1)
