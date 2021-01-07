@@ -1559,10 +1559,70 @@ Another lisp, this one is on the JVM.
     :defer 2
     :init
     ;; Make CIDER welcome message go away.
-    (setq cider-repl-display-help-banner nil))
+    (setq cider-repl-display-help-banner nil)
+    :config
+    (setq nrepl-hide-special-buffers t
+          nrepl-log-messages nil
+          cider-font-lock-dynamically '(macro core function var deprecated)
+          cider-overlays-use-font-lock t
+          cider-prompt-for-symbol nil
+          cider-repl-history-display-duplicates nil
+          cider-repl-history-display-style 'one-line
+          cider-repl-history-file (concat deftpunk--cache-dir "cider-repl-history")
+          cider-repl-history-highlight-current-entry t
+          cider-repl-history-quit-action 'delete-and-restore
+          cider-repl-history-highlight-inserted-item t
+          cider-repl-history-size 5000
+          cider-repl-result-prefix ";; => "
+          cider-repl-print-length 100
+          cider-repl-use-clojure-font-lock t
+          cider-repl-use-pretty-printing t
+          cider-repl-wrap-history nil
+          cider-stacktrace-default-filters '(tooling dup))
+
+    ;; From Doom
+    ;; Don't focus the CIDER REPL when it starts. Since it can take so long
+    ;; to start up, you either wait for a minute doing nothing or be
+    ;; prepared for your cursor to suddenly change buffers without warning.
+    ;; See https://github.com/clojure-emacs/cider/issues/1872
+    (setq cider-repl-pop-to-buffer-on-connect 'display-only)
+
+    ;; More Doom goodness.
+    ;; Error messages emitted from CIDER is silently funneled into *nrepl-server*
+    ;; rather than the *cider-repl* buffer. How silly. We might want to see that
+    ;; stuff and who's going to check *nrepl-server* on every startup? I've got a
+    ;; better idea: we copy these errors into the *cider-repl* buffer.
+    (add-hook! 'cider-connected-hook
+      (defun +clojure--cider-dump-nrepl-server-log-h ()
+        "Copy contents of *nrepl-server* to beginning of *cider-repl*."
+        (when (buffer-live-p nrepl-server-buffer)
+          (save-excursion
+            (goto-char (point-min))
+            (insert
+             (with-current-buffer nrepl-server-buffer
+               (buffer-string))))))))
+
+  ;; Yet more Doom to make things look right.
+  (after! cider-doc
+    ;; Fixes raxod502/radian#446: CIDER tries to do color calculations when it's
+    ;; loaded, sometimes too early, causing errors. Better to wait until something
+    ;; is actually rendered.
+    (setq cider-docview-code-background-color nil)
+
+    (defadvice! +clojure--defer-color-calculation-a (&rest _)
+      "Set `cider-docview-code-background-color'.
+  This is needed because we have ripped out the code that would normally set it
+  (since that code will run during early init, which is a problem)."
+      :before #'cider-docview-fontify-code-blocks
+      (setq cider-docview-code-background-color (cider-scale-background-color)))
+
+    ;; HACK Disable cider's advice on these; and hope no one else is using these
+    ;;      old-style advice.
+    (ad-deactivate #'enable-theme)
+    (ad-deactivate #'disable-theme))
 #+end_src
 
-*** clj-refactor
+**** clj-refactor
 
 [[https://github.com/clojure-emacs/clj-refactor.el][clj-refactor]] - A collection of Clojure refactoring functions for Emacs
 
@@ -1591,6 +1651,16 @@ Another lisp, this one is on the JVM.
      (("j" cider-jack-in "Cider JackIn")
       ("r" hydra-cljr-help-menu/body "clj refactor"))))
 #+end_src
+
+**** flycheck-kondo
+
+Using the [[https://github.com/clj-kondo/clj-kondo][clj-kondo]] linter with flycheck
+
+#+begin_src emacs-lisp :name flycheck-clj-kondo
+  (use-package flycheck-clj-kondo
+    :after flycheck w)
+#+end_src
+
 
 *** Emacs Lisp
 
