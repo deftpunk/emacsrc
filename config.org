@@ -1529,6 +1529,50 @@ languages.
 
 *** Clojure
 
+Another lisp, this one is on the JVM.
+
+**** CIDER
+
+[[https://cider.mx/][CIDER]] "The" interactive development environment for Clojure.
+
+#+begin_src emacs-lisp :name cider
+  (use-package cider
+    :defer 2
+    :init
+    ;; Make CIDER welcome message go away.
+    (setq cider-repl-display-help-banner nil))
+#+end_src
+
+*** clj-refactor
+
+[[https://github.com/clojure-emacs/clj-refactor.el][clj-refactor]] - A collection of Clojure refactoring functions for Emacs
+
+#+BEGIN_SRC emacs-lisp :name clj-refactor
+  (use-package clj-refactor
+    :hook (clojure-mode . clj-refactor-mode))
+#+END_SRC
+
+**** clojure mode
+
+[[https://github.com/clojure-emacs/clojure-mode][clojure-mode]] - Emacs support for the Clojure(Script) programming language
+
+#+BEGIN_SRC emacs-lisp :name clojure-mode
+(use-package clojure-mode
+  :init (setq clojure-docstring-fill-prefix-width 0)
+  )
+#+END_SRC
+
+**** clojure major-mode-hydra
+
+#+begin_src emacs-lisp :name clojure-major-mode-hydra
+  (defvar clojure-mode-map--title (with-mode-icon 'clojure-mode "Clojure Mode" 1 -0.05))
+  (major-mode-hydra-define clojure-mode
+    (:title clojure-mode-map--title :color blue :separator "─")
+    ("Tools"
+     (("j" cider-jack-in "Cider JackIn")
+      ("r" hydra-cljr-help-menu/body "clj refactor"))))
+#+end_src
+
 *** Emacs Lisp
 
 #+begin_src emacs-lisp :name elisp
