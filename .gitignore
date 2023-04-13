@@ -7,29 +7,38 @@
 # Backup files
 *~
 
-# Undo-tree save-files
-*.~undo-tree
+# init files - will be regenerated on org-bable-tangle
+early-init.el
+init.el
 
+src/
 crumbs/
 elpa/
 url/
 .local/
-etc/
 transient/
 dash-docsets/
 .cache/
 
+var/
+eln-cache/
+straight/
+auto-save-list/
 
 # We can't get these through melpa so I git clone them.  I don't like submodules.
 emacswikilibs/
 repos-not-in-melpa/
 
-# The generated elisp config file
-config.el
-
 projectile-bookmarks.eld
 logview-cache.extmap
 .org-id-locations
 loaddefs.el
-src/
 loaddefs.el~
+
+/.cache/
+/.lsp-session-v1
+/dftpnk-emacs-evil.org
+/dftpnk-emacs-no-evil.org
+/etc/recentf-save.el
+/.DS_Store
+/.dap-breakpoints
