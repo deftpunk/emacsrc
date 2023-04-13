@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-# name: padd
-# key: padd
-# --
-p.add_argument("--$1", dest="$2", action="$3",
-               help="$4")

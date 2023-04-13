@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: lwx
-# key: lwx
-# --
-log.warning("$1"$0)

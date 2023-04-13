@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: printx
-# key: printx
-# --
-print("$1 {$2}".format($3))$0

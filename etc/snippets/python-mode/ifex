@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-# name: ifex
-# key: ifex
-# --
-if errors:
-    raise AcceptanceTestError("$1 {}".format(errors))$0

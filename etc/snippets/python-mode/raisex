@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: raisex
-# key: raisex
-# --
-raise $1("$2{}".format($3))$0

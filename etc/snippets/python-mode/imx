@@ -1,4 +1,0 @@
-# name: imx
-# key: imx
-# --
-import $1 $0

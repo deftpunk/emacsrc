@@ -1,5 +1,0 @@
-# -*- mode: snippet -*-
-# name: prx
-# key: prx
-# --
-print("$1"$0)

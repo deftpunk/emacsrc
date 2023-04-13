@@ -1,6 +1,0 @@
-# -*- mode: snippet -*-
-#contributor: Erick Bodine (deftpunk)
-#name: prx
-#key: prx
-# --
-(provide '$0)
