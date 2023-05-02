@@ -1,0 +1,11 @@
+;;;; Emacs Bookmark Format Version 1;;;; -*- coding: utf-8-emacs; mode: lisp-data -*-
+;;; This format is meant to be slightly human-readable;
+;;; nevertheless, you probably don't want to edit it.
+;;; -*- End Of Bookmark File Format Version Stamp -*-
+(("org-capture-last-stored"
+ (filename . "~/MyStuff/DeftpunkRoamNotes/20230502164129-git_notes.org")
+ (front-context-string . "\n* Making a copy")
+ (rear-context-string . "itle: Git Notes\n")
+ (position . 87)
+ (last-modified 25681 37379 387968 0))
+)
