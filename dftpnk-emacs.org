@@ -324,18 +324,9 @@ Manage keybindings.
     :demand t
     :straight t)
 
-  ;; Use <SPC> as the leader key.
-  (general-create-definer deftpunk-leader-def
-    :states '(normal)
-    :prefix "SPC")
-
-  ;; https://github.com/noctuid/general.el#how-do-i-prevent-key-sequence-starts-with-non-prefix-key-errors
-  (deftpunk-leader-def "" nil)
-
   ;; local leader
   ;; This allows for finer granularity than hydra-major-mode by binding to individual key maps.
   (general-create-definer deftpunk-local-leader-def
-    :states '(normal)
     :prefix "C-;")
 #+end_src
 
@@ -1637,7 +1628,7 @@ Org mode related investigations:
 [[https://github.com/jjasghar/alfred-org-capture][alfred-org-capture]] - Use Alfred and org-capture together
 [[https://github.com/Fuco1/org-pretty-table][org-pretty-table]] - make the tables look better
 
-*** COMMENT Org Configuration
+*** Org Configuration
 
 #+begin_src emacs-lisp :name org-configuration
   ;; Make Tab in Org mode either insert a header or cycle the header folding.
@@ -3269,24 +3260,6 @@ TODO: Work out personal prefixes:
       ("w" spacemacs/alternate-window "last window"))))
 #+end_src
 
-
-**** Normal mode
-
-Normal mode keybindings that I make for myself.
-
-#+begin_src emacs-lisp :name normal-state
-  ;; NOTE: The org-open-at-point will open a "Babel Results" window when this function is called
-  ;;       inside a src block
-  (defun deftpunk/url-at-point ()
-    "Make opening the url at point a little more flexible."
-    (interactive)
-    (if (string-equal major-mode "org-mode")
-        (unless (ignore-errors (or (org-open-at-point) t))
-          (ace-link))
-      (unless (ignore-errors (or (browse-url-at-point) t))
-        (ace-link))))
-#+end_src
-
 *** C-i bindings
 
 #+begin_src emacs-lisp :name leaer-keybindings
@@ -3381,14 +3354,21 @@ Normal mode keybindings that I make for myself.
   (global-set-key (kbd "s-a") 'org-agenda)
   (global-set-key (kbd "s-i") 'helm-mini)
 
-  ;; Make ESC quit prompts
-  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
   ;; This "should" allow you to use ESC in more situations that would require C-g
   (define-key key-translation-map (kbd "ESC") (kbd "C-g"))
 
   ;; Make eval-last-sexp output prettier
   (global-set-key [remap eval-last-sexp] 'pp-eval-last-sexp)
+
+  (defun deftpunk/url-at-point ()
+    "Make opening the url at point a little more flexible."
+    (interactive)
+    (if (string-equal major-mode "org-mode")
+        (unless (ignore-errors (or (org-open-at-point) t))
+          (ace-link))
+      (unless (ignore-errors (or (browse-url-at-point) t))
+        (ace-link))))
 
   ;; Using C-j for jumping around
   ;; TODO: Use General for mapping?
@@ -3398,6 +3378,8 @@ Normal mode keybindings that I make for myself.
   (global-set-key (kbd "C-j g") 'goto-line)
   (global-set-key (kbd "C-j j") 'avy-goto-char-timer)
   (global-set-key (kbd "C-j o") 'ace-link)
+  (global-set-key (kbd "C-j x") 'deftpunk/url-at-point)
+
 
   (global-set-key (kbd "C-w") 'backward-kill-word)
   (global-set-key (kbd "C--") 'ace-window)
