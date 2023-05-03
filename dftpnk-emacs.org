@@ -1,6 +1,6 @@
 #+title Deftpunk Emacs
 #+author: Erick Bodine <erick.bodine@gmail.com>
-#+property: header-args :tangle "/Users/bodine/MyStuff/emacsrc/init.el"
+#+property: header-args :tangle "/Users/ebodine/tmp/emacsrc/init.el"
 #+startup: content
 #+auto_tangle: t
 
@@ -10,7 +10,7 @@ The thermonuclear editor.
 
 * Early-Init
 :properties:
-:header-args: :tangle "/Users/bodine/MyStuff/emacsrc/early-init.el"
+:header-args: :tangle "/Users/ebodine/tmp/emacsrc/early-init.el"
 :end:
 #+name: early-init-header-block
 #+begin_src emacs-lisp :exports none
@@ -1327,8 +1327,8 @@ A really nice and performant modeline broken out of [[https://github.com/hlissne
           doom-modeline-gnus-timer 0
           doom-modeline-buffer-modification-icon t
           doom-modeline-project-detection 'projectile
-          doom-modeline-icon (display-graphic-p))
-    :hook (after-init . doom-modeline-mode))
+          doom-modeline-icon (display-graphic-p)))
+    ;;:hook (after-init . doom-modeline-mode))
 #+end_src
 
 ** Themes
@@ -1354,13 +1354,34 @@ Because Doom themes are great.
 
   ;; (load-theme 'doom-moonlight t)
   ;; (load-theme 'doom-vibrant :no-confirm)
-  (load-theme 'doom-tokyo-night :no-confirm)
+  ;; (load-theme 'doom-tokyo-night :no-confirm)
 #+end_src
 
-*** TODO Nano, theme & modeline
+*** [[https://github.com/rougier/nano-theme][nano-theme]]
 
-https://github.com/rougier/nano-theme
-https://github.com/rougier/nano-modeline
+#+begin_src emacs-lisp :name nano-theme
+  (use-package nano-theme
+    :straight (:host github :repo "rougier/nano-theme")
+    ;; :init (setq nano-modeline-position 'bottom
+    ;;             nano-modeline-prefix 'icon)
+    )
+  (load-theme 'nano-light :no-confirm)
+#+end_src
+
+*** [[https://github.com/rougier/nano-modeline][nano-modeline]]
+
+#+begin_src emacs-lisp :name nano-modeline
+  (use-package nano-modeline
+    :hook (after-init . nano-modeline-mode))
+#+end_src
+
+*** [[https://github.com/rougier/nano-minibuffer][nano-minibuffer]]
+
+#+begin_src emacs-lisp :name nano-minibuffer
+  (use-package nano-minibuffer
+    :straight (:host github :repo "rougier/nano-minibuffer")
+    :init (setq nano-minibuffer-position 'bottom))
+#+end_src
 
 ** Completion
 
@@ -1602,6 +1623,14 @@ isearch with an overview, and more. Oh, man! https://oremacs.com/swiper/
     (interactive)
     (swiper)
     (recenter (1- (max 1 scroll-margin))))
+#+end_src
+
+*** [[https://github.com/abo-abo/lispy][Lispy]]
+
+All of the features described [[https://github.com/abo-abo/lispy#features][here]]
+
+#+begin_src emacs-lisp :name lispy
+  (use-package lispy)
 #+end_src
 
 ** [[http://orgmode.org/manual/index.html][Org]]
