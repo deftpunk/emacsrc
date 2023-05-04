@@ -1887,8 +1887,26 @@ emphasized word.
     :config
     (org-roam-setup))
 #+end_src
+**** [[https://github.com/jgru/consult-org-roam][consult-org-roam]]
 
-*** [[https://github.com/org-roam/org-roam-ui][org-roam-ui]]
+Use [[https://github.com/minad/consult][consult]] to search/find org-roam files.
+
+#+begin_src emacs-lisp :name consult-org-roam
+  (use-package consult-org-roam
+    :after org-roam
+    :init
+    (require 'consult-org-roam)
+    (consult-org-roam-mode 1)
+    (setq consult-org-roam-grep-func #'consult-ripgrep
+          consult-org-roam-buffer-narrow-key ?r
+          consult-org-roam-buffer-after-buffers t)
+    (("C-c n e" . consult-org-roam-file-find)
+     ("C-c n b" . consult-org-roam-backlinks)
+     ("C-c n l" . consult-org-roam-forward-links)
+     ("C-c n r" . consult-org-roam-search)))
+#+end_src
+
+**** [[https://github.com/org-roam/org-roam-ui][org-roam-ui]]
 
 A graphical frontend for your org-roam Zettelkasten
 
