@@ -292,10 +292,13 @@ https://emacsnotes.wordpress.com/2022/09/11/three-bonus-keys-c-i-c-m-and-c-for-y
 Some utility hooks and functions from Doom Emacs.
 
 Hooks:
-=on-first-input=
+=on-first-input= - eg. delay loading which-key-mode until the 1st keys is pressed.
 =on-first-file=
 =on-first-buffer=
 =on-init-ui=
+=on-switch-buffer=
+=on-switch-frame=
+=on-switch-window=
 
 #+begin_src emacs-lisp :name on.el
   (use-package on.el
