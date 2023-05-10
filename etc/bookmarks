@@ -3,9 +3,9 @@
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
 (("org-capture-last-stored"
- (filename . "~/MyStuff/DeftpunkRoamNotes/20230502164129-git_notes.org")
- (front-context-string . "\n* Making a copy")
- (rear-context-string . "itle: Git Notes\n")
+ (filename . "~/MyStuff/DeftpunkRoamNotes/20230503172520-reference.org")
+ (front-context-string . "General Node for")
+ (rear-context-string . "itle: Reference\n")
  (position . 87)
- (last-modified 25681 37379 387968 0))
+ (last-modified 25682 60798 593498 0))
 )

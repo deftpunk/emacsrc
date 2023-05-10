@@ -1,6 +1,6 @@
 #+title Deftpunk Emacs
 #+author: Erick Bodine <erick.bodine@gmail.com>
-#+property: header-args :tangle "/Users/ebodine/tmp/emacsrc/init.el"
+#+property: header-args :tangle "/Users/bodine/MyStuff/emacsrc/init.el"
 #+startup: content
 #+auto_tangle: t
 
@@ -8,9 +8,16 @@
 
 The thermonuclear editor.
 
+** External dependencies
+
+- ripgrep
+- pngpaste
+- git
+
+
 * Early-Init
 :properties:
-:header-args: :tangle "/Users/ebodine/tmp/emacsrc/early-init.el"
+:header-args: :tangle "/Users/bodine/MyStuff/emacsrc/early-init.el"
 :end:
 #+name: early-init-header-block
 #+begin_src emacs-lisp :exports none
@@ -1843,7 +1850,7 @@ Helm for org headlines and keywords completion.
     :commands (helm-org-in-buffer-headings helm-org-capture-templates))
 #+end_src
 
-*** [[https://github.com/abo-abo/org-download][org-download]]
+*** COMMENT [[https://github.com/abo-abo/org-download][org-download]]
 
 Facilitate moving images from point A to point B - images to/from orgmode files.
 
@@ -1852,11 +1859,17 @@ I use this when i capture images in OSX that I then paste into an Org file using
 
 #+begin_src emacs-lisp :name org-download
   (use-package org-download
+    :after org
     :hook (dired-mode . org-download-enable)
     :init
     (setq org-download-heading-level nil
-          org-download-timestamp t
-          org-download-image-dir "~/MyStuff/org/pictures"))
+          org-download-timestamp "org_image_%Y%m%d-%H%M%S_"
+          org-download-image-dir "~/MyStuff/OrgAssets/pictures"
+          org-image-actual-width 300
+          org-download-screenshot-method "/opt/homebrew/bin/pngpaste %s")
+    :config
+    (require 'org-download))
+
 #+end_src
 
 *** [[https://github.com/awth13/org-appear][org-appear]]
@@ -1882,11 +1895,11 @@ emphasized word.
      ("C-c n i" . org-roam-node-insert)
      ("C-c n l" . org-roam-buffer-toggle)
      ("C-c n o" . org-id-get-create)
-     ("C-c n r" . org-roam-node-random)
      ("C-c n t" . org-roam-tag-add))
     :config
     (org-roam-setup))
 #+end_src
+
 **** [[https://github.com/jgru/consult-org-roam][consult-org-roam]]
 
 Use [[https://github.com/minad/consult][consult]] to search/find org-roam files.
@@ -3530,9 +3543,6 @@ Start the emacs server as a last thing to do.
 - integrate eyebrowse & desktop-mode
 
 *** Investigate vertico+orderless+consult+embark+marginalia
-
-*** org-download
-https://github.com/abo-abo/org-download
 
 *** esup
 https://github.com/jschaf/esup
