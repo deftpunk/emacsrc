@@ -334,9 +334,18 @@ Manage keybindings.
     :demand t
     :straight t)
 
+  ;; Use <SPC> as the leader key.
+  (general-create-definer deftpunk-leader-def
+    :states '(normal)
+    :prefix "SPC")
+
+  ;; https://github.com/noctuid/general.el#how-do-i-prevent-key-sequence-starts-with-non-prefix-key-errors
+  (deftpunk-leader-def "" nil)
+
   ;; local leader
   ;; This allows for finer granularity than hydra-major-mode by binding to individual key maps.
   (general-create-definer deftpunk-local-leader-def
+    :states '(normal)
     :prefix "C-;")
 #+end_src
 
@@ -1393,6 +1402,311 @@ Because Doom themes are great.
     :init (setq nano-minibuffer-position 'bottom))
 #+end_src
 
+** [[https://github.com/emacs-evil/evil][Evil]]
+
+Using Evil to make the editor part of Emacs even better than anything else.
+
+#+begin_src emacs-lisp :name evil
+  (use-package evil
+    :init
+    (setq evil-undo-system 'undo-fu
+          undo-limit 8000000
+          undo-strong-limit 8000000
+          undo-outer-limit 8000000)
+
+    (setq evil-default-state 'normal
+          evil-want-C-u-scroll    nil
+          evil-want-C-w-delete    t
+          evil-esc-delay          0
+          evil-want-Y-yank-to-eol t
+          evil-shift-width        4
+          evil-want-integration   t
+          evil-want-keybinding    nil   ; this is for evil-collection
+          evil-toggle-key         "s-z" ; I want C-z for other things
+          evil-want-C-i-jump      t)
+
+    (setq-default evil-symbol-word-search 1)
+    :demand t
+    :config
+
+    (evil-mode 1)
+
+    ;; https://emacs.stackexchange.com/questions/14940/emacsdoesnt-paste-in-evils-visual-mode-with-every-os-clipboard/15054#15054
+    ;; Imagine the following scenario.  One wants to paste some previously copied
+    ;; (from application other than Emacs) text to the system's clipboard in place
+    ;; of some contiguous block of text in a buffer.  Hence, one switches to
+    ;; `evil-visual-state' and selects the corresponding block of text to be
+    ;; replaced.  However, one either pastes some (previously killed) text from
+    ;; `kill-ring' or (if `kill-ring' is empty) receives the error: "Kill ring is
+    ;; empty"; see `evil-visual-paste' and `current-kill' respectively.  The
+    ;; reason why `current-kill' does not return the desired text from the
+    ;; system's clipboard is because `evil-visual-update-x-selection' is being run
+    ;; by `evil-visual-pre-command' before `evil-visual-paste'.  That is
+    ;; `x-select-text' is being run (by `evil-visual-update-x-selection') before
+    ;; `evil-visual-paste'.  As a result, `x-select-text' copies the selected
+    ;; block of text to the system's clipboard as long as
+    ;; `x-select-enable-clipboard' is non-nil (and in this scenario we assume that
+    ;; it is).  According to the documentation of `interprogram-paste-function',
+    ;; it should not return the text from the system's clipboard if it was last
+    ;; provided by Emacs (e.g. with `x-select-text').  Thus, one ends up with the
+    ;; problem described above.  To solve it, simply make
+    ;; `evil-visual-update-x-selection' do nothing:
+    (fset 'evil-visual-update-x-selection 'ignore)
+
+    (evil-set-initial-state 'help-mode 'emacs)
+    (evil-set-initial-state 'messages-buffer-mode 'emacs)
+    (evil-set-initial-state 'view-mode 'emacs)
+    (evil-set-initial-state 'inferior-python-mode 'emacs)
+
+    ;; More Esc quits
+    (define-key evil-normal-state-map [escape] 'keyboard-quit)
+    (define-key evil-visual-state-map [escape] 'keyboard-quit)
+    (define-key evil-insert-state-map [escape] 'evil-normal-state)
+    (global-set-key [escape] 'evil-exit-emacs-state))
+
+  ;; Always Escape
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+  ;; Make leader work in *Messages* buffer
+  ;; https://emacs.stackexchange.com/questions/70703/general-leader-key-not-working-in-some-modes-messages-on-initial-startup-onl
+  (with-eval-after-load 'evil
+    (general-add-hook 'after-init-hook
+                      (lambda (&rest _)
+                        (when-let ((messages-buffer (get-buffer "*Messages*")))
+                          (with-current-buffer messages-buffer
+                            (evil-normalize-keymaps))))
+                      nil
+                      nil
+                      t))
+#+end_src
+
+** Evil Extensions
+
+Plugins that extend Evil.  Most are similar to or replacements of Vim/Neovim plugins.
+
+*** [[https://github.com/wcsmith/evil-args][evil-args]]
+
+Motions and text objects for delimited (, & ;) arguments
+
+#+begin_src emacs-lisp :name evil-args
+  (use-package evil-args)
+
+  (require 'evil-args)
+
+  ;; bind evil-args text objects
+  (define-key evil-inner-text-objects-map "a" 'evil-inner-arg)
+  (define-key evil-outer-text-objects-map "a" 'evil-outer-arg)
+
+  ;; TODO: Perhaps there is a way to integrate this with f/t & F/T
+  ;; ;; bind evil-forward/backward-args
+  ;; (define-key evil-normal-state-map "L" 'evil-forward-arg)
+  ;; (define-key evil-normal-state-map "H" 'evil-backward-arg)
+  ;; (define-key evil-motion-state-map "L" 'evil-forward-arg)
+  ;; (define-key evil-motion-state-map "H" 'evil-backward-arg)
+
+  ;; bind evil-jump-out-args
+  (define-key evil-normal-state-map "K" 'evil-jump-out-args)
+#+end_src
+
+*** [[https://github.com/emacs-evil/evil-collection][evil-collection]]
+
+A collection of Evil bindings.
+
+#+begin_src emacs-lisp :name evil-collection
+  (use-package evil-collection
+    :init
+    (evil-collection-init))
+#+end_src
+
+*** [[https://github.com/linktohack/evil-commentary][evil-commentary]]
+
+Make it easy to comment out (lines of) code.
+
+The default key bindings use `gc` for the evil-commentary operator command. That means it can be used with
+all available motions and counts, just like other operator commands, such as evil-delete.
+
+#+begin_src emacs-lisp :name evil-commentary
+  (use-package evil-commentary
+    :after evil
+    :config
+    (evil-commentary-mode))
+
+  ;; Had to do this to get the bindings to work?!?
+  (require 'evil-commentary)
+#+end_src
+
+*** evil-embrace
+
+*** [[https://github.com/Dewdrops/evil-exchange][evil-exchange]]
+
+A text exchange operator
+
+#+begin_src emacs-lisp :name evil-exchange
+  (use-package evil-exchange
+    :init
+    (setq evil-exhange-key (kbd "ge"))
+    :config
+    (evil-exchange-install))
+#+end_src
+
+*** evil-goggles
+
+[[https://github.com/edkolev/evil-goggles][evil-goggles]] Display a visual hint when editing with evil.
+
+#+begin_src emacs-lisp :name evil-goggles
+(use-package evil-goggles
+  :config
+  (evil-goggles-mode)
+
+  ;; optionally use diff-mode's faces; as a result, deleted text
+  ;; will be highlighed with `diff-removed` face which is typically
+  ;; some red color (as defined by the color theme)
+  ;; other faces such as `diff-added` will be used for other actions
+  (evil-goggles-use-diff-faces))
+#+end_src
+
+*** evil-lion
+
+[[https://github.com/edkolev/evil-lion][evil-lion]] Evil align operator, port of vim-lion by Tom McDonald (https://github.com/tommcdo/vim-lion)
+
+This package provides gl and gL align operators: gl MOTION CHAR and right-align gL MOTION CHAR.
+
+Use CHAR / to enter regular expression if a single character wouldn't suffice.
+
+Use CHAR RET to align with align.el's default rules for the active major mode.
+
+The above call will install "gl" evil operator, which is used as:
+  gl TEXT-OBJECT SEPARATOR
+for example,
+  gl ip =
+will align the paragraph on = signs
+
+#+begin_src emacs-lisp :name evil-lion
+  (use-package evil-lion)
+  (evil-lion-mode)
+#+end_src
+
+*** evil-matchit
+
+[[https://github.com/redguardtoo/evil-matchit][evil-matchit]] Press “%” to jump between matched tags in Emacs.  It can also match character pairs &
+inner/outer text objects.
+
+#+begin_src emacs-lisp :name evil-matchit
+  (use-package evil-matchit
+    :init
+    ;; We want 3% to jump 3 times, not jump 3% down the file.
+    (setq evilmi-may-jump-by-percentage nil)
+    :config
+    (global-evil-matchit-mode 1))
+#+end_src
+
+*** evil-numbers
+
+[[https://github.com/juliapath/evil-numbers][evil-numbers]] Increment/decrement for numbers,binary,octal,hexadecimal,etc.
+
+#+begin_src emacs-lisp :name evil-numbers
+  (use-package evil-numbers)
+#+end_src
+
+*** [[https://github.com/Somelauw/evil-org-mode][evil-org]]
+
+Supplemental keybindings (normal, visual & insert) for Org mode.
+Full list here: https://github.com/Somelauw/evil-org-mode/blob/master/doc/keythemes.org
+
+#+begin_src emacs-lisp :name evil-org
+  (use-package evil-org)
+#+end_src
+
+*** evil-owl
+
+[[https://github.com/mamapanda/evil-owl][evil-owl]] allows you to view registers and marks before using them.
+
+Press q, @, ​"​, C-r, m, ​'​, or ` to view the popup, press C-f or C-b to scroll it, and input a register or mark to make the popup disappear.
+
+#+begin_src emacs-lisp :name evil-owl
+  (use-package evil-owl
+    :config
+    (setq evil-owl-display-method 'posframe
+          evil-owl-extra-posframe-args '(:width 50 :height 20)
+          evil-owl-max-string-length 50)
+    (evil-owl-mode))
+#+end_src
+
+*** evil-smartparens
+
+[[https://github.com/expez/evil-smartparens][evil-smartparens]] - Makes Evil play nice with smartparens
+
+#+begin_src emacs-lisp :name evil-smart
+  (use-package evil-smartparens
+    :after evil
+    :config
+    (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode))
+#+end_src
+
+*** [[https://github.com/emacs-evil/evil-surround][evil-surround]]
+
+Emulates surround.vim by Tim Pope. The functionality is wrapped into a minor mode.
+
+=Add surrounding=
+You can surround in visual-state with S<textobject> or gS<textobject>. Or in normal-state with
+ys<textobject> or yS<textobject>.
+
+=Change surrounding=
+You can change a surrounding with cs<old-textobject><new-textobject>.
+
+=Delete surrounding=
+You can delete a surrounding with ds<textobject>.
+
+#+begin_src emacs-lisp :name evil-surround
+  (use-package evil-surround)
+  (global-evil-surround-mode 1)
+#+end_src
+
+*** evil-unimpaired
+
+[[https://github.com/zmaas/evil-unimpaired][evil-unimpaired]] a port of Tim Pope’s unimpaired.vim
+
+#+begin_src emacs-lisp :name evil-unimpaired
+  (use-package evil-unimpaired
+    :straight (evil-unimpaired :type git :host github :repo "zmaas/evil-unimpaired")
+    :commands evil-unimpaired-define-pair
+    :after evil
+    :init
+    (evil-unimpaired-define-pair "e" '(move-text-up . move-text-down) '(normal visual))
+    (evil-unimpaired-define-pair "q" '(flycheck-previous-error . flycheck-next-error))
+    :config
+    (evil-unimpaired-mode))
+#+end_src
+
+*** evil-visualstar
+
+[[https://github.com/bling/evil-visualstar][evil-visualstar]] Start a * or # search from the visual selection
+
+#+begin_src emacs-lisp :name evil-visualstar
+  (use-package evil-visualstar
+    :config
+    (global-evil-visualstar-mode 1))
+#+end_src
+
+*** goto-chg
+
+[[https://github.com/emacs-evil/goto-chg][goto-chg]]
+
+Provides support for the motions g; g, and for the last-change-register ., also
+provides the functions goto-last-change and goto-last-change-reverse.
+
+#+begin_src emacs-lisp :name goto-chg
+(use-package goto-chg)
+#+end_src
+
+*** targets
+
+[[https://github.com/noctuid/targets.el][targets]] This package is like a combination of the targets, TextObjectify, anyblock, and expand-region vim plugins.
+
+#+begin_src emacs-lisp :name targets
+  ;; (use-package targets)
+#+end_src
+
 ** Completion
 
 *** [[https://company-mode.github.io/][company]]
@@ -2333,6 +2647,11 @@ Auto-saving buffers.
 #+begin_src emacs-lisp :name treemacs
   (use-package treemacs
     :custom (treemacs-project-follow-cleanup t))
+
+  (use-package treemacs-evil
+    :after (treemacs evil)
+    :config
+    (define-key evil-treemacs-state-map (kbd "TAB") #'treemacs-TAB-action))
 #+end_src
 
 *** [[https://gitlab.com/ideasman42/emacs-undo-fu][undo-fu]] & undo-fu-session
@@ -3323,16 +3642,16 @@ TODO: Work out personal prefixes:
       ("w" spacemacs/alternate-window "last window"))))
 #+end_src
 
-*** C-i bindings
+*** Leader bindings
 
 #+begin_src emacs-lisp :name leaer-keybindings
   ;; A modified unpackaged/magit-status
   ;; I removed the deletion of the other window.
-      ;;;###autoload
+        ;;;###autoload
   (defun deftpunk:unpackaged/magit-status ()
     "Open a `magit-status' buffer and close the other window so only Magit is visible.
-      If a file was visited in the buffer that was active when this
-      command was called, go to its unstaged changes section."
+        If a file was visited in the buffer that was active when this
+        command was called, go to its unstaged changes section."
     (interactive)
     (let* ((buffer-file-path (when buffer-file-name
                                (file-relative-name buffer-file-name
@@ -3378,7 +3697,6 @@ TODO: Work out personal prefixes:
       ("fp" projectile-find-file "Find files in Project"))
 
      "Tools"
-     ;; (("d" dirvish "Dirvish")
      (("d" dired "Dired")
       ("e" major-mode-hydra "Major Mode Hydra")
       ("i" helm-mini "Buffers/Recentf")
@@ -3398,7 +3716,7 @@ TODO: Work out personal prefixes:
      "Exit"
      (("q" save-buffers-kill-terminal "Exit Emacs"))))
 
-     (define-key global-map (kbd "<BLAH-i>") 'hydra-jk/body)
+  (deftpunk-leader-def "" 'hydra-jk/body)
 #+end_src
 
 *** Righteous keybindings
@@ -3433,18 +3751,18 @@ TODO: Work out personal prefixes:
       (unless (ignore-errors (or (browse-url-at-point) t))
         (ace-link))))
 
-  ;; Using C-j for jumping around
-  ;; TODO: Use General for mapping?
-  (global-unset-key (kbd "C-j"))
+  ; ;; Using C-j for jumping around
+  ; ;; TODO: Use General for mapping?
+  ; (global-unset-key (kbd "C-j"))
 
-  (global-set-key (kbd "C-j f") 'avy-goto-char-in-line)
-  (global-set-key (kbd "C-j g") 'goto-line)
-  (global-set-key (kbd "C-j j") 'avy-goto-char-timer)
-  (global-set-key (kbd "C-j o") 'ace-link)
-  (global-set-key (kbd "C-j x") 'deftpunk/url-at-point)
+  ; (global-set-key (kbd "C-j f") 'avy-goto-char-in-line)
+  ; (global-set-key (kbd "C-j g") 'goto-line)
+  ; (global-set-key (kbd "C-j j") 'avy-goto-char-timer)
+  ; (global-set-key (kbd "C-j o") 'ace-link)
+  ; (global-set-key (kbd "C-j x") 'deftpunk/url-at-point)
 
 
-  (global-set-key (kbd "C-w") 'backward-kill-word)
+  ; (global-set-key (kbd "C-w") 'backward-kill-word)
   (global-set-key (kbd "C--") 'ace-window)
 
   ;; Create a toggle for starting/stopping keyboard macros
@@ -3485,10 +3803,10 @@ TODO: Work out personal prefixes:
                    (move-to-window-line 0)
                    (recenter))))))
 
-    (global-unset-key (kbd "C-v"))
-    (global-unset-key (kbd "M-v"))
-    (global-set-key (kbd "C-v") 'my/scroll-down-half-page)
-    (global-set-key (kbd "M-v") 'my/scroll-up-half-page)
+    ; (global-unset-key (kbd "C-v"))
+    ; (global-unset-key (kbd "M-v"))
+    ; (global-set-key (kbd "C-v") 'my/scroll-down-half-page)
+    ; (global-set-key (kbd "M-v") 'my/scroll-up-half-page)
 
     ;; Remap the normal help key so that i can use it as the usual readline key
     (global-unset-key (kbd "C-h"))
@@ -3496,6 +3814,96 @@ TODO: Work out personal prefixes:
     (global-set-key (kbd "C-c C-h") 'help)
 
     (global-set-key (kbd "C-h") 'backward-delete-char)
+#+end_src
+
+*** Evil keybindings
+
+**** Insert mode
+
+#+begin_src emacs-lisp :name insert-mode
+  (define-key evil-insert-state-map (kbd "C-a") 'crux-move-beginning-of-line)
+  (define-key evil-insert-state-map (kbd "C-e") 'move-end-of-line)
+  (define-key evil-insert-state-map (kbd "C-k") 'crux-smart-kill-line)
+#+end_src
+**** Normal mode
+
+Normal mode keybindings that I make for myself.
+
+#+begin_src emacs-lisp :name normal-state
+  ;; NOTE: The org-open-at-point will open a "Babel Results" window when this function is called
+  ;;       inside a src block
+  (defun deftpunk/url-at-point ()
+    "Make opening the url at point a little more flexible."
+    (interactive)
+    (if (string-equal major-mode "org-mode")
+        (unless (ignore-errors (or (org-open-at-point) t))
+          (ace-link))
+      (unless (ignore-errors (or (browse-url-at-point) t))
+        (ace-link))))
+
+  (general-define-key
+   :states 'normal
+   ;; run the macro in the q register
+   "Q" "@q"
+   "U" 'undo-fu-only-redo
+   "Y" "yg_"
+
+   ;; Any 'g'/'goto' global commands
+   "gd" 'lsp-find-definition  ; s-l g d
+   "gD" 'lsp-ui-peek-find-definition  ; s-l G d
+   "gr" 'lsp-find-references  ; s-l g r
+   "gR" 'lsp-ui-peek-find-references  ; s-l G r
+
+   "go" 'goto-char
+   "gs" 'evil-avy-goto-char-timer
+   "gx" 'deftpunk/url-at-point
+
+   ;; 'z' commands
+   "zs" 'my-save-word  ; add current word to personal dictionary.
+
+   ;; Evil doesn't allow you to overload like Vim/Neovim do.  So this fails because s is not a prefix key.
+   ;; But 'v' gets blown away and doesn't fail with the same error???
+   ;; "ss" 'deftpunk:split-horizontally-recenter
+   ;; "vv" 'deftpunk:split-vertically-recenter
+
+   )
+
+  ;; Add some bindings to the window "C-w <something" map.
+  ;; Thu Nov 22 22:54:18 2018 - we have to bind evil-window-map this way, as
+  ;; opposed to using general.el to this to work(??)
+  (define-key evil-window-map "b" 'balance-windows)          ; replaces evil-window-bottom-right.
+  (define-key evil-window-map "d" 'ace-delete-window)        ; was unused
+  (define-key evil-window-map "f" 'make-frame)               ; was unused
+  (define-key evil-window-map "i" 'ace-maximize-window)      ; was unused
+  (define-key evil-window-map "r" 'winner-redo)              ; replaces evil-window-rotate-downwards
+  (define-key evil-window-map "u" 'winner-undo)              ; was unused
+  (define-key evil-window-map "-" 'ace-window)               ; was unused
+
+  ;; Some easy window moving keys
+  ;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order to
+  ;; get this to work(?)
+  (global-unset-key  (kbd "C-j"))
+  (global-unset-key  (kbd "C-k"))
+  (global-unset-key  (kbd "C-l"))
+  (global-unset-key (kbd "C-h"))
+  (define-key evil-normal-state-map (kbd "C-j") 'windmove-down)
+  (define-key evil-normal-state-map (kbd "C-k") 'windmove-up)
+  (define-key evil-normal-state-map (kbd "C-h") 'windmove-left)
+  (define-key evil-normal-state-map (kbd "C-l") 'windmove-right)
+
+  ;; Use visual line motions even outside of visual-line-mode buffers
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+
+  ;; Combine avy with d, y, c motions
+  (evil-global-set-key 'motion "f" 'evil-avy-goto-char-in-line)
+
+#+end_src
+
+**** Motion mode
+
+#+begin_src emacs-lisp :name motion-mode
+  (evil-define-key nil evil-motion-state-map "<SPC>" nil)
 #+end_src
 
 *** [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]]
