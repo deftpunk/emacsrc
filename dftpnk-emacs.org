@@ -2203,13 +2203,6 @@ emphasized word.
     :init
     (setq org-roam-directory "~/MyStuff/DeftpunkRoamNotes"
           org-roam-v2-ack t)
-    :bind
-    (("C-c n a" . org-roam-alias-add)
-     ("C-c n f" . org-roam-node-find)
-     ("C-c n i" . org-roam-node-insert)
-     ("C-c n l" . org-roam-buffer-toggle)
-     ("C-c n o" . org-id-get-create)
-     ("C-c n t" . org-roam-tag-add))
     :config
     (org-roam-setup))
 #+end_src
@@ -2222,15 +2215,12 @@ Use [[https://github.com/minad/consult][consult]] to search/find org-roam files.
   (use-package consult-org-roam
     :after org-roam
     :init
-    (require 'consult-org-roam)
-    (consult-org-roam-mode 1)
     (setq consult-org-roam-grep-func #'consult-ripgrep
           consult-org-roam-buffer-narrow-key ?r
           consult-org-roam-buffer-after-buffers t)
-    (("C-c n e" . consult-org-roam-file-find)
-     ("C-c n b" . consult-org-roam-backlinks)
-     ("C-c n l" . consult-org-roam-forward-links)
-     ("C-c n r" . consult-org-roam-search)))
+    :config
+    (require 'consult-org-roam)
+    (consult-org-roam-mode 1))
 #+end_src
 
 **** [[https://github.com/org-roam/org-roam-ui][org-roam-ui]]
@@ -3689,7 +3679,16 @@ TODO: Work out personal prefixes:
     (:color blue :title hydra-jk--title)
     ("Org"
      (("a" org-agenda "Org Agenda")
-      ("c" org-capture "Org Capture"))
+      ("c" org-capture "Org Capture")
+      ("na" org-roam-alias-add "Add aliases")
+      ("nb" consult-org-roam-backlinks "Consult add backlinks")
+      ("ne" consult-org-roam-file-find "Consult find Org Roam file")
+      ("nf" org-roam-node-find "Find Org Roam node(s)")
+      ("ni" org-roam-node-insert "Insert Org Roam node link")
+      ("nl" consult-org-roam-search "Search Org Roam files")
+      ("no" ord-id-get-create "Create Org Roam node ID")
+      ("nr" consult-org-roam-search "Search Org Roam files")
+      ("nt" org-roam-tag-add "Add Org Roam tag(s) to node files"))
 
      "Files, Directories, Projects"
      (("ff" helm-find-file "Find Files")
