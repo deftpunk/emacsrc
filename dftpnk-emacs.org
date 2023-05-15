@@ -3960,7 +3960,9 @@ I use something similar in Neovim to bring up ":"
 Start the emacs server as a last thing to do.
 
 #+begin_src emacs-lisp :name emacs-server
-  (server-start)
+  (require 'server)
+  (unless (server-running-p)
+    (server-start))
 #+end_src
 
 ** Work On
