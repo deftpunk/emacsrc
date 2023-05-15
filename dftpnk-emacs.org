@@ -3753,6 +3753,7 @@ TODO: Work out personal prefixes:
   ;; These keys make great prefix keys so unbind them from whatever they were previously bound to.
   (global-unset-key (kbd "C-z"))
   (global-unset-key (kbd "C-q"))
+  (global-set-key (kbd "C-q C-q") 'quoted-insert)
 
   ;; Unbind some Super keys.
   (global-unset-key (kbd "s-a"))
