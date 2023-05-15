@@ -2111,7 +2111,8 @@ Org mode related investigations:
     "o" '(ace-link-org :which-key "Links in Org mode document")
     "s" '(org-insert-structure-template :which-key "Insert templates")
     "t" '(org-babel-tangle :which-key "Tangle the src blocks")
-    "x" '(org-open-at-point :which-key "Open link at point"))
+    "x" '(org-open-at-point :which-key "Open link at point")
+    "y" '(org-download-screenshot file :which-key "Yank screenshot"))
 #+end_src
 
 *** [[https://github.com/yilkalargaw/org-auto-tangle][org-auto-tangle]]
@@ -2189,22 +2190,25 @@ Helm for org headlines and keywords completion.
     :commands (helm-org-in-buffer-headings helm-org-capture-templates))
 #+end_src
 
-*** COMMENT [[https://github.com/abo-abo/org-download][org-download]]
+*** [[https://github.com/abo-abo/org-download][org-download]]
 
-Facilitate moving images from point A to point B - images to/from orgmode files.
+Facilitate moving images from point A to point B - images to/from orgmode files. I use this when i
+capture images in OSX that I then paste into an Org file using =org-download-screenshot=
 
-I use this when i capture images in OSX that I then paste into an Org file using =org-download-clipboard=
-
+This was a great help:
+https://github.com/abo-abo/org-download/issues/131#issuecomment-672309576
+https://zzamboni.org/post/how-to-insert-screenshots-in-org-documents-on-macos/
 
 #+begin_src emacs-lisp :name org-download
   (use-package org-download
     :after org
-    :hook (dired-mode . org-download-enable)
+    :hook ((dired-mode . org-download-enable)
+           (org-mode . org-download-enable))
     :init
     (setq org-download-heading-level nil
           org-download-timestamp "org_image_%Y%m%d-%H%M%S_"
           org-download-image-dir "~/MyStuff/OrgAssets/pictures"
-          org-image-actual-width 300
+          org-image-actual-width 500
           org-download-screenshot-method "/opt/homebrew/bin/pngpaste %s")
     :config
     (require 'org-download))
