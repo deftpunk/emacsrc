@@ -2450,6 +2450,473 @@ Make =delete-by-moving-to-trash= do what we expect on MacOSX. Don't forget to =b
     (setq delete-by-moving-to-trash t))
 #+end_src
 
+*** [[https://github.com/Fanael/persistent-scratch][persistent-scratch]]
+
+Save \*scratch\* files.
+
+#+begin_src emacs-lisp :name persistent-scratch
+  (use-package persistent-scratch
+    :init
+    (setq persistent-scratch-save-file (expand-file-name "persistent-scratch" no-littering-var-directory))
+    :config
+    (persistent-scratch-setup-default))
+#+end_src
+
+*** New Packages
+
+**** transient
+
+#+begin_src emacs-lisp :name transient
+  (use-package transient)
+#+end_src
+
+**** consult
+#+begin_src emacs-lisp :name consult
+  ;;https://github.com/minad/consult
+
+  ;; Example configuration for Consult
+  (use-package consult
+    ;; Replace bindings. Lazily loaded due by `use-package'.
+    :bind (;; C-c bindings in `mode-specific-map'
+           ("C-c M-x" . consult-mode-command)
+           ("C-c h" . consult-history)
+           ("C-c k" . consult-kmacro)
+           ("C-c m" . consult-man)
+           ("C-c i" . consult-info)
+           ([remap Info-search] . consult-info)
+           ;; C-x bindings in `ctl-x-map'
+           ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+           ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+           ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+           ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+           ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+           ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+           ;; Custom M-# bindings for fast register access
+           ("M-#" . consult-register-load)
+           ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+           ("C-M-#" . consult-register)
+           ;; Other custom bindings
+           ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+           ;; M-g bindings in `goto-map'
+           ("M-g e" . consult-compile-error)
+           ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+           ("M-g g" . consult-goto-line)             ;; orig. goto-line
+           ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+           ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+           ("M-g m" . consult-mark)
+           ("M-g k" . consult-global-mark)
+           ("M-g i" . consult-imenu)
+           ("M-g I" . consult-imenu-multi)
+           ;; M-s bindings in `search-map'
+           ("M-s d" . consult-find)
+           ("M-s D" . consult-locate)
+           ("M-s g" . consult-grep)
+           ("M-s G" . consult-git-grep)
+           ("M-s r" . consult-ripgrep)
+           ("M-s l" . consult-line)
+           ("M-s L" . consult-line-multi)
+           ("M-s k" . consult-keep-lines)
+           ("M-s u" . consult-focus-lines)
+           ;; Isearch integration
+           ("M-s e" . consult-isearch-history)
+           :map isearch-mode-map
+           ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+           ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+           ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+           ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+           ;; Minibuffer history
+           :map minibuffer-local-map
+           ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+           ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+
+    ;; Enable automatic preview at point in the *Completions* buffer. This is
+    ;; relevant when you use the default completion UI.
+    :hook (completion-list-mode . consult-preview-at-point-mode)
+
+    ;; The :init configuration is always executed (Not lazy)
+    :init
+
+    ;; Optionally configure the register formatting. This improves the register
+    ;; preview for `consult-register', `consult-register-load',
+    ;; `consult-register-store' and the Emacs built-ins.
+    (setq register-preview-delay 0.5
+          register-preview-function #'consult-register-format)
+
+    ;; Optionally tweak the register preview window.
+    ;; This adds thin lines, sorting and hides the mode line of the window.
+    (advice-add #'register-preview :override #'consult-register-window)
+
+    ;; Use Consult to select xref locations with preview
+    (setq xref-show-xrefs-function #'consult-xref
+          xref-show-definitions-function #'consult-xref)
+
+    ;; Configure other variables and modes in the :config section,
+    ;; after lazily loading the package.
+    :config
+
+    ;; Optionally configure preview. The default value
+    ;; is 'any, such that any key triggers the preview.
+    ;; (setq consult-preview-key 'any)
+    ;; (setq consult-preview-key "M-.")
+    ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
+    ;; For some commands and buffer sources it is useful to configure the
+    ;; :preview-key on a per-command basis using the `consult-customize' macro.
+    (consult-customize
+     consult-theme :preview-key '(:debounce 0.2 any)
+     consult-ripgrep consult-git-grep consult-grep
+     consult-bookmark consult-recent-file consult-xref
+     consult--source-bookmark consult--source-file-register
+     consult--source-recent-file consult--source-project-recent-file
+     ;; :preview-key "M-."
+     :preview-key '(:debounce 0.4 any))
+
+    ;; Optionally configure the narrowing key.
+    ;; Both < and C-+ work reasonably well.
+    (setq consult-narrow-key "<") ;; "C-+"
+
+    ;; Optionally make narrowing help available in the minibuffer.
+    ;; You may want to use `embark-prefix-help-command' or which-key instead.
+    ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+
+    ;; By default `consult-project-function' uses `project-root' from project.el.
+    ;; Optionally configure a different project root function.
+    ;;;; 1. project.el (the default)
+    ;; (setq consult-project-function #'consult--default-project--function)
+    ;;;; 2. vc.el (vc-root-dir)
+    ;; (setq consult-project-function (lambda (_) (vc-root-dir)))
+    ;;;; 3. locate-dominating-file
+    ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
+    ;;;; 4. projectile.el (projectile-project-root)
+    ;; (autoload 'projectile-project-root "projectile")
+    ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
+    ;;;; 5. No project support
+    ;; (setq consult-project-function nil)
+    )
+#+end_src
+
+vertico
+all-the-icons-completion
+orderless
+
+https://kristofferbalintona.me/posts/202202211546/
+
+**** Marginalia
+
+ #+begin_src emacs-lisp :name marginalia
+  (use-package marginalia
+    :general
+    (:keymaps 'minibuffer-local-map
+              "M-A" 'marginalia-cycle)
+    :init
+    (setq marginalia-max-relative-age 0
+          marginalia-align 'right)
+    (marginalia-mode))
+
+  (use-package all-the-icons-completion
+    :after (marginalia all-the-icons)
+    :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
+    :init
+    (all-the-icons-completion-mode))
+#+end_src
+
+**** vertico
+#+begin_src emacs-lisp :name vertico
+  (use-package vertico
+    :demand t                             ; Otherwise won't get loaded immediately
+    :straight (vertico :files (:defaults "extensions/*") ; Special recipe to load extensions conveniently
+                       :includes (vertico-indexed
+                                  vertico-flat
+                                  vertico-grid
+                                  vertico-mouse
+                                  vertico-quick
+                                  vertico-buffer
+                                  vertico-repeat
+                                  vertico-reverse
+                                  vertico-directory
+                                  vertico-multiform
+                                  vertico-unobtrusive
+                                  ))
+    :general
+    (:keymaps '(normal insert visual motion)
+              "M-." #'vertico-repeat
+              )
+    (:keymaps 'vertico-map
+              "<tab>" #'vertico-insert ; Set manually otherwise setting `vertico-quick-insert' overrides this
+              "<escape>" #'minibuffer-keyboard-quit
+              "?" #'minibuffer-completion-help
+              "C-M-n" #'vertico-next-group
+              "C-M-p" #'vertico-previous-group
+              ;; Multiform toggles
+              "<backspace>" #'vertico-directory-delete-char
+              "C-w" #'vertico-directory-delete-word
+              "C-<backspace>" #'vertico-directory-delete-word
+              "RET" #'vertico-directory-enter
+              "C-i" #'vertico-quick-insert
+              "C-o" #'vertico-quick-exit
+              "M-o" #'kb/vertico-quick-embark
+              "M-G" #'vertico-multiform-grid
+              "M-F" #'vertico-multiform-flat
+              "M-R" #'vertico-multiform-reverse
+              "M-U" #'vertico-multiform-unobtrusive
+              "C-l" #'kb/vertico-multiform-flat-toggle
+              )
+    :hook ((rfn-eshadow-update-overlay . vertico-directory-tidy) ; Clean up file path when typing
+           (minibuffer-setup . vertico-repeat-save) ; Make sure vertico state is saved
+           )
+    :init
+    (setq vertico-count 13
+          vertico-resize t
+          vertico-cycle nil
+          ;; Extensions
+          vertico-grid-separator "       "
+          vertico-grid-lookahead 50
+          vertico-buffer-display-action '(display-buffer-reuse-window)
+          vertico-multiform-categories
+          '((file reverse)
+            (consult-grep buffer)
+            (consult-location)
+            (imenu buffer)
+            (library reverse indexed)
+            (org-roam-node reverse indexed)
+            (t reverse))
+          vertico-multiform-commands
+          '(("flyspell-correct-*" grid reverse)
+            (org-refile grid reverse indexed)
+            (consult-yank-pop indexed)
+            (consult-flycheck)
+            (consult-lsp-diagnostics)))
+
+    (defun kb/vertico-multiform-flat-toggle ()
+      "Toggle between flat and reverse."
+      (interactive)
+      (vertico-multiform--display-toggle 'vertico-flat-mode)
+      (if vertico-flat-mode
+          (vertico-multiform--temporary-mode 'vertico-reverse-mode -1)
+        (vertico-multiform--temporary-mode 'vertico-reverse-mode 1)))
+
+    (defun kb/vertico-quick-embark (&optional arg)
+      "Embark on candidate using quick keys."
+      (interactive)
+      (when (vertico-quick-jump)
+        (embark-act arg)))
+
+    ;; Workaround for problem with `tramp' hostname completions. This overrides
+    ;; the completion style specifically for remote files! See
+    ;; https://github.com/minad/vertico#tramp-hostname-completion
+    (defun kb/basic-remote-try-completion (string table pred point)
+      (and (vertico--remote-p string)
+           (completion-basic-try-completion string table pred point)))
+
+    (defun kb/basic-remote-all-completions (string table pred point)
+      (and (vertico--remote-p string)
+           (completion-basic-all-completions string table pred point)))
+
+    (add-to-list 'completion-styles-alist
+                 '(basic-remote           ; Name of `completion-style'
+                   kb/basic-remote-try-completion kb/basic-remote-all-completions nil))
+    :config
+    (vertico-mode)
+    ;; Extensions
+    (vertico-multiform-mode)
+
+    ;; Prefix the current candidate with “» ”. From
+    ;; https://github.com/minad/vertico/wiki#prefix-current-candidate-with-arrow
+    (advice-add #'vertico--format-candidate :around
+                (lambda (orig cand prefix suffix index _start)
+                  (setq cand (funcall orig cand prefix suffix index _start))
+                  (concat
+                   (if (= vertico--index index)
+                       (propertize "» " 'face 'vertico-current)
+                     "  ")
+                   cand))))
+#+end_src
+
+**** orderless
+
+ #+begin_src emacs-lisp :name orderless
+   (use-package orderless
+     :init
+     (setq completion-styles '(orderless)
+           completion-category-defaults nil    ; I want to be in control!
+           completion-category-overrides
+           '((file (styles basic-remote ; For `tramp' hostname completion with `vertico'
+                           orderless)))
+
+           orderless-component-separator 'orderless-escapable-split-on-space
+           orderless-matching-styles
+           '(orderless-literal
+             orderless-prefixes
+             orderless-initialism
+             orderless-regexp
+             ;; orderless-flex
+             ;; orderless-strict-leading-initialism
+             ;; orderless-strict-initialism
+             ;; orderless-strict-full-initialism
+             ;; orderless-without-literal          ; Recommended for dispatches instead
+             )
+           orderless-style-dispatchers
+           '(prot-orderless-literal-dispatcher
+             prot-orderless-strict-initialism-dispatcher
+             prot-orderless-flex-dispatcher
+             ))
+
+     (defun orderless--strict-*-initialism (component &optional anchored)
+       "Match a COMPONENT as a strict initialism, optionally ANCHORED.
+   The characters in COMPONENT must occur in the candidate in that
+   order at the beginning of subsequent words comprised of letters.
+   Only non-letters can be in between the words that start with the
+   initials.
+
+   If ANCHORED is `start' require that the first initial appear in
+   the first word of the candidate.  If ANCHORED is `both' require
+   that the first and last initials appear in the first and last
+   words of the candidate, respectively."
+       (orderless--separated-by
+           '(seq (zero-or-more alpha) word-end (zero-or-more (not alpha)))
+         (cl-loop for char across component collect `(seq word-start ,char))
+         (when anchored '(seq (group buffer-start) (zero-or-more (not alpha))))
+         (when (eq anchored 'both)
+           '(seq (zero-or-more alpha) word-end (zero-or-more (not alpha)) eol))))
+
+     (defun orderless-strict-initialism (component)
+       "Match a COMPONENT as a strict initialism.
+   This means the characters in COMPONENT must occur in the
+   candidate in that order at the beginning of subsequent words
+   comprised of letters.  Only non-letters can be in between the
+   words that start with the initials."
+       (orderless--strict-*-initialism component))
+
+     (defun prot-orderless-literal-dispatcher (pattern _index _total)
+       "Literal style dispatcher using the equals sign as a suffix.
+   It matches PATTERN _INDEX and _TOTAL according to how Orderless
+   parses its input."
+       (when (string-suffix-p "=" pattern)
+         `(orderless-literal . ,(substring pattern 0 -1))))
+
+     (defun prot-orderless-strict-initialism-dispatcher (pattern _index _total)
+       "Leading initialism  dispatcher using the comma suffix.
+   It matches PATTERN _INDEX and _TOTAL according to how Orderless
+   parses its input."
+       (when (string-suffix-p "," pattern)
+         `(orderless-strict-initialism . ,(substring pattern 0 -1))))
+
+     (defun prot-orderless-flex-dispatcher (pattern _index _total)
+       "Flex  dispatcher using the tilde suffix.
+   It matches PATTERN _INDEX and _TOTAL according to how Orderless
+   parses its input."
+       (when (string-suffix-p "." pattern)
+         `(orderless-flex . ,(substring pattern 0 -1))))
+     )
+#+end_src
+
+**** corfu
+    ;; https://kristofferbalintona.me/posts/202202270056/
+emacs-lisp :name corfu
+  (use-package corfu
+    :straight (corfu :files (:defaults "extensions/*")
+                     :includes (corfu-info corfu-history))
+    :commands (global-corfu-mode)
+    :hook (lsp-completion-mode . kb/corfu-setup-lsp) ; Use corfu for lsp completion
+    :general
+    (:keymaps 'corfu-map
+              :states 'insert
+              "C-n" #'corfu-next
+              "C-p" #'corfu-previous
+              "<escape>" #'corfu-quit
+              "<return>" #'corfu-insert
+              "H-SPC" #'corfu-insert-separator
+              ;; "SPC" #'corfu-insert-separator ; Use when `corfu-quit-at-boundary' is non-nil
+              "M-d" #'corfu-show-documentation
+              "C-g" #'corfu-quit
+              "M-l" #'corfu-show-location)
+    :init
+    ;; Works with `indent-for-tab-command'. Make sure tab doesn't indent when you
+    ;; want to perform completion
+    (setq tab-always-indent 'complete
+          completion-cycle-threshold nil      ; Always show candidates in menu
+
+          corfu-auto nil
+          corfu-auto-prefix 2
+          corfu-auto-delay 0.25
+
+          corfu-min-width 80
+          corfu-max-width corfu-min-width     ; Always have the same width
+          corfu-count 14
+          corfu-scroll-margin 4
+          corfu-cycle nil
+
+          ;; `nil' means to ignore `corfu-separator' behavior, that is, use the older
+          ;; `corfu-quit-at-boundary' = nil behavior. Set this to separator if using
+          ;; `corfu-auto' = `t' workflow (in that case, make sure you also set up
+          ;; `corfu-separator' and a keybind for `corfu-insert-separator', which my
+          ;; configuration already has pre-prepared). Necessary for manual corfu usage with
+          ;; orderless, otherwise first component is ignored, unless `corfu-separator'
+          ;; is inserted.
+          corfu-quit-at-boundary nil
+          corfu-separator ?\s           ; Use space
+          corfu-quit-no-match 'separator ; Don't quit if there is `corfu-separator' inserted
+          corfu-preview-current 'insert  ; Preview first candidate. Insert on input if only one
+          corfu-preselect-first t        ; Preselect first candidate?
+
+          ;; Other
+          corfu-echo-documentation nil        ; Already use corfu-doc
+          sp-completion-provider :none       ; Use corfu instead for lsp completions
+          (global-corfu-mode)
+          (corfu-popupinfo-mode))
+    :config
+    (setq corfu-popupinfo-delay 0.5)
+    ;; NOTE 2022-03-01: This allows for a more evil-esque way to have
+    ;; `corfu-insert-separator' work with space in insert mode without resorting to
+    ;; overriding keybindings with `general-override-mode-map'. See
+    ;; https://github.com/minad/corfu/issues/12#issuecomment-869037519
+    ;; Alternatively, add advice without `general.el':
+    ;; (advice-add 'corfu--setup :after 'evil-normalize-keymaps)
+    ;; (advice-add 'corfu--teardown :after 'evil-normalize-keymaps)
+    (general-add-advice '(corfu--setup corfu--teardown) :after 'evil-normalize-keymaps)
+    (evil-make-overriding-map corfu-map)
+
+    ;; Enable Corfu more generally for every minibuffer, as long as no other
+    ;; completion UI is active. If you use Mct or Vertico as your main minibuffer
+    ;; completion UI. From
+    ;; https://github.com/minad/corfu#completing-with-corfu-in-the-minibuffer
+    (defun corfu-enable-always-in-minibuffer ()
+      "Enable Corfu in the minibuffer if Vertico/Mct are not active."
+      (unless (or (bound-and-true-p mct--active) ; Useful if I ever use MCT
+                  (bound-and-true-p vertico--input))
+        (setq-local corfu-auto nil)       ; Ensure auto completion is disabled
+        (corfu-mode 1)))
+    (add-hook 'minibuffer-setup-hook #'corfu-enable-always-in-minibuffer 1)
+
+    ;; Setup lsp to use corfu for lsp completion
+    (defun kb/corfu-setup-lsp ()
+      "Use orderless completion style with lsp-capf instead of the
+  default lsp-passthrough."
+      (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+            '(orderless))))
+
+**** kind-icon
+
+Make corfu pretty
+
+#+begin_src emacs-lisp :name kind-icon
+  (use-package kind-icon
+    :after corfu
+    :init
+    (setq kind-icon-use-icons t
+          kind-icon-default-face 'corfu-default ; Have background color be the same as `corfu' face background
+          kind-icon-blend-background nil  ; Use midpoint color between foreground and background colors ("blended")?
+          kind-icon-blend-frac 0.08
+
+          ;; NOTE 2022-02-05: `kind-icon' depends `svg-lib' which creates a cache
+          ;; directory that defaults to the `user-emacs-directory'. Here, I change that
+          ;; directory to a location appropriate to `no-littering' conventions, a
+          ;; package which moves directories of other packages to sane locations.
+          svg-lib-icons-dir (no-littering-expand-var-file-name "svg-lib/cache/")) ; Change cache dir
+    :config
+    (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter) ; Enable `kind-icon'
+    )
+#+end_src
+
 *** [[https://github.com/bbatsov/projectile][projectile]]
 
 Project management for Emacs
@@ -3985,7 +4452,6 @@ Start the emacs server as a last thing to do.
 
 *** Investigate vertico+orderless+consult+embark+marginalia
 
-*** esup
 https://github.com/jschaf/esup
 esup is a tool for profiling the startup time of Emacs. This snippet is a work around of a bug where
 esup tries to step into the byte-compiled version of `cl-lib’, and fails horribly:
