@@ -1031,7 +1031,7 @@ A shell-like command interpreter written in Emacs Lisp.
         flyspell-issue-welcome-flag nil          ; helps make flyspell faster.
         flyspell-issue-message-flag nil          ; helps make flyspell faster.
         ispell-local-dictionary "en_US"
-        ispell-program-name "/usr/local/bin/aspell"
+        ispell-program-name "/opt/homebrew/bin/aspell"
         ispell-personal-dictionary (expand-file-name "deftpunk-dictionary" user-emacs-directory)
         ispell-extra-args '("--sug-mode=ultra" "--lang=en_US"))
 
@@ -1045,9 +1045,34 @@ A shell-like command interpreter written in Emacs Lisp.
   (add-to-list 'ispell-skip-region-alist '("^#+BEGIN_SRC" . "^#+END_SRC"))
 #+end_src
 
+
+
 **** TODO: Flyspell: Skip other kinds of blocks (quote, example) in Org mode
 
 **** TODO: Flyspell: https://emacs.stackexchange.com/questions/14909/how-to-use-flyspell-to-efficiently-correct-previous-word
+
+**** [[https://github.com/d12frosted/flyspell-correct][flyspell-correct]]
+
+Correcting misspelled words using =completing-read= on the fly.
+
+=flyspell-correct-wrapper= - by default jumps to the first misspelled word before the point and
+prompts for correction and gets you back. Calling it with C-u gives ability to correct multiple
+misspelled words in one run. C-u C-u changes direction. C-u C-u C-u changes direction and
+enables multiple corrections.
+=flyspell-correct-at-point= - to correct word at point.
+=flyspell-correct-previous= - to correct any visible word before the point.
+=flyspell-correct-next= - to correct any visible word after the point.
+
+A so called ‘rapid mode’ means that you can correct multiple words in a single invocation of
+flyspell-correct-wrapper following current direction (usually, backwards). In order to enable it,
+one should call flyspell-correct-wrapper with universal argument - C-u. For example, C-u C-; will
+enable it.
+
+#+begin_src emacs-lisp :name flyspell-correct
+  (use-package flyspell-correct
+    :after flyspell
+    :bind (:map flyspell-mode-map ("s-;" . flyspell-correct-wrapper)))
+#+end_src
 
 *** [[https://www.emacswiki.org/emacs/RecentFiles][recentf]]
 
