@@ -1415,8 +1415,10 @@ Because Doom themes are great.
 *** [[https://github.com/rougier/nano-modeline][nano-modeline]]
 
 #+begin_src emacs-lisp :name nano-modeline
-  (use-package nano-modeline
-    :hook (after-init . nano-modeline-mode))
+    (use-package nano-modeline
+      :init (setq nano-modeline-position 'bottom
+                  nano-modeline-display-tab-number +1)
+      :hook (after-init . nano-modeline-mode))
 #+end_src
 
 *** [[https://github.com/rougier/nano-minibuffer][nano-minibuffer]]
