@@ -2390,6 +2390,10 @@ View Dash docsets inside of Emacs - this is very handy in conjunction with helm-
     (rust-mode . (lambda () (setq-local dash-docs-docsets '("Rust")))))
 #+end_src
 
+**** TODO: Need to set `helm-dash-browser-func` to 'eww & download docsets locally - see README.md for helm-dash
+[[file:straight/repos/helm-dash/README.md][helm-dash README.md]]
+**** TODO: Investigate using DevDocs which is opensource; maybe i can ditch Helm
+
 *** Help
 
 **** [[http://www.emacswiki.org/emacs/HelpPlus][HelpPlus]]
