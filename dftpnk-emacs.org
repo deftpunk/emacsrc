@@ -13,7 +13,7 @@ The thermonuclear editor.
 - ripgrep
 - pngpaste
 - git
-
+- delta
 
 * Early-Init
 :properties:
@@ -3331,6 +3331,24 @@ Setting up some usefull things for git-commit mode that magit uses during commit
          (git-commit-mode . git-commit-save-message)
          (git-commit-mode . turn-on-auto-fill)))
 #+end_src
+
+*** [[https://github.com/dandavison/magit-delta][magit-delta]]
+
+DISABLED: Tue May 16 22:09:30 2023 - got magit display error (Illegal flag: -syntax-theme) + made it slower.
+https://github.com/dandavison/magit-delta/issues/9
+
+Use =delta= to show diffs in magit.
+
+https://scripter.co/using-git-delta-with-magit/
+
+To get the colors to show up correctly in a terminal.
+https://www.gnu.org/software/emacs/manual/html_node/efaq/Colors-on-a-TTY.html
+
+  (use-package magit-delta
+    :ensure t
+    :hook (magit-mode . magit-delta-mode)
+    :config
+    (setq magit-delta-default-dark-theme "Monokai Extended Bright"))
 
 *** [[https://github.com/alphapapa/magit-todos][magit-todos]]
 
