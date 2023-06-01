@@ -1145,12 +1145,25 @@ Accessing remote files transparently
     :custom
     (tramp-default-method "ssh")
     :config
+    ;; (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
     (setq remote-file-name-inhibit-cache nil)
     (setq vc-ignore-dir-regexp
           (format "%s\\|%s"
                   vc-ignore-dir-regexp
                   tramp-file-name-regexp))
-    (setq tramp-verbose 1))
+    (setq tramp-verbose 3))
+
+  ;; (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
+
+  (connection-local-set-profile-variables 'remote-path-mylinux
+
+  '((tramp-remote-path . ("*/bin" "/usr/local/bin" "~/miniconda3/bin" tramp-default-remote-path))))
+
+  (connection-local-set-profiles
+  '(:application tramp :machine "cxo-vdt8-567.cxo.storage.hpecorp.net") 'remote-path-mylinux)
+
+
+
 #+end_src
 
 *** visual-line-mode
@@ -1354,11 +1367,13 @@ A really nice and performant modeline broken out of [[https://github.com/hlissne
   (setq find-file-visit-truename t)
 
   (use-package doom-modeline
+    :ensure t
     :init
     (setq doom-modeline-minor-modes t
           doom-modeline-env-version t
-          doom-modeline-env-load-string "waiting...."
-          doom-modeline-buffer-file-name-style 'truncate-upto-project
+          doom-modeline-env-load-string "loading virtual env...."
+          ;; using 'file-name so that we can use Tramp and not be laggy
+          doom-modeline-buffer-file-name-style 'file-name
           doom-modeline-modal-icon t
           doom-modeline-major-mode-color-icon t
           doom-modeline-major-mode-icon t
@@ -1371,8 +1386,10 @@ A really nice and performant modeline broken out of [[https://github.com/hlissne
           doom-modeline-gnus-timer 0
           doom-modeline-buffer-modification-icon t
           doom-modeline-project-detection 'projectile
-          doom-modeline-icon (display-graphic-p)))
-    ;;:hook (after-init . doom-modeline-mode))
+          doom-modeline-icon (display-graphic-p))
+    :hook (after-init . doom-modeline-mode))
+
+
 #+end_src
 
 ** Themes
@@ -1394,39 +1411,11 @@ Because Doom themes are great.
     (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme)
     (doom-themes-treemacs-config))
   ;; Corrects (and improves) org-mode's native fontification.
-  ;; (doom-themes-org-config)
+  (doom-themes-org-config)
 
   ;; (load-theme 'doom-moonlight t)
-  ;; (load-theme 'doom-vibrant :no-confirm)
+  (load-theme 'doom-vibrant :no-confirm)
   ;; (load-theme 'doom-tokyo-night :no-confirm)
-#+end_src
-
-*** [[https://github.com/rougier/nano-theme][nano-theme]]
-
-#+begin_src emacs-lisp :name nano-theme
-  (use-package nano-theme
-    :straight (:host github :repo "rougier/nano-theme")
-    ;; :init (setq nano-modeline-position 'bottom
-    ;;             nano-modeline-prefix 'icon)
-    )
-  (load-theme 'nano-light :no-confirm)
-#+end_src
-
-*** [[https://github.com/rougier/nano-modeline][nano-modeline]]
-
-#+begin_src emacs-lisp :name nano-modeline
-    (use-package nano-modeline
-      :init (setq nano-modeline-position 'bottom
-                  nano-modeline-display-tab-number +1)
-      :hook (after-init . nano-modeline-mode))
-#+end_src
-
-*** [[https://github.com/rougier/nano-minibuffer][nano-minibuffer]]
-
-#+begin_src emacs-lisp :name nano-minibuffer
-  (use-package nano-minibuffer
-    :straight (:host github :repo "rougier/nano-minibuffer")
-    :init (setq nano-minibuffer-position 'bottom))
 #+end_src
 
 ** [[https://github.com/emacs-evil/evil][Evil]]
@@ -3248,7 +3237,7 @@ In an ideal world only git would exist
 
 Highlighting uncommited changes in the buffer.
 
-#+begin_src emacs-lisp :name git-gutter
++begin_src emacs-lisp :name git-gutter
   (use-package git-gutter
     :hook (prog-mode . git-gutter-mode)
     :init
@@ -3287,6 +3276,18 @@ Highlighting uncommited changes in the buffer.
 
   (global-git-gutter-mode)
   (require 'git-gutter-fringe nil t)
+#+end_rc
+
+*** [[https://github.com/dgutov/diff-hl][diff-hl]]
+
+diff-hl works much better with Tramp - it actually allows me to toggle it off when working w/ remote files.
+
+#+begin_src emacs-lisp :name diff-hl
+  (use-package diff-hl
+    :init
+    (setq diff-hl-disable-on-remote t)
+    :config
+    (diff-hl-margin-mode))
 #+end_src
 
 *** [[https://magit.vc/][Magit]]
@@ -3319,6 +3320,11 @@ https://emacsair.me/2017/09/01/the-magical-git-interface/
           ;; trigger a bunch of unwanted side-effects, like save hooks and
           ;; formatters. Trust us to know what we're doing.
           magit-save-repository-buffers nil))
+
+  ;; Update diff-hl when magit changes.
+  (require 'diff-hl)
+  (add-hook 'magit-pre-refresh-hook 'diff-hl-magit-pre-refresh)
+  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
 #+end_src
 
 **** [[https://magit.vc/manual/magit/Commit-Mode-and-Hooks.html][git-commit-mode]]
