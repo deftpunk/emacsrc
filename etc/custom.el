@@ -83,6 +83,8 @@
      (tramp-connection-local-default-system-profile
       (path-separator . ":")
       (null-device . "/dev/null"))))
+ '(helm-minibuffer-history-key "M-p")
+ '(magit-todos-insert-after '(bottom) nil nil "Changed by setter of obsolete option `magit-todos-insert-at'")
  '(safe-local-variable-values '((eval visual-line-mode t))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

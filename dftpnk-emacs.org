@@ -214,6 +214,18 @@ https://emacsnotes.wordpress.com/2022/09/11/three-bonus-keys-c-i-c-m-and-c-for-y
 ;;; early-init.el ends here
 #+end_src
 
+** Early key unset/set
+
+#+begin_src emacs-lisp :name unset-set-keys
+  ;; Unbind some Super keys.
+  (global-unset-key (kbd "s-a"))
+  (global-unset-key (kbd "s-f"))
+  (global-unset-key (kbd "s-g"))
+  (global-unset-key (kbd "s-i"))
+  (global-unset-key (kbd "s-o"))
+  (global-unset-key (kbd "s-s"))
+#+end_src
+
 * Init
 #+name: init-header-block
 #+begin_src emacs-lisp :exports none
@@ -334,18 +346,9 @@ Manage keybindings.
     :demand t
     :straight t)
 
-  ;; Use <SPC> as the leader key.
-  (general-create-definer deftpunk-leader-def
-    :states '(normal)
-    :prefix "SPC")
-
-  ;; https://github.com/noctuid/general.el#how-do-i-prevent-key-sequence-starts-with-non-prefix-key-errors
-  (deftpunk-leader-def "" nil)
-
   ;; local leader
   ;; This allows for finer granularity than hydra-major-mode by binding to individual key maps.
   (general-create-definer deftpunk-local-leader-def
-    :states '(normal)
     :prefix "C-;")
 #+end_src
 
@@ -512,7 +515,9 @@ Some useful interactive commands from bbatsov
 #+begin_src emacs-lisp :name crux
   (use-package crux
     :bind (("C-a" . crux-move-beginning-of-line)
-	       ("C-k" . crux-smart-kill-line)))
+           ("C-k" . crux-smart-kill-line)
+           ("s-o" . crux-smart-open-line-above)
+           ("S-RET" . crux-smart-open-line)))
 #+end_src
 
 *** [[https://orgmode.org/worg/org-contrib/][Org-Plus-Contrib]]
@@ -997,6 +1002,19 @@ Check the contents of a subdir in dired without opening it in a new buffer or in
           ediff-window-setup-function #'ediff-setup-windows-plain))
 #+end_src
 
+*** [[https://github.com/lccambiaghi/vanilla-emacs#dont-close-windows-on-escape][don't-close-windows-on-escape]]
+
+Sometimes ESC kills my window layout. This advice prevents that from happening.
+
+#+begin_src emacs-lisp :name emacs
+  (use-package emacs
+    :init
+    (defadvice keyboard-escape-quit
+        (around keyboard-escape-quit-dont-close-windows activate)
+      (let ((buffer-quit-function (lambda () ())))
+        ad-do-it)))
+#+end_src
+
 *** [[https://www.gnu.org/software/emacs/manual/html_mono/eshell.html][eshell]]
 
 A shell-like command interpreter written in Emacs Lisp.
@@ -1392,12 +1410,16 @@ A really nice and performant modeline broken out of [[https://github.com/hlissne
 
 #+end_src
 
-** Themes
+*** Themes
 
 Tue Mar 21 22:06:38 2023
 Tried Lambda themes.  didn't like so much.
 
-*** [[https://github.com/doomemacs/themes][Doom themes]]
+Thu Jun  1 11:56:55 2023
+Tried out nano theme/modeline - was cool, going back to Doom "dark" themes
+
+
+**** [[https://github.com/doomemacs/themes][Doom themes]]
 
 Because Doom themes are great.
 
@@ -1418,295 +1440,7 @@ Because Doom themes are great.
   ;; (load-theme 'doom-tokyo-night :no-confirm)
 #+end_src
 
-** [[https://github.com/emacs-evil/evil][Evil]]
-
-Using Evil to make the editor part of Emacs even better than anything else.
-
-#+begin_src emacs-lisp :name evil
-  (use-package evil
-    :init
-    (setq evil-undo-system 'undo-fu
-          undo-limit 8000000
-          undo-strong-limit 8000000
-          undo-outer-limit 8000000)
-
-    (setq evil-default-state 'normal
-          evil-want-C-u-scroll    nil
-          evil-want-C-w-delete    t
-          evil-esc-delay          0
-          evil-want-Y-yank-to-eol t
-          evil-shift-width        4
-          evil-want-integration   t
-          evil-want-keybinding    nil   ; this is for evil-collection
-          evil-toggle-key         "s-z" ; I want C-z for other things
-          evil-want-C-i-jump      t)
-
-    (setq-default evil-symbol-word-search 1)
-    :demand t
-    :config
-
-    (evil-mode 1)
-
-    ;; https://emacs.stackexchange.com/questions/14940/emacsdoesnt-paste-in-evils-visual-mode-with-every-os-clipboard/15054#15054
-    ;; Imagine the following scenario.  One wants to paste some previously copied
-    ;; (from application other than Emacs) text to the system's clipboard in place
-    ;; of some contiguous block of text in a buffer.  Hence, one switches to
-    ;; `evil-visual-state' and selects the corresponding block of text to be
-    ;; replaced.  However, one either pastes some (previously killed) text from
-    ;; `kill-ring' or (if `kill-ring' is empty) receives the error: "Kill ring is
-    ;; empty"; see `evil-visual-paste' and `current-kill' respectively.  The
-    ;; reason why `current-kill' does not return the desired text from the
-    ;; system's clipboard is because `evil-visual-update-x-selection' is being run
-    ;; by `evil-visual-pre-command' before `evil-visual-paste'.  That is
-    ;; `x-select-text' is being run (by `evil-visual-update-x-selection') before
-    ;; `evil-visual-paste'.  As a result, `x-select-text' copies the selected
-    ;; block of text to the system's clipboard as long as
-    ;; `x-select-enable-clipboard' is non-nil (and in this scenario we assume that
-    ;; it is).  According to the documentation of `interprogram-paste-function',
-    ;; it should not return the text from the system's clipboard if it was last
-    ;; provided by Emacs (e.g. with `x-select-text').  Thus, one ends up with the
-    ;; problem described above.  To solve it, simply make
-    ;; `evil-visual-update-x-selection' do nothing:
-    (fset 'evil-visual-update-x-selection 'ignore)
-
-    (evil-set-initial-state 'help-mode 'emacs)
-    (evil-set-initial-state 'messages-buffer-mode 'emacs)
-    (evil-set-initial-state 'view-mode 'emacs)
-    (evil-set-initial-state 'inferior-python-mode 'emacs)
-
-    ;; More Esc quits
-    (define-key evil-normal-state-map [escape] 'keyboard-quit)
-    (define-key evil-visual-state-map [escape] 'keyboard-quit)
-    (define-key evil-insert-state-map [escape] 'evil-normal-state)
-    (global-set-key [escape] 'evil-exit-emacs-state))
-
-  ;; Always Escape
-  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-  ;; Make leader work in *Messages* buffer
-  ;; https://emacs.stackexchange.com/questions/70703/general-leader-key-not-working-in-some-modes-messages-on-initial-startup-onl
-  (with-eval-after-load 'evil
-    (general-add-hook 'after-init-hook
-                      (lambda (&rest _)
-                        (when-let ((messages-buffer (get-buffer "*Messages*")))
-                          (with-current-buffer messages-buffer
-                            (evil-normalize-keymaps))))
-                      nil
-                      nil
-                      t))
-#+end_src
-
-** Evil Extensions
-
-Plugins that extend Evil.  Most are similar to or replacements of Vim/Neovim plugins.
-
-*** [[https://github.com/wcsmith/evil-args][evil-args]]
-
-Motions and text objects for delimited (, & ;) arguments
-
-#+begin_src emacs-lisp :name evil-args
-  (use-package evil-args)
-
-  (require 'evil-args)
-
-  ;; bind evil-args text objects
-  (define-key evil-inner-text-objects-map "a" 'evil-inner-arg)
-  (define-key evil-outer-text-objects-map "a" 'evil-outer-arg)
-
-  ;; TODO: Perhaps there is a way to integrate this with f/t & F/T
-  ;; ;; bind evil-forward/backward-args
-  ;; (define-key evil-normal-state-map "L" 'evil-forward-arg)
-  ;; (define-key evil-normal-state-map "H" 'evil-backward-arg)
-  ;; (define-key evil-motion-state-map "L" 'evil-forward-arg)
-  ;; (define-key evil-motion-state-map "H" 'evil-backward-arg)
-
-  ;; bind evil-jump-out-args
-  (define-key evil-normal-state-map "K" 'evil-jump-out-args)
-#+end_src
-
-*** [[https://github.com/emacs-evil/evil-collection][evil-collection]]
-
-A collection of Evil bindings.
-
-#+begin_src emacs-lisp :name evil-collection
-  (use-package evil-collection
-    :init
-    (evil-collection-init))
-#+end_src
-
-*** [[https://github.com/linktohack/evil-commentary][evil-commentary]]
-
-Make it easy to comment out (lines of) code.
-
-The default key bindings use `gc` for the evil-commentary operator command. That means it can be used with
-all available motions and counts, just like other operator commands, such as evil-delete.
-
-#+begin_src emacs-lisp :name evil-commentary
-  (use-package evil-commentary
-    :after evil
-    :config
-    (evil-commentary-mode))
-
-  ;; Had to do this to get the bindings to work?!?
-  (require 'evil-commentary)
-#+end_src
-
-*** evil-embrace
-
-*** [[https://github.com/Dewdrops/evil-exchange][evil-exchange]]
-
-A text exchange operator
-
-#+begin_src emacs-lisp :name evil-exchange
-  (use-package evil-exchange
-    :init
-    (setq evil-exhange-key (kbd "ge"))
-    :config
-    (evil-exchange-install))
-#+end_src
-
-*** evil-goggles
-
-[[https://github.com/edkolev/evil-goggles][evil-goggles]] Display a visual hint when editing with evil.
-
-#+begin_src emacs-lisp :name evil-goggles
-(use-package evil-goggles
-  :config
-  (evil-goggles-mode)
-
-  ;; optionally use diff-mode's faces; as a result, deleted text
-  ;; will be highlighed with `diff-removed` face which is typically
-  ;; some red color (as defined by the color theme)
-  ;; other faces such as `diff-added` will be used for other actions
-  (evil-goggles-use-diff-faces))
-#+end_src
-
-*** evil-lion
-
-[[https://github.com/edkolev/evil-lion][evil-lion]] Evil align operator, port of vim-lion by Tom McDonald (https://github.com/tommcdo/vim-lion)
-
-This package provides gl and gL align operators: gl MOTION CHAR and right-align gL MOTION CHAR.
-
-Use CHAR / to enter regular expression if a single character wouldn't suffice.
-
-Use CHAR RET to align with align.el's default rules for the active major mode.
-
-The above call will install "gl" evil operator, which is used as:
-  gl TEXT-OBJECT SEPARATOR
-for example,
-  gl ip =
-will align the paragraph on = signs
-
-#+begin_src emacs-lisp :name evil-lion
-  (use-package evil-lion)
-  (evil-lion-mode)
-#+end_src
-
-*** evil-matchit
-
-[[https://github.com/redguardtoo/evil-matchit][evil-matchit]] Press “%” to jump between matched tags in Emacs.  It can also match character pairs &
-inner/outer text objects.
-
-#+begin_src emacs-lisp :name evil-matchit
-  (use-package evil-matchit
-    :init
-    ;; We want 3% to jump 3 times, not jump 3% down the file.
-    (setq evilmi-may-jump-by-percentage nil)
-    :config
-    (global-evil-matchit-mode 1))
-#+end_src
-
-*** evil-numbers
-
-[[https://github.com/juliapath/evil-numbers][evil-numbers]] Increment/decrement for numbers,binary,octal,hexadecimal,etc.
-
-#+begin_src emacs-lisp :name evil-numbers
-  (use-package evil-numbers)
-#+end_src
-
-*** [[https://github.com/Somelauw/evil-org-mode][evil-org]]
-
-Supplemental keybindings (normal, visual & insert) for Org mode.
-Full list here: https://github.com/Somelauw/evil-org-mode/blob/master/doc/keythemes.org
-
-#+begin_src emacs-lisp :name evil-org
-  (use-package evil-org)
-#+end_src
-
-*** evil-owl
-
-[[https://github.com/mamapanda/evil-owl][evil-owl]] allows you to view registers and marks before using them.
-
-Press q, @, ​"​, C-r, m, ​'​, or ` to view the popup, press C-f or C-b to scroll it, and input a register or mark to make the popup disappear.
-
-#+begin_src emacs-lisp :name evil-owl
-  (use-package evil-owl
-    :config
-    (setq evil-owl-display-method 'posframe
-          evil-owl-extra-posframe-args '(:width 50 :height 20)
-          evil-owl-max-string-length 50)
-    (evil-owl-mode))
-#+end_src
-
-*** evil-smartparens
-
-[[https://github.com/expez/evil-smartparens][evil-smartparens]] - Makes Evil play nice with smartparens
-
-#+begin_src emacs-lisp :name evil-smart
-  (use-package evil-smartparens
-    :after evil
-    :config
-    (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode))
-#+end_src
-
-*** [[https://github.com/emacs-evil/evil-surround][evil-surround]]
-
-Emulates surround.vim by Tim Pope. The functionality is wrapped into a minor mode.
-
-=Add surrounding=
-You can surround in visual-state with S<textobject> or gS<textobject>. Or in normal-state with
-ys<textobject> or yS<textobject>.
-
-=Change surrounding=
-You can change a surrounding with cs<old-textobject><new-textobject>.
-
-=Delete surrounding=
-You can delete a surrounding with ds<textobject>.
-
-#+begin_src emacs-lisp :name evil-surround
-  (use-package evil-surround)
-  (global-evil-surround-mode 1)
-#+end_src
-
-*** evil-unimpaired
-
-[[https://github.com/zmaas/evil-unimpaired][evil-unimpaired]] a port of Tim Pope’s unimpaired.vim
-
-#+begin_src emacs-lisp :name evil-unimpaired
-  (use-package evil-unimpaired
-    :straight (evil-unimpaired :type git :host github :repo "zmaas/evil-unimpaired")
-    :commands evil-unimpaired-define-pair
-    :after evil
-    :init
-    (evil-unimpaired-define-pair "e" '(move-text-up . move-text-down) '(normal visual))
-    (evil-unimpaired-define-pair "q" '(flycheck-previous-error . flycheck-next-error))
-    :config
-    (evil-unimpaired-mode))
-#+end_src
-
-*** evil-visualstar
-
-[[https://github.com/bling/evil-visualstar][evil-visualstar]] Start a * or # search from the visual selection
-
-#+begin_src emacs-lisp :name evil-visualstar
-  (use-package evil-visualstar
-    :config
-    (global-evil-visualstar-mode 1))
-#+end_src
-
-*** goto-chg
-
-[[https://github.com/emacs-evil/goto-chg][goto-chg]]
+** [[https://github.com/emacs-evil/goto-chg][goto-chg]]
 
 Provides support for the motions g; g, and for the last-change-register ., also
 provides the functions goto-last-change and goto-last-change-reverse.
@@ -1715,21 +1449,13 @@ provides the functions goto-last-change and goto-last-change-reverse.
 (use-package goto-chg)
 #+end_src
 
-*** targets
-
-[[https://github.com/noctuid/targets.el][targets]] This package is like a combination of the targets, TextObjectify, anyblock, and expand-region vim plugins.
-
-#+begin_src emacs-lisp :name targets
-  ;; (use-package targets)
-#+end_src
-
 ** Completion
 
 *** [[https://company-mode.github.io/][company]]
 
 In buffer completion.
 
-#+begin_src emacs-lisp :name company
++begin_src emacs-lisp :name company
   (use-package company
     :commands company-complete-common company-manual-begin company-grab-line
     :ghook ('emacs-startup-hook #'global-company-mode)
@@ -1805,26 +1531,26 @@ In buffer completion.
           (if (check-expansion)
               (company-complete-common)
             (indent-for-tab-command)))))
-#+end_src
++end_src
 
 **** [[https://github.com/jcs-elpa/company-fuzzy][company-fuzzy]]
 
-#+begin_src emacs-lisp :name company-fuzzy
++begin_src emacs-lisp :name company-fuzzy
   (use-package company-fuzzy
     :hook (company-mode . company-fuzzy-mode)
     :init
     (setq company-fuzzy-sorting-backend 'alphabetic))
-#+end_src
++end_rc
 
 **** [[https://github.com/tumashu/company-posframe][company-posframe]]
 
 Floating child-frame for Company - helps avoid proportional font problems.
 
-#+begin_src emacs-lisp :name company-posframe
++begin_src emacs-lisp :name company-posframe
   (use-package company-posframe
     :config
     (company-posframe-mode 1))
-#+end_src
++end_rc
 
 *** [[https://emacs-helm.github.io/helm/][Helm]]
 
@@ -2286,6 +2012,7 @@ Selecting a window/frame to switch to
 
 #+begin_src emacs-lisp :name ace-window
   (use-package ace-window
+    :bind (("C--" . ace-window))
     :init
     (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)
           aw-leading-char-style 'path
@@ -2349,6 +2076,13 @@ Automatically add spaces around operators.
 #+begin_src emacs-lisp :name electric-operator
   (use-package electric-operator
     :hook ((python-mode rustic-mode sql-mode) . electric-operator-mode))
+#+end_src
+
+*** [[https://github.com/magnars/expand-region.el][expand-region]]
+
+#+begin_src emacs-lisp :name expand-region
+  (use-package expand-region
+    :bind (("C-=" . er/expand-region)))
 #+end_src
 
 *** [[https://gitlab.com/koral/gcmh/][GCMH]]
@@ -2593,9 +2327,27 @@ orderless
 
 https://kristofferbalintona.me/posts/202202211546/
 
+**** embark
+
+An example of consult+embark+wgrep to do workspace wide renaming.
+https://lambdaland.org/posts/2023-05-31_warp_factor_refactor/
+
+#+begin_src emacs-lisp :name embark
+  (use-package embark
+    :bind
+    (("C-c a" . embark-act)))
+#+end_src
+
+**** embark-consult
+
+#+begin_src emacs-lisp :name embark-consult
+  (use-package embark-consult
+    :after (embark consult))
+#+end_src
+
 **** Marginalia
 
- #+begin_src emacs-lisp :name marginalia
+#+begin_src emacs-lisp :name marginalia
   (use-package marginalia
     :general
     (:keymaps 'minibuffer-local-map
@@ -2664,20 +2416,18 @@ https://kristofferbalintona.me/posts/202202211546/
           vertico-grid-separator "       "
           vertico-grid-lookahead 50
           vertico-buffer-display-action '(display-buffer-reuse-window)
-          vertico-multiform-categories
-          '((file reverse)
-            (consult-grep buffer)
-            (consult-location)
-            (imenu buffer)
-            (library reverse indexed)
-            (org-roam-node reverse indexed)
-            (t reverse))
-          vertico-multiform-commands
-          '(("flyspell-correct-*" grid reverse)
-            (org-refile grid reverse indexed)
-            (consult-yank-pop indexed)
-            (consult-flycheck)
-            (consult-lsp-diagnostics)))
+          vertico-multiform-categories '((file reverse)
+                                         (consult-grep buffer)
+                                         (consult-location)
+                                         (imenu buffer)
+                                         (library reverse indexed)
+                                         (org-roam-node reverse indexed)
+                                         (t reverse))
+          vertico-multiform-commands '(("flyspell-correct-*" grid reverse)
+                                       (org-refile grid reverse indexed)
+                                       (consult-yank-pop indexed)
+                                       (consult-flycheck)
+                                       (consult-lsp-diagnostics)))
 
     (defun kb/vertico-multiform-flat-toggle ()
       "Toggle between flat and reverse."
@@ -2726,85 +2476,83 @@ https://kristofferbalintona.me/posts/202202211546/
 
 **** orderless
 
- #+begin_src emacs-lisp :name orderless
-   (use-package orderless
-     :init
-     (setq completion-styles '(orderless)
-           completion-category-defaults nil    ; I want to be in control!
-           completion-category-overrides
-           '((file (styles basic-remote ; For `tramp' hostname completion with `vertico'
-                           orderless)))
+#+begin_src emacs-lisp :name orderless
+  (use-package orderless
+    :init
+    (setq completion-styles '(orderless)
+          completion-category-defaults nil    ; I want to be in control!
+          completion-category-overrides '((file (styles basic-remote ; For `tramp' hostname completion with `vertico'
+                                                        orderless)))
 
-           orderless-component-separator 'orderless-escapable-split-on-space
-           orderless-matching-styles
-           '(orderless-literal
-             orderless-prefixes
-             orderless-initialism
-             orderless-regexp
-             ;; orderless-flex
-             ;; orderless-strict-leading-initialism
-             ;; orderless-strict-initialism
-             ;; orderless-strict-full-initialism
-             ;; orderless-without-literal          ; Recommended for dispatches instead
-             )
-           orderless-style-dispatchers
-           '(prot-orderless-literal-dispatcher
-             prot-orderless-strict-initialism-dispatcher
-             prot-orderless-flex-dispatcher
-             ))
+          orderless-component-separator 'orderless-escapable-split-on-space
+          orderless-matching-styles '(orderless-literal
+                                      orderless-prefixes
+                                      orderless-initialism
+                                      orderless-regexp
+                                      ;; orderless-flex
+                                      ;; orderless-strict-leading-initialism
+                                      ;; orderless-strict-initialism
+                                      ;; orderless-strict-full-initialism
+                                      ;; orderless-without-literal          ; Recommended for dispatches instead
+                                      )
+          orderless-style-dispatchers '(prot-orderless-literal-dispatcher
+                                        prot-orderless-strict-initialism-dispatcher
+                                        prot-orderless-flex-dispatcher
+                                        ))
 
-     (defun orderless--strict-*-initialism (component &optional anchored)
-       "Match a COMPONENT as a strict initialism, optionally ANCHORED.
-   The characters in COMPONENT must occur in the candidate in that
-   order at the beginning of subsequent words comprised of letters.
-   Only non-letters can be in between the words that start with the
-   initials.
+    (defun orderless--strict-*-initialism (component &optional anchored)
+      "Match a COMPONENT as a strict initialism, optionally ANCHORED.
+  The characters in COMPONENT must occur in the candidate in that
+  order at the beginning of subsequent words comprised of letters.
+  Only non-letters can be in between the words that start with the
+  initials.
 
-   If ANCHORED is `start' require that the first initial appear in
-   the first word of the candidate.  If ANCHORED is `both' require
-   that the first and last initials appear in the first and last
-   words of the candidate, respectively."
-       (orderless--separated-by
-           '(seq (zero-or-more alpha) word-end (zero-or-more (not alpha)))
-         (cl-loop for char across component collect `(seq word-start ,char))
-         (when anchored '(seq (group buffer-start) (zero-or-more (not alpha))))
-         (when (eq anchored 'both)
-           '(seq (zero-or-more alpha) word-end (zero-or-more (not alpha)) eol))))
+  If ANCHORED is `start' require that the first initial appear in
+  the first word of the candidate.  If ANCHORED is `both' require
+  that the first and last initials appear in the first and last
+  words of the candidate, respectively."
+      (orderless--separated-by
+       '(seq (zero-or-more alpha) word-end (zero-or-more (not alpha)))
+       (cl-loop for char across component collect `(seq word-start ,char))
+       (when anchored '(seq (group buffer-start) (zero-or-more (not alpha))))
+       (when (eq anchored 'both)
+         '(seq (zero-or-more alpha) word-end (zero-or-more (not alpha)) eol))))
 
-     (defun orderless-strict-initialism (component)
-       "Match a COMPONENT as a strict initialism.
-   This means the characters in COMPONENT must occur in the
-   candidate in that order at the beginning of subsequent words
-   comprised of letters.  Only non-letters can be in between the
-   words that start with the initials."
-       (orderless--strict-*-initialism component))
+    (defun orderless-strict-initialism (component)
+      "Match a COMPONENT as a strict initialism.
+  This means the characters in COMPONENT must occur in the
+  candidate in that order at the beginning of subsequent words
+  comprised of letters.  Only non-letters can be in between the
+  words that start with the initials."
+      (orderless--strict-*-initialism component))
 
-     (defun prot-orderless-literal-dispatcher (pattern _index _total)
-       "Literal style dispatcher using the equals sign as a suffix.
-   It matches PATTERN _INDEX and _TOTAL according to how Orderless
-   parses its input."
-       (when (string-suffix-p "=" pattern)
-         `(orderless-literal . ,(substring pattern 0 -1))))
+    (defun prot-orderless-literal-dispatcher (pattern _index _total)
+      "Literal style dispatcher using the equals sign as a suffix.
+  It matches PATTERN _INDEX and _TOTAL according to how Orderless
+  parses its input."
+      (when (string-suffix-p "=" pattern)
+        `(orderless-literal . ,(substring pattern 0 -1))))
 
-     (defun prot-orderless-strict-initialism-dispatcher (pattern _index _total)
-       "Leading initialism  dispatcher using the comma suffix.
-   It matches PATTERN _INDEX and _TOTAL according to how Orderless
-   parses its input."
-       (when (string-suffix-p "," pattern)
-         `(orderless-strict-initialism . ,(substring pattern 0 -1))))
+    (defun prot-orderless-strict-initialism-dispatcher (pattern _index _total)
+      "Leading initialism  dispatcher using the comma suffix.
+  It matches PATTERN _INDEX and _TOTAL according to how Orderless
+  parses its input."
+      (when (string-suffix-p "," pattern)
+        `(orderless-strict-initialism . ,(substring pattern 0 -1))))
 
-     (defun prot-orderless-flex-dispatcher (pattern _index _total)
-       "Flex  dispatcher using the tilde suffix.
-   It matches PATTERN _INDEX and _TOTAL according to how Orderless
-   parses its input."
-       (when (string-suffix-p "." pattern)
-         `(orderless-flex . ,(substring pattern 0 -1))))
-     )
+    (defun prot-orderless-flex-dispatcher (pattern _index _total)
+      "Flex  dispatcher using the tilde suffix.
+  It matches PATTERN _INDEX and _TOTAL according to how Orderless
+  parses its input."
+      (when (string-suffix-p "." pattern)
+        `(orderless-flex . ,(substring pattern 0 -1))))
+    )
 #+end_src
 
 **** corfu
     ;; https://kristofferbalintona.me/posts/202202270056/
-emacs-lisp :name corfu
+
+#+begin_src emacs-lisp :name corfu
   (use-package corfu
     :straight (corfu :files (:defaults "extensions/*")
                      :includes (corfu-info corfu-history))
@@ -2853,9 +2601,9 @@ emacs-lisp :name corfu
 
           ;; Other
           corfu-echo-documentation nil        ; Already use corfu-doc
-          sp-completion-provider :none       ; Use corfu instead for lsp completions
+          sp-completion-provider :none)       ; Use corfu instead for lsp completions
           (global-corfu-mode)
-          (corfu-popupinfo-mode))
+          (corfu-popupinfo-mode)
     :config
     (setq corfu-popupinfo-delay 0.5)
     ;; NOTE 2022-03-01: This allows for a more evil-esque way to have
@@ -2865,8 +2613,8 @@ emacs-lisp :name corfu
     ;; Alternatively, add advice without `general.el':
     ;; (advice-add 'corfu--setup :after 'evil-normalize-keymaps)
     ;; (advice-add 'corfu--teardown :after 'evil-normalize-keymaps)
-    (general-add-advice '(corfu--setup corfu--teardown) :after 'evil-normalize-keymaps)
-    (evil-make-overriding-map corfu-map)
+    ;; (general-add-advice '(corfu--setup corfu--teardown) :after 'evil-normalize-keymaps)
+    ;; (evil-make-overriding-map corfu-map)
 
     ;; Enable Corfu more generally for every minibuffer, as long as no other
     ;; completion UI is active. If you use Mct or Vertico as your main minibuffer
@@ -2886,6 +2634,7 @@ emacs-lisp :name corfu
   default lsp-passthrough."
       (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
             '(orderless))))
+#+end_src
 
 **** kind-icon
 
@@ -3138,9 +2887,9 @@ Auto-saving buffers.
 *** [[https://gitlab.com/ideasman42/emacs-undo-fu][undo-fu]] & undo-fu-session
 
 #+begin_src emacs-lisp :name undo-fu
-    (use-package undo-fu
-      :bind (:map global-map
-                  ("C-/" . 'undo-fu-only-undo)))
+  (use-package undo-fu
+    :bind (:map global-map
+                ("C-/" . 'undo-fu-only-undo)))
 #+end_src
 
 *** [[https://elpa.gnu.org/packages/windresize.html][windresize]]
@@ -3332,29 +3081,11 @@ https://emacsair.me/2017/09/01/the-magical-git-interface/
 Setting up some usefull things for git-commit mode that magit uses during commit.
 
 #+begin_src emacs-lisp :name git-commit-mode
-(use-package git-commit
-  :hook ((git-commit-mode . flyspell-mode)
-         (git-commit-mode . git-commit-save-message)
-         (git-commit-mode . turn-on-auto-fill)))
+  (use-package git-commit
+    :hook ((git-commit-mode . flyspell-mode)
+           (git-commit-mode . git-commit-save-message)
+           (git-commit-mode . turn-on-auto-fill)))
 #+end_src
-
-*** [[https://github.com/dandavison/magit-delta][magit-delta]]
-
-DISABLED: Tue May 16 22:09:30 2023 - got magit display error (Illegal flag: -syntax-theme) + made it slower.
-https://github.com/dandavison/magit-delta/issues/9
-
-Use =delta= to show diffs in magit.
-
-https://scripter.co/using-git-delta-with-magit/
-
-To get the colors to show up correctly in a terminal.
-https://www.gnu.org/software/emacs/manual/html_node/efaq/Colors-on-a-TTY.html
-
-  (use-package magit-delta
-    :ensure t
-    :hook (magit-mode . magit-delta-mode)
-    :config
-    (setq magit-delta-default-dark-theme "Monokai Extended Bright"))
 
 *** [[https://github.com/alphapapa/magit-todos][magit-todos]]
 
@@ -3570,8 +3301,9 @@ Show flycheck errors with helm.
 
 *** [[https://github.com/abo-abo/lispy][lispy]] & lispyville
 
-
 *** lsp-mode
+
+Wed May 31 13:37:40 2023 Eglot still works better with Tramp
 
 Lsp client for Emacs
 
@@ -3663,7 +3395,6 @@ Provides an even nicer UI on top of lsp-mode using Treemacs
     :config
     (lsp-treemacs-sync-mode 1))
 #+end_src
-
 
 ** Clojure
 
@@ -3804,8 +3535,8 @@ This is really just for Java interop while doing Clojure.  It uses [[https://pro
 
   (use-package python
     :mode ((rx ".py" string-end) . python-mode)
-    :hook ((python-mode . deftpunk/python-mode-hook)
-           (python-mode . +python-use-correct-flycheck-executables-h))
+    :hook ((python-mode . deftpunk/python-mode-hook))
+           ;; (python-mode . +python-use-correct-flycheck-executables-h))
     :config
     ;; Try to compile using the appropriate version of Python for
     ;; the file.
@@ -3876,12 +3607,42 @@ I prefer to use miniconda, I feel it is a cleaner virtual environment
 
 *** lsp-pyright
 
+Wed May 31 13:36:58 2023 - Eglot still works better with Tramp.
+
 #+begin_src emacs-lisp :name lsp-pyright
   (use-package lsp-pyright
     :ensure t
     :hook (python-mode . (lambda ()
-                            (require 'lsp-pyright)
-                            (lsp))))  ; or lsp-deferred
+                           (require 'lsp-pyright)
+                           (lsp))))  ; or lsp-deferred
+
+  (after! lsp-pyright
+    (setq lsp-log-io t)
+    (setq lsp-pyright-use-library-code-for-types t)
+    (setq lsp-pyright-diagnostic-mode "workspace")
+    (lsp-register-client
+     (make-lsp-client
+      :new-connection (lsp-tramp-connection (lambda ()
+                                              (cons "pyright-langserver"
+                                                    lsp-pyright-langserver-command-args)))
+      :major-modes '(python-mode)
+      :remote? t
+      :server-id 'pyright-remote
+      :multi-root t
+      :priority 3
+      :initialization-options (lambda () (ht-merge (lsp-configuration-section "pyright")
+                                                   (lsp-configuration-section "python")))
+      :initialized-fn (lambda (workspace)
+                        (with-lsp-workspace workspace
+                          (lsp--set-configuration
+                           (ht-merge (lsp-configuration-section "pyright")
+                                     (lsp-configuration-section "python")))))
+      :download-server-fn (lambda (_client callback error-callback _update?)
+                            (lsp-package-ensure 'pyright callback error-callback))
+      :notification-handlers (lsp-ht ("pyright/beginProgress" 'lsp-pyright--begin-progress-callback)
+                                     ("pyright/reportProgress" 'lsp-pyright--report-progress-callback)
+                                     ("pyright/endProgress" 'lsp-pyright--end-progress-callback))))
+    )
 #+end_src
 
 ** Rust
@@ -4029,7 +3790,15 @@ Rust uses *.toml & Poetry for Python does as well.
     :mode "\\.toml\\'")
 #+end_src
 
-*** YAML
+*** [[https://github.com/yoshiki/yaml-mode][YAML]]
+
+TODO: Check [[https://github.com/zkry/yaml-pro][yaml-pro]] which uses treesitter... and is probably much faster.
+
+#+begin_src emacs-lisp :name yaml-mode
+  (use-package yaml-mode
+    :config
+    (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
+#+end_src
 
 ** Terminals & Shells
 
@@ -4052,7 +3821,6 @@ TODO: Work out personal prefixes:
 - C-z -> maybe use this is a "local leader" / "major mode map leader"
 - Swap C-<spc> & C-v -> In Emacs mode, C-spc starts selection (set-mark-command).  I could use
   C-spc as a global leader equivalent & C-v as the set-mark-command
-
 
 *** Hydras
 
@@ -4107,16 +3875,19 @@ TODO: Work out personal prefixes:
   (defvar version-control-hydra--title (with-faicon "code" "Version Control" 1 -0.05))
   (pretty-hydra-define version-control-hydra
     (:color blue :title version-control-hydra--title)
-    ("Magit"
-     (("a" vc-annotate "side-by-side blame")
-      ("d" magit-file-dispatch "do stuff with git")
+    (
+     "Magit"
+     (("d" magit-file-dispatch "do stuff with git")
       ("g" magit-status "magit status")
       ("G" deftpunk:unpackaged/magit-status "Only magit-status")
-      ("h" helm-hunks-current-buffer "Helm Git hunks")
+      ("l" magit-log "Git log"))
+     "Change Hunks"
+     (("h" helm-hunks-current-buffer "Helm Git hunks")
       ("j" (progn (git-gutter:next-hunk 1) (recenter)) "next hunk")
-      ("k" (progn (git-gutter:previous-hunk 1) (recenter)) "previous hunk")
+      ("k" (progn (git-gutter:previous-hunk 1) (recenter)) "previous hunk"))
+     "Tools"
+     (("a" vc-annotate "side-by-side blame")
       ("m" git-messenger:popup-message "git messenger")
-      ("l" magit-log "Git log")
       ("t" git-timemachine "timemachine"))))
 #+end_src
 
@@ -4161,44 +3932,6 @@ TODO: Work out personal prefixes:
 *** Leader bindings
 
 #+begin_src emacs-lisp :name leaer-keybindings
-  ;; A modified unpackaged/magit-status
-  ;; I removed the deletion of the other window.
-        ;;;###autoload
-  (defun deftpunk:unpackaged/magit-status ()
-    "Open a `magit-status' buffer and close the other window so only Magit is visible.
-        If a file was visited in the buffer that was active when this
-        command was called, go to its unstaged changes section."
-    (interactive)
-    (let* ((buffer-file-path (when buffer-file-name
-                               (file-relative-name buffer-file-name
-                                                   (locate-dominating-file buffer-file-name ".git"))))
-           (section-ident `((file . ,buffer-file-path) (unstaged) (status))))
-      (magit-status)
-      (when buffer-file-path
-        (goto-char (point-min))
-        (cl-loop until (when (equal section-ident (magit-section-ident (magit-current-section)))
-                         (magit-section-show (magit-current-section))
-                         (recenter)
-                         t)
-                 do (condition-case nil
-                        (magit-section-forward)
-                      (error (cl-return (magit-status-goto-initial-section-1))))))))
-
-  (defvar version-control-hydra--title (with-faicon "code" "Version Control" 1 -0.05))
-  (pretty-hydra-define version-control-hydra
-    (:color blue :title version-control-hydra--title)
-    ("Magit"
-     (("a" vc-annotate "side-by-side blame")
-      ("d" magit-file-dispatch "do stuff with git")
-      ("g" magit-status "magit status")
-      ("G" deftpunk:unpackaged/magit-status "Only magit-status")
-      ("h" helm-hunks-current-buffer "Helm Git hunks")
-      ("j" (progn (git-gutter:next-hunk 1) (recenter)) "next hunk")
-      ("k" (progn (git-gutter:previous-hunk 1) (recenter)) "previous hunk")
-      ("m" git-messenger:popup-message "git messenger")
-      ("l" magit-log "Git log")
-      ("t" git-timemachine "timemachine"))))
-
   ;; Main leader hydra
   (defvar hydra-jk--title (with-faicon "cogs" "Control Panel" 1 -0.05))
   (pretty-hydra-define hydra-jk
@@ -4241,8 +3974,9 @@ TODO: Work out personal prefixes:
      "Exit"
      (("q" save-buffers-kill-terminal "Exit Emacs"))))
 
-  (deftpunk-leader-def "" 'hydra-jk/body)
+     (global-set-key (kbd "<BLAH-i>") 'hydra-jk/body)
 #+end_src
+
 
 *** Righteous keybindings
 
@@ -4252,15 +3986,14 @@ TODO: Work out personal prefixes:
   (global-unset-key (kbd "C-q"))
   (global-set-key (kbd "C-q C-q") 'quoted-insert)
 
-  ;; Unbind some Super keys.
-  (global-unset-key (kbd "s-a"))
-  (global-unset-key (kbd "s-f"))
-  (global-unset-key (kbd "s-i"))
 
   ;; Call org-agenda from anywhere
   (global-set-key (kbd "s-a") 'org-agenda)
   (global-set-key (kbd "s-i") 'helm-mini)
+  (global-set-key (kbd "s-s") 'swiper)
 
+  (global-set-key (kbd "s-j") 'crux-top-join-line)
+  (global-set-key (kbd "s-k") 'crux-kill-whole-line) ; or do zap-to-char?
 
   ;; This "should" allow you to use ESC in more situations that would require C-g
   (define-key key-translation-map (kbd "ESC") (kbd "C-g"))
@@ -4277,19 +4010,19 @@ TODO: Work out personal prefixes:
       (unless (ignore-errors (or (browse-url-at-point) t))
         (ace-link))))
 
-  ; ;; Using C-j for jumping around
-  ; ;; TODO: Use General for mapping?
-  ; (global-unset-key (kbd "C-j"))
+  ;; Using C-j for jumping around.
+  (global-unset-key (kbd "C-j"))
+  (global-set-key (kbd "C-j") 'avy-goto-char-timer)
+  (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
 
-  ; (global-set-key (kbd "C-j f") 'avy-goto-char-in-line)
-  ; (global-set-key (kbd "C-j g") 'goto-line)
-  ; (global-set-key (kbd "C-j j") 'avy-goto-char-timer)
-  ; (global-set-key (kbd "C-j o") 'ace-link)
-  ; (global-set-key (kbd "C-j x") 'deftpunk/url-at-point)
+                                          ; (global-set-key (kbd "C-j f") 'avy-goto-char-in-line)
+                                          ; (global-set-key (kbd "C-j g") 'goto-line)
+                                          ; (global-set-key (kbd "C-j j") 'avy-goto-char-timer)
+                                          ; (global-set-key (kbd "C-j o") 'ace-link)
+                                          ; (global-set-key (kbd "C-j x") 'deftpunk/url-at-point)
 
 
-  ; (global-set-key (kbd "C-w") 'backward-kill-word)
-  (global-set-key (kbd "C--") 'ace-window)
+                                          ; (global-set-key (kbd "C-w") 'backward-kill-word)
 
   ;; Create a toggle for starting/stopping keyboard macros
   (defun deftpunk/toggle-kmacro ()
@@ -4318,44 +4051,52 @@ TODO: Work out personal prefixes:
                  (move-to-window-line -1)
                  (recenter))))))
 
-    (defun my/scroll-up-half-page ()
-      "scroll up half a page while keeping the cursor centered"
-      (interactive)
-      (let ((ln (line-number-at-pos (point)))
-            (lmax (line-number-at-pos (point-max))))
-        (cond ((= ln 1) nil)
-              ((= ln lmax) (move-to-window-line nil))
-              (t (progn
-                   (move-to-window-line 0)
-                   (recenter))))))
+  (defun my/scroll-up-half-page ()
+    "scroll up half a page while keeping the cursor centered"
+    (interactive)
+    (let ((ln (line-number-at-pos (point)))
+          (lmax (line-number-at-pos (point-max))))
+      (cond ((= ln 1) nil)
+            ((= ln lmax) (move-to-window-line nil))
+            (t (progn
+                 (move-to-window-line 0)
+                 (recenter))))))
 
-    ; (global-unset-key (kbd "C-v"))
-    ; (global-unset-key (kbd "M-v"))
-    ; (global-set-key (kbd "C-v") 'my/scroll-down-half-page)
-    ; (global-set-key (kbd "M-v") 'my/scroll-up-half-page)
+                                          ; (global-unset-key (kbd "C-v"))
+                                          ; (global-unset-key (kbd "M-v"))
+                                          ; (global-set-key (kbd "C-v") 'my/scroll-down-half-page)
+                                          ; (global-set-key (kbd "M-v") 'my/scroll-up-half-page)
 
-    ;; Remap the normal help key so that i can use it as the usual readline key
-    (global-unset-key (kbd "C-h"))
-    (global-set-key (kbd "C-c h") 'help)
-    (global-set-key (kbd "C-c C-h") 'help)
+  ;; Remap the normal help key so that i can use it as the usual readline key
+  (global-unset-key (kbd "C-h"))
+  (global-set-key (kbd "C-c h") 'help)
+  (global-set-key (kbd "C-c C-h") 'help)
 
-    (global-set-key (kbd "C-h") 'backward-delete-char)
+  (global-set-key (kbd "C-h") 'backward-delete-char)
+
+  ;; Some final remapping of Escape to "Quit"52121234
+
+  (global-set-key (kbd "<escape>") 'keyboard-quit)
+
+  ;; When C-g gets rebound.
+  (define-key key-translation-map (kbd "ESC") (kbd "C-g"))
+
+  (define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
+  (define-key minibuffer-local-ns-map [escape] 'minibuffer-keyboard-quit)
+  (define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
+  (define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
+  (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
 #+end_src
 
 *** Evil keybindings
-
-**** Insert mode
-
-#+begin_src emacs-lisp :name insert-mode
-  (define-key evil-insert-state-map (kbd "C-a") 'crux-move-beginning-of-line)
-  (define-key evil-insert-state-map (kbd "C-e") 'move-end-of-line)
-  (define-key evil-insert-state-map (kbd "C-k") 'crux-smart-kill-line)
-#+end_src
 **** Normal mode
+
+TODO: Incorporate some of the commands into my normal keybindings.
+
 
 Normal mode keybindings that I make for myself.
 
-#+begin_src emacs-lisp :name normal-state
++begin_src emacs-lisp :name normal-state
   ;; NOTE: The org-open-at-point will open a "Babel Results" window when this function is called
   ;;       inside a src block
   (defun deftpunk/url-at-point ()
@@ -4424,13 +4165,7 @@ Normal mode keybindings that I make for myself.
   ;; Combine avy with d, y, c motions
   (evil-global-set-key 'motion "f" 'evil-avy-goto-char-in-line)
 
-#+end_src
-
-**** Motion mode
-
-#+begin_src emacs-lisp :name motion-mode
-  (evil-define-key nil evil-motion-state-map "<SPC>" nil)
-#+end_src
++end_src
 
 *** [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]]
 
@@ -4480,6 +4215,8 @@ Start the emacs server as a last thing to do.
 
 *** Investigate vertico+orderless+consult+embark+marginalia
 
+*** esup - profiling tool.
+
 https://github.com/jschaf/esup
 esup is a tool for profiling the startup time of Emacs. This snippet is a work around of a bug where
 esup tries to step into the byte-compiled version of `cl-lib’, and fails horribly:
@@ -4494,3 +4231,7 @@ https://github.com/Malabarba/elisp-bug-hunter
 *** Use ace-window dispatch to delete buffer in other window
 
 *** Why does <ESC> kill the other window??
+
+*** Get breadcrumb to work
+
+https://github.com/joaotavora/breadcrumb
