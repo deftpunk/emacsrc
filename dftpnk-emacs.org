@@ -246,22 +246,24 @@ https://emacsnotes.wordpress.com/2022/09/11/three-bonus-keys-c-i-c-m-and-c-for-y
 ** Some Globals
 
 #+begin_src emacs-lisp :name globals
+  ;; (setq debug-on-error t)
+
   ;;; Some constants for use elsewhere.
-    (defconst deftpunk--emacs-dir (file-truename "~/.emacs.d")
-      "The path to the emacs.d directory")
+  (defconst deftpunk--emacs-dir (file-truename "~/.emacs.d")
+    "The path to the emacs.d directory")
 
-    (defconst deftpunk--org-configuration-file (concat deftpunk--emacs-dir "/deftpunk-emacs.org")
-      "The Org mode literate configuration file.")
+  (defconst deftpunk--org-configuration-file (concat deftpunk--emacs-dir "/deftpunk-emacs.org")
+    "The Org mode literate configuration file.")
 
-    (defconst deftpunk--etc-dir (concat deftpunk--emacs-dir "/etc/")
-      "Location for files to save across systems.")
+  (defconst deftpunk--etc-dir (concat deftpunk--emacs-dir "/etc/")
+    "Location for files to save across systems.")
 
-    (defconst deftpunk--var-dir (concat deftpunk--emacs-dir "/var/")
-      "Location for cache & files that we don't save across systems.")
+  (defconst deftpunk--var-dir (concat deftpunk--emacs-dir "/var/")
+    "Location for cache & files that we don't save across systems.")
 
-    ;; I use Mac & occasionally Linux, no Windoze.
-    (defconst IS-MAC (eq system-type 'darwin))
-    (defconst IS-LINUX (eq system-type 'gnu/linux))
+  ;; I use Mac & occasionally Linux, no Windoze.
+  (defconst IS-MAC (eq system-type 'darwin))
+  (defconst IS-LINUX (eq system-type 'gnu/linux))
 #+end_src
 
 ** Package Management
