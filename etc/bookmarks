@@ -2,10 +2,36 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("org-capture-last-stored"
- (filename . "~/MyStuff/DeftpunkRoamNotes/20230503172520-reference.org")
- (front-context-string . "General Node for")
- (rear-context-string . "itle: Reference\n")
- (position . 87)
- (last-modified 25682 60798 593498 0))
+(#1=(#("remote-container.py" 0 19
+      (bmkp-full-record #1#))
+    (filename . "/ssh:bodine@cxo-vdt8-567.cxo.storage.hpecorp.net:/data/workspace/erick-podman/devtools/container.py")
+    (buffer-name . "container.py")
+    (front-context-string . "import logging\ni")
+    (rear-context-string)
+    (front-context-region-string)
+    (rear-context-region-string)
+    (visits . 0)
+    (time . #2=(25820 28444 475539 0))
+    (created . #2#)
+    (position . 1))
+#1=(#("scratch-reference" 0 17
+      (bmkp-full-record #1#))
+    (end-position . 33491)
+    (filename . "~/WorkStuff/eig/erick-podman/scratch.org")
+    (buffer-name . "scratch.org")
+    (front-context-string . "* Reference\n\n** ")
+    (rear-context-string . "ointing to CXO\n\n")
+    (front-context-region-string)
+    (rear-context-region-string)
+    (visits . 2)
+    (time 25860 50613 821899 0)
+    (created 25820 27220 296225 0)
+    (position . 33491))
+#1=(#("org-capture-last-stored" 0 23
+      (bmkp-full-record #1#))
+    (filename . "~/MyStuff/DeftpunkRoamNotes/20230503172520-reference.org")
+    (front-context-string . "General Node for")
+    (rear-context-string . "itle: Reference\n")
+    (position . 87)
+    (last-modified 25682 60798 593498 0))
 )
