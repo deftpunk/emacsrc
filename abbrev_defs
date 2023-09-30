@@ -248,6 +248,7 @@
     ("witeness" "witness" nil 1)
     ("workign" "working" nil 1)
     ("wyh" "why" nil 1)
+    ("ydx" "" deftpunk/timestamp nil 1)
    ))
 
 (define-abbrev-table 'gnus-group-mode-abbrev-table '())
