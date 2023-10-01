@@ -3428,7 +3428,9 @@ M-? - show references
     )
 #+end_src
 
-** lsp-ui
+** [[https://github.com/emacs-lsp/lsp-ui][lsp-ui]]
+
+Higher level UI elements for lsp-mode, e.g. flycheck support, code lenses.
 
 #+begin_src emacs-lisp :name lsp-ui
   (use-package lsp-ui
