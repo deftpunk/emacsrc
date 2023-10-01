@@ -3238,35 +3238,35 @@ The absolutely best git porcelain on Planet Earth.
 Some more informational links:
 https://emacsair.me/2017/09/01/magit-walk-through/
 https://emacsair.me/2017/09/01/the-magical-git-interface/
+https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
 
 #+begin_src emacs-lisp :name magit
   (use-package magit
     :defer t
     :general
     (:prefix "C-x"
-             "g" 'magit-status)
+             "g" 'magit-dispatch)
+    :hook (git-commit-setup-hook . git-commit-turn-on-flyspell)
     :init
-    (add-hook 'git-commit-setup-hook 'git-commit-turn-on-flyspell)
     (if IS-MAC
         (setq magit-git-executable "/opt/homebrew/bin/git")
       (setq magit-git-executable "/usr/local/bin/git"))
     :config
     (setq  magit-log-arguments '("--graph" "--decorate" "--color")
-           magit-save-repository-buffers 'dontask
-           magit-revert-buffers 'silent)
-
-    (setq magit-revision-show-gravatars '("^Author:     " . "^Commit:     ")
-          magit-diff-refine-hunk t ; show granular diffs in selected hunk
-          ;; Don't autosave repo buffers. This is too magical, and saving can
-          ;; trigger a bunch of unwanted side-effects, like save hooks and
-          ;; formatters. Trust us to know what we're doing.
-          magit-save-repository-buffers nil))
-
-  ;; Update diff-hl when magit changes.
-  ;; (require 'diff-hl)
-  ;; ;; (add-hook 'magit-pre-refresh-hook 'diff-hl-magit-pre-refresh)
-  ;; ;; ;; (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
+           magit-revert-buffers 'silent
+           magit-revision-show-gravatars '("^Author:     " . "^Commit:     ")
+           magit-diff-refine-hunk t ; show granular diffs in selected hunk
+           ;; Don't autosave repo buffers. This is too magical, and saving can
+           ;; trigger a bunch of unwanted side-effects, like save hooks and
+           ;; formatters. Trust us to know what we're doing.
+           magit-save-repository-buffers nil))
 #+end_src
+
+**** TODO why magit checkout looks wierd on the cmdline
+
+**** TODO Figure out Forge & using it with HPE GitHub Enterprise
+
+https://magit.vc/manual/forge/
 
 **** [[https://github.com/alphapapa/magit-todos][magit-todos]]
 
@@ -3375,6 +3375,11 @@ c Show current commit using magit (if magit available).
     (unless (featurep 'git-timemachine)
       (require 'git-timemachine))
     (git-timemachine--start #'my-git-timemachine-show-selected-revision))
+
+  ;; Add git timemachine to the end of the magit-dispatch transient keymap.
+  (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
+
+
 #+end_src
 
 ** [[https://github.com/torgeir/helm-hunks.el][helm-hunks]]
