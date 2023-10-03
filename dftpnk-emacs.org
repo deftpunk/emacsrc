@@ -358,11 +358,19 @@ Manage keybindings.
     :demand t
     :straight t)
 
+  ;; Leader key
+  (general-create-definer deftpunk-leader-def
+    :states '(normal)
+    :keymaps 'override
+    :prefix "SPC")
+
   ;; local leader
   ;; This allows for finer granularity than hydra-major-mode by binding to individual key maps.
   (general-create-definer deftpunk-local-leader-def
+    :states '(normal insert emacs)
     :keymaps 'override
-    :prefix "C-;")
+    :prefix ";"
+    :global-prefix "C-;")
 #+end_src
 
 *** [[https://github.com/abo-abo/hydra][hydra]]
@@ -909,7 +917,283 @@ Intercept and kickout the builtin Org version for something more recent.
   (setq create-lockfiles nil)
 #+end_src
 
-** [[https://github.com/meain/evil-textobj-tree-sitter][evil-textobj-tree-sitter]]
+* Evil
+
+** Evil Dependencies
+
+*** [[https://github.com/emacs-evil/goto-chg][goto-chg]]
+
+Provides support for the motions g; g, and for the last-change-register ., also
+provides the functions goto-last-change and goto-last-change-reverse.
+
+#+begin_src emacs-lisp :name goto-chg
+(use-package goto-chg)
+#+end_src
+
+** [[https://github.com/emacs-evil/evil][Evil Configuration]]
+
+Using Evil to make the editor part of Emacs even better than anything else.
+
+#+begin_src emacs-lisp :name evil
+  (use-package evil
+    :init
+    (setq evil-undo-system 'undo-fu
+          undo-limit 8000000
+          undo-strong-limit 8000000
+          undo-outer-limit 8000000)
+
+    (setq evil-default-state 'normal
+          evil-want-C-u-scroll    t
+          evil-want-C-w-delete    t
+          evil-esc-delay          0
+          evil-want-Y-yank-to-eol t
+          evil-shift-width        4
+          evil-want-integration   t
+          evil-want-keybinding    nil   ; this is for evil-collection
+          evil-toggle-key         "s-z" ; I want C-z for other things
+          evil-want-C-i-jump      t)
+
+    (setq-default evil-symbol-word-search 1)
+    :demand t
+    :config
+
+    (evil-mode 1)
+
+    ;; https://emacs.stackexchange.com/questions/14940/emacsdoesnt-paste-in-evils-visual-mode-with-every-os-clipboard/15054#15054
+    ;; Imagine the following scenario.  One wants to paste some previously copied
+    ;; (from application other than Emacs) text to the system's clipboard in place
+    ;; of some contiguous block of text in a buffer.  Hence, one switches to
+    ;; `evil-visual-state' and selects the corresponding block of text to be
+    ;; replaced.  However, one either pastes some (previously killed) text from
+    ;; `kill-ring' or (if `kill-ring' is empty) receives the error: "Kill ring is
+    ;; empty"; see `evil-visual-paste' and `current-kill' respectively.  The
+    ;; reason why `current-kill' does not return the desired text from the
+    ;; system's clipboard is because `evil-visual-update-x-selection' is being run
+    ;; by `evil-visual-pre-command' before `evil-visual-paste'.  That is
+    ;; `x-select-text' is being run (by `evil-visual-update-x-selection') before
+    ;; `evil-visual-paste'.  As a result, `x-select-text' copies the selected
+    ;; block of text to the system's clipboard as long as
+    ;; `x-select-enable-clipboard' is non-nil (and in this scenario we assume that
+    ;; it is).  According to the documentation of `interprogram-paste-function',
+    ;; it should not return the text from the system's clipboard if it was last
+    ;; provided by Emacs (e.g. with `x-select-text').  Thus, one ends up with the
+    ;; problem described above.  To solve it, simply make
+    ;; `evil-visual-update-x-selection' do nothing:
+    (fset 'evil-visual-update-x-selection 'ignore)
+
+    (evil-set-initial-state 'help-mode 'emacs)
+    (evil-set-initial-state 'messages-buffer-mode 'emacs)
+    (evil-set-initial-state 'view-mode 'emacs)
+    (evil-set-initial-state 'inferior-python-mode 'emacs)
+
+    ;; More Esc quits
+    (define-key evil-normal-state-map [escape] 'keyboard-quit)
+    (define-key evil-visual-state-map [escape] 'keyboard-quit)
+    (define-key evil-insert-state-map [escape] 'evil-normal-state)
+    (global-set-key [escape] 'evil-exit-emacs-state))
+
+  ;; Always Escape
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+  ;; Make leader work in *Messages* buffer
+  ;; https://emacs.stackexchange.com/questions/70703/general-leader-key-not-working-in-some-modes-messages-on-initial-startup-onl
+  (with-eval-after-load 'evil
+    (general-add-hook 'after-init-hook
+                      (lambda (&rest _)
+                        (when-let ((messages-buffer (get-buffer "*Messages*")))
+                          (with-current-buffer messages-buffer
+                            (evil-normalize-keymaps))))
+                      nil
+                      nil
+                      t))
+#+end_src
+
+*** [[https://github.com/emacs-evil/evil-collection][evil-collection]]
+
+A collection of Evil bindings.
+
+#+begin_src emacs-lisp :name evil-collection
+  (use-package evil-collection
+    :after evil
+    :ensure t
+    :config
+    (evil-collection-init))
+#+end_src
+
+** Evil Extensions
+
+*** evil-args
+
+[[https://github.com/wcsmith/evil-args][evil-args]] Motions and text objects for delimited (, & ;) arguments
+
+#+begin_src emacs-lisp :name evil-args
+  (use-package evil-args
+    :after evil
+    :config
+    ; bind evil-args text objects
+    (define-key evil-inner-text-objects-map "a" 'evil-inner-arg)
+    (define-key evil-outer-text-objects-map "a" 'evil-outer-arg)
+
+    ;; TODO: Perhaps there is a way to integrate this with f/t & F/T
+    ;; ;; bind evil-forward/backward-args
+    ;; (define-key evil-normal-state-map "L" 'evil-forward-arg)
+    ;; (define-key evil-normal-state-map "H" 'evil-backward-arg)
+    ;; (define-key evil-motion-state-map "L" 'evil-forward-arg)
+    ;; (define-key evil-motion-state-map "H" 'evil-backward-arg)
+
+    ;; bind evil-jump-out-args
+    (define-key evil-normal-state-map "K" 'evil-jump-out-args))
+#+end_src
+
+*** [[https://github.com/YourFin/evil-better-visual-line][evil-better-visual-line]]
+
+Better *j* & *k* navigation.
+
+#+begin_src
+(use-package evil-better-visual-line
+  :ensure t
+  :config
+  (evil-better-visual-line-on))
+#+end_src
+
+*** TODO: evil-embrace - integrates with evil-surround.
+
+*** evil-exchange
+
+[[https://github.com/Dewdrops/evil-exchange][evil-exchange]] - A text exchange operator
+
+#+begin_src emacs-lisp :name evil-exchange
+  (use-package evil-exchange
+    :init
+    (setq evil-exhange-key (kbd "ge"))
+    :config
+    (evil-exchange-install))
+#+end_src
+
+*** evil-goggles
+
+[[https://github.com/edkolev/evil-goggles][evil-goggles]] Display a visual hint when editing with evil.
+
+#+begin_src emacs-lisp :name evil-goggles
+(use-package evil-goggles
+  :config
+  (evil-goggles-mode)
+
+  ;; optionally use diff-mode's faces; as a result, deleted text
+  ;; will be highlighed with `diff-removed` face which is typically
+  ;; some red color (as defined by the color theme)
+  ;; other faces such as `diff-added` will be used for other actions
+  (evil-goggles-use-diff-faces))
+#+end_src
+
+*** TODO evil-iedit-state
+
+*** TODO evil-indent-plus
+
+*** TODO evil-lisp-state
+
+*** TODO evil-org
+
+*** TODO evil-search-highlight-persist
+
+*** TODO evil-textobj-line
+
+*** TODO evil-visual-mark-mode
+
+*** TODO treemacs-evil
+
+*** evil-lion
+
+[[https://github.com/edkolev/evil-lion][evil-lion]] Evil align operator, port of vim-lion by Tom McDonald (https://github.com/tommcdo/vim-lion)
+
+This package provides gl and gL align operators: gl MOTION CHAR and right-align gL MOTION CHAR.
+
+Use CHAR / to enter regular expression if a single character wouldn't suffice.
+
+Use CHAR RET to align with align.el's default rules for the active major mode.
+
+The above call will install "gl" evil operator, which is used as:
+  gl TEXT-OBJECT SEPARATOR
+for example,
+  gl ip =
+will align the paragraph on = signs
+
+#+begin_src emacs-lisp :name evil-lion
+  (use-package evil-lion)
+  (evil-lion-mode)
+#+end_src
+
+*** evil-matchit
+
+[[https://github.com/redguardtoo/evil-matchit][evil-matchit]] Press “%” to jump between matched tags in Emacs.  It can also match character pairs &
+inner/outer text objects.
+
+#+begin_src emacs-lisp :name evil-matchit
+  (use-package evil-matchit
+    :after evil
+    :init
+    ;; We want 3% to jump 3 times, not jump 3% down the file.
+    (setq evilmi-may-jump-by-percentage nil)
+    :config
+    (global-evil-matchit-mode 1))
+#+end_src
+
+*** evil-numbers
+
+[[https://github.com/juliapath/evil-numbers][evil-numbers]] Increment/decrement for numbers,binary,octal,hexadecimal,etc.
+
+#+begin_src emacs-lisp :name evil-numbers
+  (use-package evil-numbers)
+#+end_src
+
+*** evil-owl
+
+[[https://github.com/mamapanda/evil-owl][evil-owl]] allows you to view registers and marks before using them.
+
+Press q, @, ​"​, C-r, m, ​'​, or ` to view the popup, press C-f or C-b to scroll it, and input a register or mark to make the popup disappear.
+
+#+begin_src emacs-lisp :name evil-owl
+  (use-package evil-owl
+    :config
+    (setq evil-owl-display-method 'posframe
+          evil-owl-extra-posframe-args '(:width 50 :height 20)
+          evil-owl-max-string-length 50)
+    (evil-owl-mode))
+#+end_src
+
+*** evil-smartparens
+
+[[https://github.com/expez/evil-smartparens][evil-smartparens]] - Makes Evil play nice with smartparens
+
+#+begin_src emacs-lisp :name evil-smart
+  (use-package evil-smartparens
+    :after evil
+    :config
+    (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode))
+#+end_src
+
+*** evil-surround
+
+[[https://github.com/emacs-evil/evil-surround][evil-surround]] - emulate surround.vim by Tim Pope
+
+Change surrounding
+`cs<old-textobject><new-textobject>`
+
+Delete surrounding
+`ds<textobject>`
+
+Add surrounding
+You can surround in visual-state with `S<textobject>` or `gS<textobject>`.
+Or in normal-state with `ys<textobject>` or `yS<textobject>`
+
+#+begin_src emacs-lisp :name evil-surround
+  (use-package evil-surround
+    :after evil
+    :config
+    (global-evil-surround-mode 1))
+#+end_src
+
+*** [[https://github.com/meain/evil-textobj-tree-sitter][evil-textobj-tree-sitter]]
 
 Tree-sitter powered textobjects for Emacs. You can use them with evil-mode or with thing-at-point.
 
@@ -918,18 +1202,44 @@ Tree-sitter powered textobjects for Emacs. You can use them with evil-mode or wi
     :ensure t)
 
   ;; bind `function.outer`(entire function block) to `f` for use in things like `vaf`, `yaf`
-;;  (define-key evil-outer-text-objects-map "f" (evil-textobj-tree-sitter-get-textobj "function.outer"))
+  (define-key evil-outer-text-objects-map "f" (evil-textobj-tree-sitter-get-textobj "function.outer"))
   ;; bind `function.inner`(function block without name and args) to `f` for use in things like `vif`, `yif`
- ;; (define-key evil-inner-text-objects-map "f" (evil-textobj-tree-sitter-get-textobj "function.inner"))
+  (define-key evil-inner-text-objects-map "f" (evil-textobj-tree-sitter-get-textobj "function.inner"))
 
   ;; You can also bind multiple items and we will match the first one we can find
-  ;;(define-key evil-outer-text-objects-map "a" (evil-textobj-tree-sitter-get-textobj ("conditional.outer" "loop.outer")))
+  (define-key evil-outer-text-objects-map "a" (evil-textobj-tree-sitter-get-textobj ("conditional.outer" "loop.outer")))
 
   ;; The first arguemnt to `evil-textobj-tree-sitter-get-textobj' will be the capture group to use
   ;; and the second arg will be an alist mapping major-mode to the corresponding query to use.
-  ;;(define-key evil-outer-text-objects-map "m" (evil-textobj-tree-sitter-get-textobj "import"
-   ;;                                             '((python-mode . [(import_statement) @import])
-    ;;                                              (rust-mode . [(use_declaration) @import]))))
+  (define-key evil-outer-text-objects-map "m" (evil-textobj-tree-sitter-get-textobj "import"
+                                                '((python-mode . [(import_statement) @import])
+                                                  (rust-mode . [(use_declaration) @import]))))
+#+end_src
+
+*** evil-visualstar
+
+[[https://github.com/bling/evil-visualstar][evil-visualstar]] Start a * or # search from the visual selection
+
+#+begin_src emacs-lisp :name evil-visualstar
+  (use-package evil-visualstar
+    :config
+    (global-evil-visualstar-mode 1))
+#+end_src
+
+*** [[https://github.com/zmaas/evil-unimpaired][evil-unimpaired]]
+
+A port of Tim Pope’s unimpaired.vim
+
+#+begin_src emacs-lisp :name evil-unimpaired
+  (use-package evil-unimpaired
+    :straight (evil-unimpaired :type git :host github :repo "zmaas/evil-unimpaired")
+    :commands evil-unimpaired-define-pair
+    :after evil
+    :init
+    (evil-unimpaired-define-pair "e" '(move-text-up . move-text-down) '(normal visual))
+    (evil-unimpaired-define-pair "q" '(flycheck-previous-error . flycheck-next-error))
+    :config
+    (evil-unimpaired-mode))
 #+end_src
 
 * Emacs Builtins
@@ -1467,7 +1777,7 @@ Tried out nano theme/modeline - was cool, going back to Doom "dark" themes
 
 *** [[https://protesilaos.com/codelog/2022-11-30-standard-themes-emacs/][standard-themes]]
 
-#+begin_src emacs-lisp :name standard-themes
++begin_src emacs-lisp :name standard-themes
   (use-package standard-themes
     :init
     (setq standard-themes-italic-constructs t
@@ -1483,28 +1793,28 @@ Tried out nano theme/modeline - was cool, going back to Doom "dark" themes
     "Configure `hl-todo-keyword-faces' with Standard themes colors.
     The exact color values are taken from the active Standard theme."
     (standard-themes-with-colors
-      (setq hl-todo-keyword-faces
-            `(("HOLD" . ,yellow)
-              ("TODO" . ,red)
-              ("NEXT" . ,blue)
-              ("THEM" . ,magenta)
-              ("PROG" . ,cyan-warmer)
-              ("OKAY" . ,green-warmer)
-              ("DONT" . ,yellow-warmer)
-              ("FAIL" . ,red-warmer)
-              ("BUG" . ,red-warmer)
-              ("DONE" . ,green)
-              ("NOTE" . ,blue-warmer)
-              ("KLUDGE" . ,cyan)
-              ("HACK" . ,cyan)
-              ("TEMP" . ,red)
-              ("FIXME" . ,red-warmer)
-              ("XXX+" . ,red-warmer)
-              ("REVIEW" . ,red)
-              ("DEPRECATED" . ,yellow)))))
+     (setq hl-todo-keyword-faces
+           `(("HOLD" . ,yellow)
+             ("TODO" . ,red)
+             ("NEXT" . ,blue)
+             ("THEM" . ,magenta)
+             ("PROG" . ,cyan-warmer)
+             ("OKAY" . ,green-warmer)
+             ("DONT" . ,yellow-warmer)
+             ("FAIL" . ,red-warmer)
+             ("BUG" . ,red-warmer)
+             ("DONE" . ,green)
+             ("NOTE" . ,blue-warmer)
+             ("KLUDGE" . ,cyan)
+             ("HACK" . ,cyan)
+             ("TEMP" . ,red)
+             ("FIXME" . ,red-warmer)
+             ("XXX+" . ,red-warmer)
+             ("REVIEW" . ,red)
+             ("DEPRECATED" . ,yellow)))))
 
   (add-hook 'standard-themes-post-load-hook #'my-standard-themes-hl-todo-faces)
-#+end_src
++end_src
 
 *** catpuccin themes
 
@@ -1513,6 +1823,38 @@ Tried out nano theme/modeline - was cool, going back to Doom "dark" themes
   ;; (load-theme 'catppuccin t)
   ;; (setq catppuccin-flavor 'mocha)
   ;; (catppuccin-reload)
+#+end_src
+
+*** tron-legacy
+
+#+begin_src emacs-lisp :name tron-legacy
+  (use-package tron-legacy-theme)
+    ;; :config
+    ;; (setq tron-legacy-theme-vivid-cursor t)
+    ;; (load-theme 'tron-legacy t))
+#+end_src
+
+*** doom-themes
+
+#+begin_src emacs-lisp :name doom-themes
+  (use-package doom-themes
+    :ensure t
+    :config
+    (setq doom-themes-enable-bold t
+          doom-themes-enable-italic t)
+    ;; (load-theme 'doom-moonlight t)
+
+    (setq doom-themes-treemacs-theme "doom-colors")
+    ;; (doom-themes-treemacs-config)
+    ;; (doom-themes-org-config)
+    )
+#+end_src
+
+*** gotham-theme
+
+#+begin_src emacs-lisp :name gotham
+  (use-package gotham-theme)
+  (load-theme 'gotham t)
 #+end_src
 
 ** [[https://github.com/seagle0128/doom-modeline][doom-modeline]]
@@ -1548,7 +1890,6 @@ A really nice and performant modeline broken out of [[https://github.com/hlissne
 #+end_src
 
 * Completion
-
 
 ** Company
 
@@ -2738,14 +3079,6 @@ The GNU Emacs Garbage Collector Magic Hack
   (add-hook 'focus-out-hook #'gcmh-idle-garbage-collect)
   (add-hook 'suspend-hook #'gcmh-idle-garbage-collect)
 #+end_src
-** [[https://github.com/emacs-evil/goto-chg][goto-chg]]
-
-Provides support for the motions g; g, and for the last-change-register ., also
-provides the functions goto-last-change and goto-last-change-reverse.
-
-#+begin_src emacs-lisp :name goto-chg
-(use-package goto-chg)
-#+end_src
 
 ** [[http://www.emacswiki.org/emacs/HelpPlus][HelpPlus]]
 
@@ -2867,8 +3200,6 @@ Incorporate projectile into consult
   (use-package consult-projectile
     :straight (consult-projectile :type git :host gitlab :repo "OlMon/consult-projectile" :branch "master"))
 #+end_src
-
-
 
 ** [[https://github.com/iqbalansari/restart-emacs][restart-emacs]]
 
@@ -3038,14 +3369,14 @@ Auto-saving buffers.
   (super-save-mode +1)
 #+end_src
 
-** [[https://github.com/Alexander-Miller/treemacs][treemacs]]
+*** [[https://github.com/Alexander-Miller/treemacs][treemacs]]
 
 #+begin_src emacs-lisp :name treemacs
   (use-package treemacs
     :custom (treemacs-project-follow-cleanup t))
 #+end_src
 
-** [[https://gitlab.com/ideasman42/emacs-undo-fu][undo-fu]] & undo-fu-session
+*** [[https://gitlab.com/ideasman42/emacs-undo-fu][undo-fu]] & undo-fu-session
 
 #+begin_src emacs-lisp :name undo-fu
   (use-package undo-fu
@@ -3219,18 +3550,6 @@ Highlighting uncommited changes in the buffer.
 
 *** TODO Try git-gutter+ to see if that helps with Tramp + git-gutter
 
-** [[https://github.com/dgutov/diff-hl][diff-hl]]
-
-diff-hl works much better with Tramp - it actually allows me to toggle it off when working w/ remote files.
-
-+begin_src emacs-lisp :name diff-hl
-  (use-package diff-hl
-    :init
-    (setq diff-hl-disable-on-remote t)
-    :config
-    (diff-hl-margin-mode))
-#+end_rc
-
 ** [[https://magit.vc/][Magit]]
 
 The absolutely best git porcelain on Planet Earth.
@@ -3243,15 +3562,20 @@ https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
 #+begin_src emacs-lisp :name magit
   (use-package magit
     :defer t
+    :commands (magit-dispatch)
     :general
     (:prefix "C-x"
              "g" 'magit-dispatch)
     :hook (git-commit-setup-hook . git-commit-turn-on-flyspell)
     :init
+    (add-hook 'git-commit-setup-hook 'git-commit-turn-on-flyspell)
     (if IS-MAC
         (setq magit-git-executable "/opt/homebrew/bin/git")
       (setq magit-git-executable "/usr/local/bin/git"))
     :config
+    ;; Add git-timemachine to the magit-dispatch transient map.
+    (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
+
     (setq  magit-log-arguments '("--graph" "--decorate" "--color")
            magit-revert-buffers 'silent
            magit-revision-show-gravatars '("^Author:     " . "^Commit:     ")
@@ -3375,11 +3699,6 @@ c Show current commit using magit (if magit available).
     (unless (featurep 'git-timemachine)
       (require 'git-timemachine))
     (git-timemachine--start #'my-git-timemachine-show-selected-revision))
-
-  ;; Add git timemachine to the end of the magit-dispatch transient keymap.
-  (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
-
-
 #+end_src
 
 ** [[https://github.com/torgeir/helm-hunks.el][helm-hunks]]
@@ -3430,7 +3749,7 @@ https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
   (use-package lsp-mode
     :commands (lsp lsp-deferred)
     :hook ((lsp-mode . lsp-enabled-which-key-integration)
-           (python-mode . lsp-deferred)
+           (python-mode . lsp)
            (clojure-mode . lsp-deferred))
     :init (setq lsp-enable-symbol-highlighting t
                 lsp-lens-enable t
@@ -3446,17 +3765,17 @@ Higher level UI elements for lsp-mode, e.g. flycheck support, code lenses.
 
 #+begin_src emacs-lisp :name lsp-ui
   (use-package lsp-ui
-    :commands lsp-ui-mode
+    :commands (lsp-ui-mode)
+    :general
+    (:keymaps 'lsp-ui-mode-map
+              [remap xref-find-definitions] #'lsp-ui-peek-find-definitions
+              [remap xref-find-references] #'lsp-ui-peek-find-references)
     :hook (lsp-mode . lsp-ui-mode)
     :init
     (setq lsp-ui-doc-position 'bottom
           lsp-ui-doc-header t
           lsp-ui-doc-include-signature t
           lsp-ui-sideline-enable nil))
-
-  ;; Remap find-definitions/references to the peek functions.
-  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
 #+end_src
 
 ** [[https://github.com/emacs-lsp/lsp-ivy][lsp-ivy]]
@@ -3468,18 +3787,6 @@ Ivy interface to workspace symbol functionality offered by `lsp-mode`.
 
 #+begin_src emacs-lisp :name lsp-ivy
   (use-package lsp-ivy)
-#+end_src
-
-** [[https://github.com/emacs-lsp/lsp-treemacs][lsp-treemacs]]
-
-- lsp-treemacs-errors-list
-- lsp-treemacs-symbols
-- lsp-treemacs-references/implementations
-- lsp-treemacs-call-hierarchy
-
-#+begin_src emacs-lisp :name lsp-treemacs
-  (use-package lsp-treemacs
-    :after lsp)
 #+end_src
 
 ** [[https://github.com/emacs-lsp/dap-mode/tree/a31f2496605d076d50d49393116f77fbb29f2631][dap-mode]]
@@ -3519,20 +3826,6 @@ pyright - faster
                '((company-capf company-dabbrev-code :with company-yasnippet :separate
                                company-files))))
   (add-hook 'prog-mode-hook #'prog-mode-company-backends-hook)
-#+end_src
-
-** [[https://github.com/joaotavora/breadcrumb][breadcrumb mode]]
-
-Breadcrumbs to show where you are - particularly helpful showing where you are in some spaghetti code... like where I work :)
-
-Use *breadcrumb-local-mode*
-
-This is only necessary for *eglot*, *lsp-mode* already has its own version of breadcrumbs.
-
-#+begin_src emacs-lisp :name breadcrumbs
-  (use-package breadcrumb
-    :straight (breadcrumb :type git :host github :repo "joaotavora/breadcrumb"))
-  (require 'breadcrumb)
 #+end_src
 
 ** [[http://www.flycheck.org/en/latest/][flycheck]]
@@ -3811,6 +4104,10 @@ This is really just for Java interop while doing Clojure.  It uses [[https://pro
 
 I prefer to use miniconda, I feel it is a cleaner virtual environment
 
+Using with Tramp & Docker:
+https://www.reddit.com/r/emacs/comments/kymvrz/emacs_lsp_with_docker_conda/
+https://github.com/necaris/conda.el/issues/30
+
 #+begin_src emacs-lisp :name conda
   (use-package conda
     :init
@@ -3955,10 +4252,11 @@ Major mode for editing [[http://daringfireball.net/projects/markdown/][Markdown]
            ("\\.markdown\\'" . markdown-mode))
     :init (setq markdown-command "multimarkdown")
     :config
-    (defun flex-emacs:markdown ()
-      (interactive)
-      (smartparens-mode -1))
-    (add-hook 'markdown-mode #'flex-emacs:markdown))
+    ;; (defun flex-emacs:markdown ()
+    ;;   (interactive)
+    ;;   (smartparens-mode -1))
+    ;; (add-hook 'markdown-mode #'flex-emacs:markdown)
+    )
 
   (deftpunk-local-leader-def
     :keymaps 'markdown-mode
@@ -4018,7 +4316,7 @@ TODO: Check [[https://github.com/zkry/yaml-pro][yaml-pro]] which uses treesitter
 
 https://systemcrafters.cc/emacs-from-scratch/learn-to-love-the-terminal-modes/
 
-*** [[https://github.com/akermu/emacs-libvterm][vterm]]
+** [[https://github.com/akermu/emacs-libvterm][vterm]]
 
 A fully fledged terminal emulator within Emacs
 
@@ -4027,6 +4325,9 @@ You need to have cmake installed in order to build libvterm.
 #+begin_src emacs-lisp :name vterm
   (use-package vterm)
 #+end_src
+
+*** TODO vterm-toggle
+https://github.com/jixiuf/vterm-toggle
 
 * Keybindings
 
@@ -4092,8 +4393,9 @@ TODO: Work out personal prefixes:
     (
      "Magit"
      (("d" magit-file-dispatch "do stuff with git")
-      ("g" magit-status "magit status")
-      ("G" deftpunk:unpackaged/magit-status "Only magit-status")
+      ("g" magit-dispatch "Magit dispatch")
+      ("s" magit-status "magit status")
+      ("S" deftpunk:unpackaged/magit-status "Only magit-status")
       ("l" magit-log "Git log"))
      "Change Hunks"
      (("h" helm-hunks-current-buffer "Helm Git hunks")
@@ -4177,7 +4479,7 @@ TODO: Work out personal prefixes:
       ("r" counsel-rg "Ripgrep")
       ("s" deftpunk/recenter-swiper "Swiper")
       ("w" save-buffer "Save Buffer")
-      ("y" helm-show-kill-ring "Kill ring"))
+      ("y" consult-yank-pop "Kill ring"))
 
      "Version Control"
      (("g" version-control-hydra/body "Git stuff"))
@@ -4188,10 +4490,9 @@ TODO: Work out personal prefixes:
      "Exit"
      (("q" save-buffers-kill-terminal "Exit Emacs"))))
 
-    (global-set-key (kbd "<BLAH-i>") 'hydra-jk/body)
-  ;;(deftpunk-leader-def "" 'hydra-jk/body)
+  ;; (global-set-key (kbd "<BLAH-i>") 'hydra-jk/body)
+  (deftpunk-leader-def "" 'hydra-jk/body)
 #+end_src
-
 
 *** Righteous keybindings
 
@@ -4257,12 +4558,11 @@ TODO: Work out personal prefixes:
   (global-set-key (kbd "s-j") 'crux-top-join-line)
   (global-set-key (kbd "s-k") 'crux-kill-whole-line) ; or do zap-to-char?
 
+  (global-unset-key (kbd "s-l"))
+  (global-set-key (kbd "s-l") 'recenter-top-bottom)
+
   (global-set-key (kbd "s-[") 'my/scroll-up-half-page)
   (global-set-key (kbd "s-]") 'my/scroll-down-half-page)
-
-  ;; Because i keep missing the Alt key
-  (global-set-key (kbd "s-<") 'beginning-of-buffer)
-  (global-set-key (kbd "s->") 'end-of-buffer)
 
   (with-eval-after-load "org"
     (define-key org-mode-map (kbd "C-'") nil))
@@ -4319,6 +4619,20 @@ TODO: Work out personal prefixes:
 #+end_src
 
 *** Evil keybindings
+**** Insert mode
+
+#+begin_src emacs-lisp :name insert-mode
+  (define-key evil-insert-state-map (kbd "C-a") 'crux-move-beginning-of-line)
+  (define-key evil-insert-state-map (kbd "C-e") 'move-end-of-line)
+  (define-key evil-insert-state-map (kbd "C-k") 'crux-smart-kill-line)
+#+end_src
+
+**** Motion mode
+
+#+begin_src emacs-lisp :name motion-mode
+  (evil-define-key nil evil-motion-state-map "<SPC>" nil)
+#+end_src
+
 **** Normal mode
 
 TODO: Incorporate some of the commands into my normal keybindings.
@@ -4326,6 +4640,7 @@ TODO: Incorporate some of the commands into my normal keybindings.
 
 Normal mode keybindings that I make for myself.
 
+#+begin_src emacs-lisp :name normal-state
   ;; NOTE: The org-open-at-point will open a "Babel Results" window when this function is called
   ;;       inside a src block
   (defun deftpunk/url-at-point ()
@@ -4394,6 +4709,8 @@ Normal mode keybindings that I make for myself.
   ;; Combine avy with d, y, c motions
   (evil-global-set-key 'motion "f" 'evil-avy-goto-char-in-line)
 
+#+end_src
+
 *** [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]]
 
 Map pairs of simultaneously pressed keys to commands.
@@ -4457,3 +4774,10 @@ https://robbmann.io/emacsd/#pyright-error-links-in-and-lowast-compilation-and-lo
 *** elips bug hunter
 https://github.com/Malabarba/elisp-bug-hunter
 
+*** Use ace-window dispatch to delete buffer in other window
+
+*** Why does <ESC> kill the other window??
+
+*** Get breadcrumb to work
+
+https://github.com/joaotavora/breadcrumb
