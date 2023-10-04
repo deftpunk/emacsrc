@@ -1058,9 +1058,9 @@ Better *j* & *k* navigation.
 
 *** TODO: evil-embrace - integrates with evil-surround.
 
-*** evil-exchange
+*** [[https://github.com/Dewdrops/evil-exchange][evil-exchange]]
 
-[[https://github.com/Dewdrops/evil-exchange][evil-exchange]] - A text exchange operator
+A text exchange operator
 
 #+begin_src emacs-lisp :name evil-exchange
   (use-package evil-exchange
@@ -1070,9 +1070,9 @@ Better *j* & *k* navigation.
     (evil-exchange-install))
 #+end_src
 
-*** evil-goggles
+*** [[https://github.com/edkolev/evil-goggles][evil-goggles]]
 
-[[https://github.com/edkolev/evil-goggles][evil-goggles]] Display a visual hint when editing with evil.
+Display a visual hint when editing with evil.
 
 #+begin_src emacs-lisp :name evil-goggles
 (use-package evil-goggles
