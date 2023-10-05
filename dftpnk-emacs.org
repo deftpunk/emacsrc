@@ -4475,7 +4475,8 @@ TODO: Work out personal prefixes:
       ("nt" org-roam-tag-add "Add Org Roam tag(s) to node files"))
 
      "Files, Directories, Projects"
-     (("ff" counsel-find-file "Find Files")
+     (("fb" consult-bookmark "Bookmarks")
+      ("ff" counsel-find-file "Find Files")
       ("ft" vterm "Terminal")
       ("fp" projectile-find-file "Find files in Project"))
 
@@ -4634,12 +4635,16 @@ TODO: Work out personal prefixes:
   (define-key evil-insert-state-map (kbd "C-a") 'crux-move-beginning-of-line)
   (define-key evil-insert-state-map (kbd "C-e") 'move-end-of-line)
   (define-key evil-insert-state-map (kbd "C-k") 'crux-smart-kill-line)
+  (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 #+end_src
 
 **** Motion mode
 
 #+begin_src emacs-lisp :name motion-mode
   (evil-define-key nil evil-motion-state-map "<SPC>" nil)
+
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
 #+end_src
 
 **** Normal mode
@@ -4680,11 +4685,6 @@ Normal mode keybindings that I make for myself.
 
    ;; 'z' commands
    "zs" 'my-save-word  ; add current word to personal dictionary.
-
-   ;; Evil doesn't allow you to overload like Vim/Neovim do.  So this fails because s is not a prefix key.
-   ;; But 'v' gets blown away and doesn't fail with the same error???
-   ;; "ss" 'deftpunk:split-horizontally-recenter
-   ;; "vv" 'deftpunk:split-vertically-recenter
 
    )
 
