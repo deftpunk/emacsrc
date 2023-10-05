@@ -2757,6 +2757,12 @@ Org mode related investigations:
     (org-remove-occur-highlights)
     )
 
+  (defun timu/org-go-to-heading (&optional arg)
+    "Go to an Org heading and move to the top of the buffer."
+    (interactive)
+    (consult-org-heading)
+    (evil-scroll-line-to-top arg))
+
   ;;; Keybindings
 
   ;; Keys for org-mode-map
@@ -2772,7 +2778,7 @@ Org mode related investigations:
     "a" '(org-todo-buffer :which-key "Show TODOs for current buffer.")
     "c" '(org-todo :which-key "Org Todo + Todo States")
     "e" '(org-edit-special :which-key "Edit blk in special buffer")
-    "h" '(counsel-imenu :which-key "Org Headers")
+    "h" '(timu/org-go-to-heading :which-key "Org Headers")
     "i" '(org-insert-link :which-key "Org Insert link")
     "n" '(org-babel-next-src-block :which-key "Go to the next src block")
     "o" '(ace-link-org :which-key "Links in Org mode document")
