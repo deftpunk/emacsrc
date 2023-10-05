@@ -2677,7 +2677,10 @@ Org mode related investigations:
   ;; Speed keys for faster navigation.
   ;; https://www.reddit.com/r/emacs/comments/tk8qou/org_speed_keys_boom_great_orgmodes_feature_and_a/
   ;; These don't work in Normal mode (and never will) but do in Insert mode.  See the above link for why.
-  (setq org-use-speed-commands t)
+  ;; (setq org-use-speed-commands t)
+
+  ;; Expand headings with Tab.
+  (evil-define-key 'normal org-mode-map (kbd "<tab>") #'org-cycle)
 
   ;; This makes quote/verse blocks show up nicely in modus themes.
   (setq org-fontify-quote-and-verse-blocks t)
