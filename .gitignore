@@ -42,3 +42,7 @@ loaddefs.el~
 /etc/recentf-save.el
 /.DS_Store
 /.dap-breakpoints
+
+# treesitter
+tree-sitter-module/
+tree-sitter/
