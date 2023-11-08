@@ -7,6 +7,9 @@
 # Backup files
 *~
 
+# ignore broken files
+*.broken
+
 # init files - will be regenerated on org-bable-tangle
 early-init.el
 init.el
@@ -19,6 +22,7 @@ url/
 transient/
 dash-docsets/
 .cache/
+devdocs/
 
 var/
 eln-cache/
