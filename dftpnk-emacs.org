@@ -344,9 +344,9 @@ Similar to packages like =minions=, =diminish=, or =delight=. You can alter how 
 in the mode-line.
 
 #+begin_src emacs-lisp :name blackout
-(use-package blackout
-  :demand t
-  :straight (:host github :repo "raxod502/blackout"))
+  (use-package blackout
+    :demand t
+    :straight (:host github :repo "raxod502/blackout"))
 #+end_src
 
 *** [[https://github.com/noctuid/general.el][General]]
@@ -387,6 +387,7 @@ Display keybindings following your prefix command in a popup.
 
 #+begin_src emacs-lisp :name which-key
   (use-package which-key
+    :blackout t
     :commands (which-key-mode)
     :hook (on-first-input . which-key-mode)
     :init
@@ -417,6 +418,7 @@ is found on [[https://github.com/hlissner/doom-emacs/issues/4729][GitHub]].
 
 #+begin_src emacs-lisp :name mixed-pitch
   (use-package mixed-pitch
+    :blackout t
     :hook
     (text-mode . mixed-pitch-mode)
     :config
@@ -1760,6 +1762,7 @@ Show hex codes as their actual color.
 #+begin_src emacs-lisp :name rainbow-mode
   (use-package rainbow-mode
     :defer t
+    :blackout t
     :commands rainbow-turn-on
     :init
     (add-hook 'prog-mode-hook 'rainbow-turn-on)
@@ -1984,12 +1987,13 @@ A collection of ivy-enhanced versions of common Emacs commands.
 
 #+begin_src emacs-lisp :name counsel
   (use-package counsel
-    :delight
+    :blackout t
     :bind (:map ivy-minibuffer-map
                 ([escape] . minibuffer-keyboard-quit))
     :init
     (setq ivy-use-virtual-buffers t
-          counsel-rg-base-command "rg -i -M 120 --no-heading --line-number --color never %s .")
+          counsel-rg-base-command "rg -i -M 120 --no-heading --line-number --color never %s ."
+          counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
     :config
     (counsel-mode 1))
 #+end_src
@@ -1998,7 +2002,7 @@ A collection of ivy-enhanced versions of common Emacs commands.
 
 #+begin_src emacs-lisp :name ivy
   (use-package ivy
-    :delight
+    :blackout t
     :general
     (:keymaps 'ivy-minibuffer-map
 	      "C-d" 'delete-forward-char
@@ -2813,6 +2817,7 @@ Implements a "modern" style for Org buffers.
   (advice-add 'org-beginning-of-line :after #'disable-point-adjustment)
 
   (use-package org-modern
+    :blackout t
     :config
     (setq
      ;; Edit settings
@@ -2887,6 +2892,7 @@ emphasized word.
 
 #+begin_src emacs-lisp :name org-appear
   (use-package org-appear
+    :blackout t
     :hook (org-mode . org-appear-mode))
 #+end_src
 
@@ -2894,6 +2900,7 @@ emphasized word.
 
 #+begin_src emacs-lisp :name org-roam
   (use-package org-roam
+    :blackout t
     :init
     (setq org-roam-directory "~/MyStuff/DeftpunkRoamNotes"
           org-roam-v2-ack t)
@@ -3210,6 +3217,8 @@ Incorporate projectile into consult
     :straight (consult-projectile :type git :host gitlab :repo "OlMon/consult-projectile" :branch "master"))
 #+end_src
 
+
+
 ** [[https://github.com/iqbalansari/restart-emacs][restart-emacs]]
 
 Restart Emacs from within Emacs.
@@ -3408,10 +3417,14 @@ Unobtrusively trim spaces from the end of a line.
 #+begin_src emacs-lisp :name ws-butler
   (use-package ws-butler
     :straight (ws-butler :type git :host github :repo "hlissner/ws-butler")
+    :blackout t
     :hook ((text-mode . ws-butler-mode)
            (prog-mode . ws-butler-mode))
     :custom
     (ws-butler-keep-whitespace-before-point nil))
+
+  ;; show trailing whitespace
+  (setq show-trailing-whitespace t)
 #+end_src
 
 ** [[https://github.com/joaotavora/yasnippet][yasnippet]] and [[https://github.com/AndreaCrotti/yasnippet-snippets][yasnippet-snippets]]
@@ -3441,6 +3454,8 @@ Reload all snippets: ~ya-reload-all~
 
   (yas-global-mode 1)
   (yas-reload-all)
+  (blackout 'yas-mode)
+  (blackout 'yas-minor-mode)
 #+end_src
 
 *** [[https://www.emacswiki.org/emacs/AutoInsertMode][auto-insert]]
@@ -3518,13 +3533,13 @@ Highlighting uncommited changes in the buffer.
 
 #+begin_src emacs-lisp :name git-gutter
   (use-package git-gutter
+    :blackout t
     :hook (prog-mode . git-gutter-mode)
     :init
     (setq git-gutter:update-interval 0.1     ; update as frequently as possible
           git-gutter:hide-gutter t           ; hide git-gutter if there are no changes
           git-gutter:verbosity 0             ; make git-gutter quiet
           git-gutter:handled-backends '(git) ; we only use git
-          git-gutter:lighter " GG"           ; use GG in the modeline
           )
 
     ;; Disable in some modes - comment from Doom Emacs:
