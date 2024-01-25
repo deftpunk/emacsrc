@@ -1089,6 +1089,9 @@ https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
            ;; trigger a bunch of unwanted side-effects, like save hooks and
            ;; formatters. Trust us to know what we're doing.
            magit-save-repository-buffers nil))
+
+  (use-package forge
+    :after magit)
 #+end_src
 
 TODO: Another codereview from magit tool https://github.com/blahgeek/emacs-pr-review for doing reviews with GitHub
