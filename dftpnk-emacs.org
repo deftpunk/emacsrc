@@ -879,11 +879,49 @@ Add marginalia to minibuffer completions.
 #+end_src
 
 ** Emacs builtin modes
+*** [[https://www.emacswiki.org/emacs/AbbrevMode][abbreviations]]
+
+#+begin_src emacs-lisp :name abbreviations
+  (setq save-abbrevs 'silently
+        abbrev-file-name (expand-file-name "abbrev_defs" deftpunk--etc-dir))
+
+  ;; Turn abbreviations on globally.
+  (setq-default abbrev-mode t)
+  (blackout 'abbrev-mode)
+
+  ;; Read the abbrev file on startup.
+  (quietly-read-abbrev-file)
+#+end_src
+
 *** auto-save & backups
 
 Saving and backing up files. While its nice to assume that everything is in source control this is a handy fallback.
 
 #+begin_src emacs-lisp :name auto-save-backup
+  ;; https://www.emacswiki.org/emacs/BackupDirectory
+  ;; https://stackoverflow.com/questions/151945/how-do-i-control-how-emacs-makes-backup-files
+
+  ;; Default and per-save backups go here:
+  (setq backup-directory-alist '(("" . (expand-file-name "backups/per-save" deftpunk--var-dir)))
+        auto-save-file-name-transforms '((".*" ,(expand-file-name "backups/per-save" deftpunk--var-dir) t)))
+
+
+  (defun force-backup-of-buffer ()
+    ;; Make a special "per session" backup at the first save of each
+    ;; emacs session.
+    (when (not buffer-backed-up)
+      ;; Override the default parameters for per-session backups.
+      (let ((backup-directory-alist '(("" . "~/.emacs.d/backup/per-session")))
+            (kept-new-versions 3))
+        (backup-buffer)))
+    ;; Make a "per save" backup on each save.  The first save results in
+    ;; both a per-session and a per-save backup, to keep the numbering
+    ;; of per-save backups consistent.
+    (let ((buffer-backed-up nil))
+      (backup-buffer)))
+
+  (add-hook 'before-save-hook  'force-backup-of-buffer)
+
   (setq version-control t              ; Use version numbers for backup
         kept-new-versions 5            ; Number of newest version to keep around
         kept-old-versions 0            ; Number of oldest versions to keep around
