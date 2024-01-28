@@ -976,6 +976,32 @@ Remembering the last place you visited in a file.
   (add-hook 'find-file-hook 'save-place-find-file-hook t)
 #+end_src
 
+** Emacs Enhancements
+*** [[https://github.com/abo-abo/ace-window][ace-window]]
+
+Selecting a window/frame to switch to
+
+#+begin_src emacs-lisp :name ace-window
+  (use-package ace-window
+    :bind (("C--" . ace-window))
+    :init
+    (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)
+          aw-leading-char-style 'path
+          aw-background t
+          aw-dispatch-always t)
+    :config
+    (set-face-attribute 'aw-leading-char-face nil :height 4.0))
+#+end_src
+
+*** [[https://github.com/abo-abo/ace-link][ace-link]]
+
+Select a link to jump to in Info, help, woman, org or eww modes
+
+#+begin_src emacs-lisp :name ace-link
+   (use-package ace-link
+     :init (ace-link-setup-default))
+#+end_src
+
 ** Org
 
 *** Configuration
