@@ -693,6 +693,25 @@ Make the icons in Emacs pretty. Don't forget to run =M-x all-the-icons-install-f
   (use-package all-the-icons)
 #+end_src
 
+*** [[https://github.com/hlissner/emacs-solaire-mode][solaire-mode]]
+
+Help visually distinguish buffers. If you don't like the lighter/darker arrangement you can change it with =(add-to-list 'solaire-mode-themes-to-face-swap 'doom-vibrant)=
+
+Supported themes:
+- Doom themes
+- nano-theme
+- modus-themes
+- parchment
+- spacemacs-theme
+- vscode-dark-plus-theme
+- wilmersdorf-theme
+
+#+begin_src emacs-lisp :name solaire-mode
+  (use-package solaire-mode
+    :config
+    (solaire-global-mode +1))
+#+end_src
+
 ** Completion Frameworks
 
 *** vertico
