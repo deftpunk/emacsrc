@@ -1237,9 +1237,28 @@ TODO: fixes code-review: https://github.com/wandersoncferreira/code-review/pull/
 
 ** General Software Development
 *** lispy
+** Miscellaneous File types
+*** Markdown
+**** [[http://jblevins.org/projects/markdown-mode/][Markdown Mode]]
+
+Major mode for editing [[http://daringfireball.net/projects/markdown/][Markdown]] formatted text.
+
+#+begin_src emacs-lisp :name markdown
+  (use-package markdown-mode
+    :defer t
+    :commands (markdown-mode gfm-mode)
+    :hook (markdown-mode . flyspell-mode)
+    :mode (("README\\.md\\'" . gfm-mode)
+           ("\\.md\\'"       . markdown-mode)
+           ("\\.markdown\\'" . markdown-mode))
+    :init
+    (setq markdown-command "/opt/homebrew/bin/multimarkdown"
+          markdown-header-scaling t)
+    )
+#+end_src
+
 
 ** Keybindings and related functionality
-
 *** Matching parens ala %
 
 #+begin_src emacs-lisp :name matching-parens
