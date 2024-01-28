@@ -413,6 +413,15 @@ Display keybindings following your prefix command in a popup.
     (which-key-mode +1))
 #+end_src
 
+*** [[https://github.com/abo-abo/hydra][hydra]]
+
+Use hydra for repeating keys.
+
+#+begin_src emacs-lisp :name hydra
+  (use-package hydra)
+  (elpaca-wait)
+#+end_src
+
 ** Some useful functions
 
 #+begin_src emacs-lisp :name some-macros-and-functions
