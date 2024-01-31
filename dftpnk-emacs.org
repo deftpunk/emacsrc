@@ -228,6 +228,7 @@ https://emacsnotes.wordpress.com/2022/09/11/three-bonus-keys-c-i-c-m-and-c-for-y
   (global-unset-key (kbd "s-p"))
   (global-unset-key (kbd "s-s"))
   (global-unset-key (kbd "s-t"))
+  (global-unset-key (kbd "s-y"))
 #+end_src
 
 #+name: early-init-footer-block
@@ -925,7 +926,9 @@ Search and navigation commands based on the Emacs completion function
 
   ;; Revert buffers when the underlying file has changed.
   (global-auto-revert-mode 1)
-
+  ;; Revert Dired and other buffers
+  (setq global-auto-revert-non-file-buffers t)
+  
   ;; no lockfiles
   (setq create-lockfiles nil)
 #+end_src
@@ -983,14 +986,14 @@ Saving and backing up files. While its nice to assume that everything is in sour
         )
 #+end_src
 *** Dired
-
+*** Helpful
 *** [[https://www.emacswiki.org/emacs/SaveHist][savehist]]
 
 Save the minibuffer history.
 
 #+begin_src emacs-lisp :name savehist
   (setq savehist-file (expand-file-name "savehist" deftpunk--var-dir)
-        history-length 100
+        history-length 65                                                ; reducing size helps reduce startup cost.
         history-delete-duplicates t
         savehist-save-minibuffer-history t
         savehist-additional-variables '(kill-ring
