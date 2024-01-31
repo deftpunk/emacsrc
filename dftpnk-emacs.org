@@ -1282,7 +1282,8 @@ https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
     :commands (magit-dispatch)
     :general
     (:prefix "C-x"
-             "g" 'magit)
+             "g" 'magit-status
+             "C-g" 'magit-status)
     :hook (git-commit-setup-hook . git-commit-turn-on-flyspell)
     :init
     (if IS-MAC
