@@ -1411,7 +1411,7 @@ https://oremacs.com/2015/02/25/rectangle-hydra/
   (global-set-key (kbd "C-x SPC") 'hydra-rectangle/body)
 #+end_src
 
-**** deftpunk-g-def bindings
+*** deftpunk-g-def bindings
 
 Just like the Neovim "g<letter>" bindings.
 
@@ -1437,4 +1437,50 @@ Just like the Neovim "g<letter>" bindings.
     "x" deftpunk/url-at-point
     )
 
+#+end_src
+
+*** Change help-map
+
+=which-key-show-full-keymap=
+
+#+begin_src emacs-lisp :name change-help-map
+  (global-unset-key (kbd "C-h"))
+  (setq help-char nil)                  ; Makes C-h work as another key in different contexts
+  (global-unset-key (kbd "M-h"))        ; was mark-paragraph
+  (global-set-key (kbd "M-h") help-map)
+#+end_src
+
+
+
+*** Window management/navigation bindings
+
+#+begin_src emacs-lisp :name windows-bindings
+  (global-set-key (kbd "C--") 'ace-window)
+
+  ;; Move around
+  (global-set-key (kbd "s-h") 'windmove-left)
+  (global-set-key (kbd "s-j") 'windmove-down)
+  (global-set-key (kbd "s-k") 'windmove-up)
+  (global-set-key (kbd "s-l") 'windmove-right)
+#+end_src
+
+*** [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]]
+
+Map pairs of simultaneously pressed keys to commands.
+
+Keychord does have some drawbacks:
+1. Doesn't get recorded when recording macros.
+2. Can't use function keys in keychords
+3. Doesn't work well with internationalization packages.
+
+I use something similar in Neovim to bring up ":"
+
+#+begin_src emacs-lisp :name jk-binding
+  (use-package key-chord
+    :commands (key-chord-define-global)
+    :init
+    (key-chord-mode 1)
+    (key-chord-define-global "jk" 'helm-M-x)
+    (key-chord-define-global "hh" 'split-window-below)
+    (key-chord-define-global "vv" 'split-window-right))
 #+end_src
