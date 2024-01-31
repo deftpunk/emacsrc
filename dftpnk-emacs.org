@@ -55,6 +55,16 @@ to handle things like fuzzy completion and language-server requirements. (See al
   (defvar extended-gc-cons-threshold most-positive-fixnum)
   (defvar default-gc-cons-threshold (* 100 1024 1024))
 
+  ;; Prevents libgccjit error, sort of.
+  ;; I had to uninstall/re-install, then run `emacs -nw` to get the native-comp to work properly.
+  ;; Solution found at: https://github.com/d12frosted/homebrew-emacs-plus/issues/554
+  (setenv "LIBRARY_PATH"
+          (string-join
+           '("/usr/local/opt/gcc/lib/gcc/13"
+             "/usr/local/opt/libgccjit/lib/gcc/13"
+             "/usr/local/opt/gcc/lib/gcc/13/gcc/x86_64-apple-darwin21/13")
+           ":"))
+
   ;; Native Compilation Vars
   (when (featurep 'native-compile)
     (setq native-comp-speed 2
@@ -66,10 +76,6 @@ to handle things like fuzzy completion and language-server requirements. (See al
       (if (version< emacs-version "29")
           (add-to-list 'native-comp-eln-load-path (convert-standard-filename (expand-file-name "var/eln-cache/" user-emacs-directory)))
         (startup-redirect-eln-cache (convert-standard-filename (expand-file-name "var/eln-cache/" user-emacs-directory))))))
-
-  ;; Prevents libgccjit error
-  ;; Solution found at: https://github.com/d12frosted/homebrew-emacs-plus/issues/323
-  (setenv "LIBRARY_PATH" "/usr/local/opt/gcc/lib/gcc/13:/usr/local/opt/libgccjit/lib/gcc/13:/usr/local/opt/gcc/lib/gcc/13/gcc/x86_64-apple-darwin21/13")
 
   (setq-default auto-window-vscroll nil
                 bidi-display-reordering 'left-to-right
