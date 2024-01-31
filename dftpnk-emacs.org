@@ -1367,9 +1367,7 @@ I might as well take advantage of my Neovim habit.
   (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
 #+end_src
 
-*** Deftpunk bindings
-
-**** Rectangle hydra
+*** Rectangle hydra
 
 A Hydra for dealing w/ rectangle selection.
 https://oremacs.com/2015/02/25/rectangle-hydra/
