@@ -1491,7 +1491,11 @@ I use something similar in Neovim to bring up ":"
     :commands (key-chord-define-global)
     :init
     (key-chord-mode 1)
-    (key-chord-define-global "jk" 'helm-M-x)
-    (key-chord-define-global "hh" 'split-window-below)
-    (key-chord-define-global "vv" 'split-window-right))
+
+  (key-chord-define-global "jk" 'execute-extended-command)
+  (key-chord-define-global "hh" 'split-window-below)
+  (key-chord-define-global "vv" 'split-window-right))
+
+
+
 #+end_src
