@@ -202,6 +202,7 @@
     ("tweakign" "tweaking" nil :count 1)
     ("tyr" "try" nil :count 2)
     ("upate" "update" nil :count 1)
+    ("useing" "using" nil :count 1)
     ("ussign" "using" nil :count 1)
     ("vinding" "binding" nil :count 1)
     ("wehn" "when" nil :count 1)

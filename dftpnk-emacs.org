@@ -970,9 +970,10 @@ Search and navigation commands based on the Emacs completion function
 ** Emacs builtin modes
 *** [[https://www.emacswiki.org/emacs/AbbrevMode][abbreviations]]
 
+The abbreviations file is saved by =no-littering= into our =etc/= directory.
+
 #+begin_src emacs-lisp :name abbreviations
-  (setq save-abbrevs 'silently
-        abbrev-file-name (expand-file-name "abbrev_defs" deftpunk--etc-dir))
+  (setq-default save-abbrevs 'silently)
 
   ;; Turn abbreviations on globally.
   (setq-default abbrev-mode t)
