@@ -418,9 +418,9 @@ Display keybindings following your prefix command in a popup.
     :blackout
     :commands (which-key-mode)
     :hook (on-first-input . which-key-mode)
-    :init
-    (setq which-key-enable-exteded-define-key t
-          which-key-idle-delay 0.5)
+    :custom
+    (which-key-enable-exteded-define-key t)
+    (which-key-idle-delay 0.5)
     :config
     (elpaca-wait)
     (which-key-mode +1))
