@@ -714,7 +714,22 @@ Supported themes:
 
 ** Completion Frameworks
 
-*** vertico
+*** [[https://github.com/minad/vertico][vertico]]
+
+Vertical completion UI based on the default completion system.
+
+#+begin_src emacs-lisp :name vertico
+  (use-package vertico
+    :general
+    (:keymaps 'vertico-map
+              "<escape>" #'minibuffer-keyboard-quit
+              )
+    :custom
+    (vertico-resize t)
+    (vertico-cycle t)
+    :config
+    (vertico-mode))
+#+end_src
 
 *** [[https://github.com/minad/marginalia][Marginalia]]
 
@@ -729,6 +744,43 @@ Add marginalia to minibuffer completions.
     (setq marginalia-max-relative-age 0
           marginalia-align 'right)
     (marginalia-mode))
+#+end_src
+
+*** [[https://github.com/iyefrat/all-the-icons-completion][all-the-icons-completion]]
+
+Add icons to completion candidates.
+
+#+begin_src emacs-lisp :name all-the-icons-completion
+  (use-package all-the-icons-completion
+    :after (marginalia all-the-icons)
+    :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
+    :init
+    (all-the-icons-completion-mode))
+#+end_src
+
+*** [[https://github.com/minad/consult][consult]]
+
+Search and navigation commands based on the Emacs completion function
+
+#+begin_src emacs-lisp :name consult
+  (use-package consult
+    :bind
+    (("C-c r" . consult-ripgrep)))
+#+end_src
+
+*** embark
+
+#+begin_src emacs-lisp :name embark
+  (use-package embark
+    :bind
+    (("C-c a" . embark-act)))
+#+end_src
+
+*** embark-consult
+
+#+begin_src emacs-lisp :name embark-consult
+  (use-package embark-consult
+    :after (embark consult))
 #+end_src
 
 ** Emacs Defaults
