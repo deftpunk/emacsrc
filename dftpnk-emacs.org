@@ -753,10 +753,32 @@ Add marginalia to minibuffer completions.
     :general
     (:keymaps 'minibuffer-local-map
      "s-a" 'marginalia-cycle)
+    :custom
+    (marginalia-max-relative-age 0)
+    (marginalia-align 'right)
     :init
-    (setq marginalia-max-relative-age 0
-          marginalia-align 'right)
-    (marginalia-mode))
+    (marginalia-mode)
+    :config
+    ;; An annotator so that M-x aliases show up.
+    ;; https://www.reddit.com/r/emacs/comments/196pvtx/comment/khxa8ip/?utm_source=share&utm_medium=web2x&context=3
+    (defun marginalia-annotate-alias (cand)
+  "Annotate CAND with the function it aliases."
+  (when-let ((sym (intern-soft cand))
+         (alias (car (last (function-alias-p sym t))))
+         (name (and (symbolp alias) (symbol-name alias))))
+    (format #(" (%s)" 1 5 (face marginalia-function)) name)))
+
+    (defun marginalia-annotate-command-with-alias (cand)
+  "Annotate command CAND with its documentation string.
+    Similar to `marginalia-annotate-symbol', but does not show symbol class."
+  (when-let (sym (intern-soft cand))
+    (concat
+     (marginalia-annotate-binding cand)
+     (marginalia-annotate-alias cand)
+     (marginalia--documentation (marginalia--function-doc sym)))))
+
+    (cl-pushnew #'marginalia-annotate-command-with-alias
+        (alist-get 'command marginalia-annotator-registry)))
 #+end_src
 
 *** [[https://github.com/iyefrat/all-the-icons-completion][all-the-icons-completion]]
@@ -1473,6 +1495,12 @@ Just like the Neovim "g<letter>" bindings.
   (global-set-key (kbd "s-j") 'windmove-down)
   (global-set-key (kbd "s-k") 'windmove-up)
   (global-set-key (kbd "s-l") 'windmove-right)
+#+end_src
+
+*** Some aliases
+
+#+begin_src emacs-lisp :name defaliases
+  (defalias 'ff 'find-file)
 #+end_src
 
 *** [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]]
