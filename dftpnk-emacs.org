@@ -742,22 +742,74 @@ https://www.gnu.org/software/emacs/manual/html_node/emacs/Minibuffer-Maps.html
   (keymap-set minibuffer-local-filename-completion-map "C-w" 'backword-kill-word)
 #+end_src
 
+*** [[https://github.com/abo-abo/avy][avy]]
+
+Jump to things in Emacs tree-style
+
+#+begin_src emacs-lisp :name avy
+  (use-package avy
+    :defer t
+    :config
+    (setq avy-all-windows nil
+          avy-background t))
+#+end_src
+
 *** [[https://github.com/minad/vertico][vertico]]
 
 Vertical completion UI based on the default completion system.
 
 #+begin_src emacs-lisp :name vertico
   (use-package vertico
-    :demand t
+    :demand t ; otherwise it doesn't come up right away.
+    :elpaca (vertico :files (:defaults "extensions/*") ; Special recipe to load extensions conveniently
+                     :includes (vertico-indexed
+                                vertico-flat
+                                vertico-grid
+                                vertico-mouse
+                                vertico-quick
+                                vertico-buffer
+                                vertico-repeat
+                                vertico-reverse
+                                vertico-directory
+                                vertico-multiform
+                                vertico-unobtrusive
+                                ))
     :general
     (:keymaps 'vertico-map
-              "<escape>" #'minibuffer-keyboard-quit
+              "<tab>" #'vertico-insert
+              "<escape>" #'cccccbggktrttbelejrfvtlgeilidfkkeyboard-quit
+              "<backspace>" #'vertico-directory-delete-char
+              "C-w" #'vertico-directory-delete-word
+              "?" #'minibuffer-completion-help
+              "s-." #'vertico-repeat
               )
     :custom
     (vertico-resize t)
     (vertico-cycle t)
+    (vertico-count 25)
     :config
     (vertico-mode))
+#+end_src
+
+*** [[https://github.com/oantolin/orderless][orderless]]
+
+Provides an =orderless= completion style.
+
+#+begin_src emacs-lisp :name orderless
+  (use-package orderless
+    :after vertico
+    :custom
+    (orderless-matching-styles
+     '(orderless-literal
+       orderless-prefixes
+       orderless-initialism
+       orderless-regexp
+       orderless-flex))
+    (completion-styles '(orderless))
+    (completion-category-defaults nil)
+    (completion-category-overrides
+     '((file (styles basic-remote                            ; basic-remote for Tramp hostname completion with vertico
+                     orderless partial-completion)))))
 #+end_src
 
 *** [[https://github.com/minad/marginalia][Marginalia]]
@@ -1545,6 +1597,17 @@ Just like the Neovim "g<letter>" bindings.
 
 #+begin_src emacs-lisp :name defaliases
   (defalias 'ff 'find-file)
+#+end_src
+
+*** Deftpunk keybindings
+
+#+begin_src emacs-lisp :name deftpunk-keybindings
+  ;; Using C-j for jumping around.
+  (global-unset-key (kbd "C-j"))
+  (global-set-key (kbd "C-j") 'avy-goto-char-timer)
+  (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
+
+  (global-set-key (kbd "s-s") 'my/consult-ripgrep-or-line)
 #+end_src
 
 *** [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]]
