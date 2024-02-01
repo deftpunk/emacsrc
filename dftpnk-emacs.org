@@ -1654,7 +1654,4 @@ I use something similar in Neovim to bring up ":"
   (key-chord-define-global "jk" 'execute-extended-command)
   (key-chord-define-global "hh" 'split-window-below)
   (key-chord-define-global "vv" 'split-window-right))
-
-
-
 #+end_src
