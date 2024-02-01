@@ -275,6 +275,7 @@
     ("wondow" "window" nil :count 1)
     ("wont" "won't " nil :count 8)
     ("workign" "working" nil :count 1)
+    ("worng" "wrong" nil :count 1)
     ("wrinkel" "wrinkle" nil :count 1)
     ("wyh" "why" nil :count 1)
     ("xtraneious" "extraneous" nil :count 1)
