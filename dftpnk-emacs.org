@@ -696,8 +696,9 @@ https://archive.casouri.cc/note/2021/fontset/index.html
 2023-01-21 - This didn't work when it was in early-init.el
 
 #+begin_src emacs-lisp :name Fonts
-  (set-face-attribute 'default nil :font "Victor Mono" :height 110)
-  (set-fontset-font t nil "Courier New" nil 'append) ; fallback font
+  (set-face-attribute 'default nil :font "Menlo" :height 120)
+  ;;(set-face-attribute 'default nil :font "Victor Mono" :height 110)
+  (set-fontset-font t nil "Menlo" nil 'append) ; fallback font
 #+end_src
 
 *** [[https://github.com/domtronn/all-the-icons.el][all-the-icons]]
@@ -816,6 +817,35 @@ Search and navigation commands based on the Emacs completion function
   (use-package consult
     :bind
     (("C-c r" . consult-ripgrep)))
+
+  ;; from the consult wiki
+  (defcustom my/consult-ripgrep-or-line-limit 300000
+    "Buffer size threshold for `my/consult-ripgrep-or-line'.
+  When the number of characters in a buffer exceeds this threshold,
+  `consult-ripgrep' will be used instead of `consult-line'."
+    :type 'integer)
+
+  (defun my/consult-ripgrep-or-line ()
+    "Call `consult-line' for small buffers or `consult-ripgrep' for large files."
+    (interactive)
+    (if (or (not buffer-file-name)
+            (buffer-narrowed-p)
+            (ignore-errors
+              (file-remote-p buffer-file-name))
+            (jka-compr-get-compression-info buffer-file-name)
+            (<= (buffer-size)
+                (/ my/consult-ripgrep-or-line-limit
+                   (if (eq major-mode 'org-mode) 4 1))))
+        (consult-line)
+      (when (file-writable-p buffer-file-name)
+        (save-buffer))
+      (let ((consult-ripgrep-args
+             (concat consult-ripgrep-args
+                     ;; filter to desired filename
+                     " -g "
+                     (shell-quote-argument (file-name-nondirectory buffer-file-name))
+                     " ")))
+        (consult-ripgrep))))
 #+end_src
 
 *** embark
