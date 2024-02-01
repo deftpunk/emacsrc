@@ -915,6 +915,28 @@ Search and navigation commands based on the Emacs completion function
     :after (embark consult))
 #+end_src
 
+*** cape
+
+*** corfu
+
+#+begin_src emacs-lisp :name corfu
+  (use-package corfu
+    :bind
+    (:map corfu-map
+          ("TAB" . corfu-next)
+          ([tab] . corfu-previous)
+          ("S-TAB" . corfu-previous)
+          ([backtab] . corfu-previous))
+    :custom
+    (corfu-cycle t)
+    (corfu-preselect 'prompt)
+    (corfu-auto t)
+    (corfu-auto-delay 0)
+    (corfu-auto-prefix 2)
+    :init
+    (global-corfu-mode))
+#+end_src
+
 ** Emacs Defaults
 #+begin_src emacs-lisp :name defaults
   (setq-default
