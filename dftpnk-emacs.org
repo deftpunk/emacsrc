@@ -670,6 +670,8 @@ Helping keep my ~/.emacs.d clean.
           no-littering-var-directory deftpunk--var-dir)
     (setq auto-save-file-name-transforms
           `((".*" ,(expand-file-name "auto-save/" no-littering-var-directory) t))))
+
+  (elpaca-wait) ; So that other packages know where some Emacs system files are.
 #+end_src
 
 *** [[https://github.com/bbatsov/crux][crux]]
@@ -983,7 +985,7 @@ Search and navigation commands based on the Emacs completion function
 ** Emacs builtin modes
 *** [[https://www.emacswiki.org/emacs/AbbrevMode][abbreviations]]
 
-The abbreviations file is saved by =no-littering= into our =etc/= directory.
+The abbreviations file is saved by =no-littering= into our =etc/= directory as =abbrev.el=
 
 #+begin_src emacs-lisp :name abbreviations
   (setq-default save-abbrevs 'silently)
