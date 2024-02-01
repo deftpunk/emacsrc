@@ -727,12 +727,25 @@ Supported themes:
 
 ** Completion Frameworks
 
+*** Some minibuffer mappings first
+
+Some info on minibuffer mappings:
+https://www.gnu.org/software/emacs/manual/html_node/emacs/Minibuffer-Maps.html
+
+#+begin_src emacs-lisp :name minibuffer-mappings
+  
+  (keymap-set minibuffer-local-map "C-w" 'backword-kill-word)
+  (keymap-set minibuffer-local-completion-map "C-w" 'backword-kill-word)
+  (keymap-set minibuffer-local-filename-completion-map "C-w" 'backword-kill-word)
+#+end_src
+
 *** [[https://github.com/minad/vertico][vertico]]
 
 Vertical completion UI based on the default completion system.
 
 #+begin_src emacs-lisp :name vertico
   (use-package vertico
+    :demand t
     :general
     (:keymaps 'vertico-map
               "<escape>" #'minibuffer-keyboard-quit
