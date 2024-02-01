@@ -1565,21 +1565,7 @@ Just like the Neovim "g<letter>" bindings.
     "o" ace-link
     "x" deftpunk/url-at-point
     )
-
 #+end_src
-
-*** Change help-map
-
-=which-key-show-full-keymap=
-
-#+begin_src emacs-lisp :name change-help-map
-  (global-unset-key (kbd "C-h"))
-  (setq help-char nil)                  ; Makes C-h work as another key in different contexts
-  (global-unset-key (kbd "M-h"))        ; was mark-paragraph
-  (global-set-key (kbd "M-h") help-map)
-#+end_src
-
-
 
 *** Window management/navigation bindings
 
