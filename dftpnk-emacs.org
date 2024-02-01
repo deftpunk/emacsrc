@@ -1138,6 +1138,22 @@ Saving and backing up files. While its nice to assume that everything is in sour
         )
 #+end_src
 *** Dired
+
+#+begin_src emacs-lisp :name dired
+  (use-package dired
+    :elpaca nil
+    :config
+
+    ;; Make dired open in the same window when using RET or ^
+    ;; Make Dired only use a single buffer when visiting a directory.
+    ;; http://ergoemacs.org/emacs/emacs_dired_tips.html
+    (put 'dired-find-alternate-file 'disabled nil) ; disables warning
+    (define-key dired-mode-map (kbd "RET") 'dired-find-alternate-file) ; was dired-advertised-find-file
+    (define-key dired-mode-map (kbd "^") (lambda ()
+                                           (interactive)
+                                           (find-alternate-file ".."))))  ; was dired-up-directory
+#+end_src
+
 *** Helpful
 *** [[https://www.emacswiki.org/emacs/SaveHist][savehist]]
 
