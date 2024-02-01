@@ -1584,17 +1584,16 @@ Just like the Neovim "g<letter>" bindings.
 
 #+begin_src emacs-lisp :name deftpunk-g-def
   ;; NOTE: The org-open-at-point will open a "Babel Results" window when this function is called
-    ;;       inside a src block
-    (defun deftpunk/url-at-point ()
-      "Make opening the url at point a little more flexible."
-      (interactive)
-      (if (string-equal major-mode "org-mode")
-          (unless (ignore-errors (or (org-open-at-point) t))
-            (ace-link))
-        (unless (ignore-errors (or (browse-url-at-point) t))
-          (ace-link))))
+  ;;       inside a src block
+  (defun deftpunk/url-at-point ()
+    "Make opening the url at point a little more flexible."
+    (interactive)
+    (if (string-equal major-mode "org-mode")
+        (unless (ignore-errors (or (org-open-at-point) t))
+          (ace-link))
+      (unless (ignore-errors (or (browse-url-at-point) t))
+        (ace-link))))
 
-  (global-unset-key (kbd "s-g"))
   (general-create-definer deftpunk-g-def
     :keymaps 'override
     :prefix "s-g"
