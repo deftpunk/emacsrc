@@ -1363,7 +1363,7 @@ Implements a "modern" style for Org buffers.
          "a" '(org-todo-buffer :which-key "Show TODOs for current buffer.")
          "d" '(org-todo :which-key "Org Todo + Todo States")
          "e" '(org-edit-special :which-key "Edit blk in special buffer")
-         "h" '(timu/org-go-to-heading :which-key "Org Headers")
+         "h" '(consult-org-heading :which-key "Org Headers")
          "i" '(org-insert-link :which-key "Org Insert link")
          "n" '(org-babel-next-src-block :which-key "Go to the next src block")
          "o" '(ace-link-org :which-key "Links in Org mode document")
