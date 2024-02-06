@@ -10,10 +10,6 @@
 # ignore broken files
 *.broken
 
-# init files - will be regenerated on org-bable-tangle
-early-init.el
-init.el
-
 src/
 crumbs/
 elpa/
