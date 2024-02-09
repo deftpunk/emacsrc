@@ -1526,6 +1526,29 @@ Major mode for editing [[http://daringfireball.net/projects/markdown/][Markdown]
     )
 #+end_src
 
+** Terminals & Shells
+
+Terminals, shells, consoles ... oh my.
+
+*** [[https://github.com/akermu/emacs-libvterm][vterm]]
+
+A fully-fledged terminal emulator inside GNU Emacs based on libvterm - which will need to be compiled.
+
+Don't forget to do the following [[https://github.com/akermu/emacs-libvterm?tab=readme-ov-file#shell-side-configuration][shell-side-configuration]] in =.zshrc=
+
+#+begin_src emacs-lisp :name vterm
+  (use-package vterm
+    :ensure t
+    :hook
+    ;; Change the face so its more obvious we are in an emulator.
+    (vterm-mode . (lambda ()
+                    (set (make-local-variable 'buffer-face-mode-face) 'fixed-pitch)
+                    (buffer-face-mode t)))
+    :custom
+    (vterm-always-compile-module t)
+    (vterm-max-scrollback 100000)               ; the max without changing vterm-module.h and re-compiling
+    (vterm-copy-mode-remove-fake-newlines t))
+#+end_src
 
 ** Keybindings and related functionality
 *** Matching parens ala %
