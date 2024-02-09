@@ -9,18 +9,24 @@
 My version of Emacs for MacOS - an attempt to be more minimalistic &
 use builtin functionality.  All of which is, of course, relative.
 
-** Install
+** Installation
 
-Some utilities to install first:
+My notes for installing from scratch.
 
+Dependencies:
+- zsh + oh-my-zsh
 - git
 - ripgrep
+- cmake   -> for compiling libvterm
 
 I am using emacs-plus: https://github.com/d12frosted/homebrew-emacs-plus
-#+begin_example
-brew tap d12frosted/emacs-plus
-brew install emacs-plus@29 --with-imagemagick --with-native-comp --with-poll
-#+end_example
+
+1. brew tap d12frosted/emacs-plus
+2. brew install emacs-plus@29 --with-imagemagick --with-native-comp --with-poll
+
+Clone this dotfiles repository.
+
+Run =emacs --quick --script ~/.emacs.d/scripts/get-env.el= to generate the environment variables file.
 
 * Early-Init
 :properties:
@@ -37,16 +43,9 @@ brew install emacs-plus@29 --with-imagemagick --with-native-comp --with-poll
 ;;; Code:
 #+end_src
 
-** Adjust garbage collection & other startup/performance optimizations
+** Startup message
 
-You'll see this modification in many config files around the internet. The idea is that emacs sets it's memory
-threshold 40 years in the past. This causes the garbage collector to run frequently and can cause delays or
-muck up the speed of your setup. We pretty much disable garbage collection during the initial phase to improve
-our startup time. After we have given enough time for everything to load we then set the gc-theshold to a
-reasonable number. Sometimes people set the threshold back to its default value, but I keep it a little higher
-to handle things like fuzzy completion and language-server requirements. (See also GCMH Mode)
-
-#+begin_src emacs-lisp :name garbage-collection
+#+begin_src emacs-lisp :name startup-hook
   ;; Time how long Emacs starts up.
   ;; Use a hook so the message doesn't get clobbered by other messages.
   (add-hook 'emacs-startup-hook
@@ -56,12 +55,46 @@ to handle things like fuzzy completion and language-server requirements. (See al
                                (float-time
                                 (time-subtract after-init-time before-init-time)))
                        gcs-done)))
+#+end_src
 
-  (defvar default-file-name-handler-alist file-name-handler-alist)
-  (defvar extended-gc-cons-threshold most-positive-fixnum)
-  (defvar default-gc-cons-threshold (* 100 1024 1024))
+** Environmental variables
 
-  ;; Prevents libgccjit error, sort of.
+Using a different methology instead of exec-path-from-shell to set environment variables.
+
+https://roamingbytes.substack.com/p/emacs-on-macos-preserving-the-correct-environment-1735d2e8cb88
+https://github.com/doomemacs/doomemacs/blob/master/lisp/cli/env.el#L53
+
+A modest gist of bash/zsh shell configuration on MacOS from the perspective of setting PATH.
+https://gist.github.com/Linerre/f11ad4a6a934dcf01ee8415c9457e7b2
+
+#+begin_src emacs-lisp :name environment-setup
+  (defun load-env-file (file)
+    "Read and set envvars from FILE."
+    (if (null (file-exists-p file))
+        (signal 'file-error
+                (list "No envvar file exists." file
+                      "Run `emacs --quick --script ~/.emacs.d/scripts/gen-env-file.el` from a terminal."))
+      (with-temp-buffer
+        (insert-file-contents file)
+        (when-let (env (read (current-buffer)))
+          (let ((tz (getenv-internal "TZ")))
+            (setq-default
+             process-environment
+             (append env (default-value 'process-environment))
+             exec-path
+             (append (split-string (getenv "PATH") path-separator t)
+                     (list exec-directory))
+             shell-file-name
+             (or (getenv "SHELL")
+                 (default-value 'shell-file-name)))
+            (when-let (newtz (getenv-internal "TZ"))
+              (unless (equal tz newtz)
+                (set-time-zone-rule newtz))))
+          env))))
+
+  (load-env-file "~/.emacs.d/var/env.el")
+
+  ;; Mostly prevents libgccjit errors; manually setting to the latest gcc path is brittle.
   ;; I had to uninstall/re-install, then run `emacs -nw` to get the native-comp to work properly.
   ;; Solution found at: https://github.com/d12frosted/homebrew-emacs-plus/issues/554
   (setenv "LIBRARY_PATH"
@@ -70,6 +103,24 @@ to handle things like fuzzy completion and language-server requirements. (See al
              "/opt/homebrew/opt/libgccjit/lib/gcc/13"
              "/opt/homebrew/opt/gcc/lib/gcc/13/gcc/aarch64-apple-darwin21/13")
            ":"))
+#+end_src
+
+** Adjust garbage collection & other startup/performance optimizations
+
+You'll see this modification in many config files around the internet. The idea is that emacs sets it's memory
+threshold 40 years in the past. This causes the garbage collector to run frequently and can cause delays or
+muck up the speed of your setup. We pretty much disable garbage collection during the initial phase to improve
+our startup time. After we have given enough time for everything to load we then set the gc-theshold to a
+reasonable number. Sometimes people set the threshold back to its default value, but I keep it a little higher
+to handle things like fuzzy completion and language-server requirements. (See also GCMH Mode)
+
+Some of the things in here may be cargo culting so .... caveat emptor.
+
+#+begin_src emacs-lisp :name garbage-collection
+
+  (defvar default-file-name-handler-alist file-name-handler-alist)
+  (defvar extended-gc-cons-threshold most-positive-fixnum)
+  (defvar default-gc-cons-threshold (* 100 1024 1024))
 
   ;; Native Compilation Vars
   (when (featurep 'native-compile)
@@ -635,30 +686,6 @@ Use hydra for repeating keys.
 #+end_src
 
 ** Some initial packages and libraries
-*** [[https://github.com/purcell/exec-path-from-shell][Exec-Path-From-Shell]]
-
-Application launching on MacOS isn't handled by a specific system. This makes it really hard to get envrionment variables from your shell to show up in Emacs. This package makes that easier.
-
-An insteresting article on shell startup: [[https://blog.flowblok.id.au/2013-02/shell-startup-scripts.html][shell startup scripts]]
-
-#+begin_src emacs-lisp :name exec-path-from-shell
-  (use-package exec-path-from-shell
-    :commands (exec-path-from-shell-initialize)
-    :config
-    (dolist (var '( "CONDARC"
-		    "CONDA_ENVS_PATH"
-		    "FZF_DEFAULT_COMMAND"
-		    "IPYTHONDIR"
-		    "PYTHONPATH"
-		    "JAVA_HOME"
-		    "MYPY_CACHE_DIR"
-		    "PATH"))
-      (add-to-list 'exec-path-from-shell-variables var))
-    (elpaca-wait))
-  ;; Because MacOSX ??
-;;  (exec-path-from-shell-initialize)
-#+end_src
-
 *** [[https://github.com/emacscollective/no-littering][no-littering]]
 
 Helping keep my ~/.emacs.d clean.
