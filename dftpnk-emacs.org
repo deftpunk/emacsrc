@@ -824,27 +824,27 @@ Vertical completion UI based on the default completion system.
   (use-package vertico
     :demand t ; otherwise it doesn't come up right away.
     :elpaca (vertico :files (:defaults "extensions/*") ; Special recipe to load extensions conveniently
-                     :includes (vertico-indexed
-                                vertico-flat
-                                vertico-grid
-                                vertico-mouse
-                                vertico-quick
-                                vertico-buffer
-                                vertico-repeat
-                                vertico-reverse
-                                vertico-directory
-                                vertico-multiform
-                                vertico-unobtrusive
-                                ))
+		     :includes (vertico-indexed
+				vertico-flat
+				vertico-grid
+				vertico-mouse
+				vertico-quick
+				vertico-buffer
+				vertico-repeat
+				vertico-reverse
+				vertico-directory
+				vertico-multiform
+				vertico-unobtrusive
+				))
     :general
     (:keymaps 'vertico-map
-              "<tab>" #'vertico-insert
-              "<escape>" #'cccccbggktrttbelejrfvtlgeilidfkkeyboard-quit
-              "<backspace>" #'vertico-directory-delete-char
-              "C-w" #'vertico-directory-delete-word
-              "?" #'minibuffer-completion-help
-              "s-." #'vertico-repeat
-              )
+	      "<tab>" #'vertico-insert
+	      "<escape>" #'keyboard-quit
+	      "<backspace>" #'vertico-directory-delete-char
+	      "C-w" #'vertico-directory-delete-word
+	      "?" #'minibuffer-completion-help
+	      "s-." #'vertico-repeat
+	      )
     :custom
     (vertico-resize t)
     (vertico-cycle t)
@@ -929,8 +929,15 @@ Search and navigation commands based on the Emacs completion function
 
 #+begin_src emacs-lisp :name consult
   (use-package consult
-    :bind
-    (("C-c r" . consult-ripgrep)))
+    ;; Enable automatic preview at point in the *Completions* buffer. This is
+    ;; relevant when you use the default completion UI.
+    :hook (completion-list-mode . consult-preview-at-point-mode)
+    :bind (("C-c r" . consult-ripgrep)
+           ([remap switch-to-buffer] . consult-buffer)
+           ("s-i" . consult-buffer)
+           :map minibuffer-local-map
+           ("s-s" . consult-history)
+           ("s-r" . consult-history)))
 
   ;; from the consult wiki
   (defcustom my/consult-ripgrep-or-line-limit 300000
@@ -962,6 +969,55 @@ Search and navigation commands based on the Emacs completion function
         (consult-ripgrep))))
 #+end_src
 
+**** [[https://github.com/karthink/consult-dir][consult-dir]]
+
+Call *consult-dir* when in the minibuffer to choose a directory with completion and insert it into the
+minibuffer prompt, shadowing or replacing the directory path showing currently. The file name part
+of the text is retained. This lets the user switch to distant directories very quickly when finding
+files, for instance.
+
+Call *consult-dir* from a regular buffer to choose a directory with completion and then interactively
+find a file in that directory. The command run with this directory is configurable via
+consult-dir-default-command and defaults to find-file.
+
+Call *consult-dir-jump-file* from the minibuffer to asynchronously find a file anywhere under the
+directory that is currently in the prompt. This can be used with consult-dir to quickly switch
+directories and find files at an arbitrary depth under them. consult-dir-jump-file uses consult-find
+under the hood.
+
+Replace minibuffer-local-completion-map above with
+
+- vertico-map if you use Vertico,
+- selectrum-minibuffer-map if you use Selectrum.
+
+#+begin_src emacs-lisp :name consult-dir
+  (use-package consult-dir
+    :ensure t
+    :bind (("C-x C-d" . consult-dir)
+           :map minibuffer-local-completion-map
+           ("C-x C-d" . consult-dir)
+           ("C-x C-j" . consult-dir-jump-file)))
+#+end_src
+
+**** [[https://github.com/liuyinz/consult-todo][consult-todo]]
+
+
+#+begin_src emacs-lisp :name consult-todo
+  (use-package consult-todo
+    :demand t
+    :elpaca (:main nil) ; skip dependency check because hl-todos doesn't have version info.
+    :custom
+    (defconst consult-todo--narrow
+    '((?t . "TODO")
+      (?f . "FIXME")
+      (?d . "DEPRECATED")
+      (?b . "BUG")
+      (?x . "XXX")
+      (?n . "NOTE")
+      (?h . "HACK"))
+    "Default mapping of narrow and keywords."))
+#+end_src
+
 *** embark
 
 #+begin_src emacs-lisp :name embark
@@ -979,24 +1035,68 @@ Search and navigation commands based on the Emacs completion function
 
 *** cape
 
-*** corfu
+*** [[https://github.com/minad/corfu][corfu]]
+
+In-buffer completion - text completion like =company-mode=
+
+- Any invocation of =completion-at-point= or =completion-in-region= leverages =corfu=.
+- Any completion style, e.g. =orderless= can be used for filtering candidates.
+- You can use any =company= backend via =cape-company-to-capf=
+
+TODO: Add =company-yasnippet= support.
+TODO: Add orderless support
+
+Some config options from here: https://kristofferbalintona.me/posts/202202270056/
 
 #+begin_src emacs-lisp :name corfu
   (use-package corfu
-    :bind
-    (:map corfu-map
-          ("TAB" . corfu-next)
-          ([tab] . corfu-previous)
-          ("S-TAB" . corfu-previous)
-          ([backtab] . corfu-previous))
+    :elpaca (corfu :files (:defaults "extensions/*")
+           :includes (corfu-info corfu-history))
+    :general
+    (:keymaps 'corfu-map
+          :states 'insert
+          "C-n" #'corfu-next
+          "C-p" #'corfu-previous
+          "TAB" #'corfu-next
+          "S-TAB" #'corfu-previous
+          "<escape>" #'corfu-quit)
     :custom
     (corfu-cycle t)
+    (corfu-min-width 80)
+    (corfu-max-width corfu-min-width) ; always have the same width
     (corfu-preselect 'prompt)
     (corfu-auto t)
-    (corfu-auto-delay 0)
+    (corfu-auto-delay 0.25)
     (corfu-auto-prefix 2)
+    (corfu-popupinfo-delay 0)
+    ;; `nil' means to ignore `corfu-separator' behavior, that is, use the older
+    ;; `corfu-quit-at-boundary' = nil behavior. Set this to separator if using
+    ;; `corfu-auto' = `t' workflow (in that case, make sure you also set up
+    ;; `corfu-separator' and a keybind for `corfu-insert-separator', which my
+    ;; configuration already has pre-prepared). Necessary for manual corfu usage with
+    ;; orderless, otherwise first component is ignored, unless `corfu-separator'
+    ;; is inserted.
+    (corfu-quit-at-boundary nil)
     :init
-    (global-corfu-mode))
+    (global-corfu-mode)
+    (corfu-popupinfo-mode))
+
+
+#+end_src
+
+*** [[https://github.com/jdtsmith/kind-icon][kind-icon]]
+
+Add some icons to completion prefixes.
+
+#+begin_src emacs-lisp :name kind-icon
+  (use-package kind-icon
+    :after corfu
+    :custom
+    (kind-icon-use-icons t)
+    ;; No pollution. Change the location of the svg-lib cache directory.
+    (svg-lib-icons-dir (no-littering-expand-var-file-name "svg-lib/cache"))
+    :config
+    (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 #+end_src
 
 ** Emacs Defaults
