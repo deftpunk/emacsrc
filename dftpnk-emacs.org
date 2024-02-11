@@ -1729,6 +1729,18 @@ Just like the Neovim "g<letter>" bindings.
   (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
 
   (global-set-key (kbd "s-s") 'my/consult-ripgrep-or-line)
+
+  ;; Figure out hippie-expand
+  ;; From https://stackoverflow.com/a/43665319
+  (defun my-expand-lines ()
+    "My old friend C-x C-l in Emacs"
+    (interactive)
+    (let ((hippie-expand-try-functions-list
+       '(try-expand-line)))
+      (call-interactively 'hippie-expand)))
+
+  (global-unset-key (kbd "C-x C-l")) ; I can downcase the region another way.
+  (global-set-key (kbd "C-x C-l") 'my-expand-lines)
 #+end_src
 
 *** [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]]
