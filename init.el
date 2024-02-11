@@ -321,28 +321,12 @@
     (which-key--create-buffer-and-show nil keymap)))
 (setq prefix-help-command #'repeated-prefix-help-command)
 
-(use-package exec-path-from-shell
-  :commands (exec-path-from-shell-initialize)
-  :config
-  (dolist (var '("CONDARC"
-                 "CONDA_ENVS_PATH"
-                 "FZF_DEFAULT_COMMAND"
-                 "IPYTHONDIR"
-                 "PYTHONPATH"
-                 "JAVA_HOME"
-                 "MYPY_CACHE_DIR"
-                 "PATH"))
-    (add-to-list 'exec-path-from-shell-variables var))
-  ;; Because MacOSX
-  (exec-path-from-shell-initialize)
-  (elpaca-wait))
-
 (use-package no-littering
-  :init
-  (setq no-littering-etc-directory deftpunk--etc-dir
-        no-littering-var-directory deftpunk--var-dir)
-  (setq auto-save-file-name-transforms
-        `((".*" ,(expand-file-name "auto-save/" no-littering-var-directory) t))))
+  :custom
+  (no-littering-etc-directory deftpunk--etc-dir)
+  (no-littering-var-directory deftpunk--var-dir)
+  (auto-save-file-name-transforms
+   `((".*" ,(expand-file-name "auto-save/" no-littering-var-directory) t))))
 
 (elpaca-wait) ; So that other packages know where some Emacs system files are.
 
@@ -359,6 +343,7 @@
 (use-package all-the-icons)
 
 (use-package hl-todo
+  :elpaca (hl-todo :depth nil) ; see https://github.com/alphapapa/magit-todos/issues/171
   :init
   (setq hl-todo-highlight-punctuation ":"
         hl-todo-keyword-faces '(("TODO" . "#FF0000")
@@ -388,17 +373,17 @@
   :demand t ; otherwise it doesn't come up right away.
   :elpaca (vertico :files (:defaults "extensions/*") ; Special recipe to load extensions conveniently
 		   :includes (vertico-indexed
-			  vertico-flat
-			  vertico-grid
-			  vertico-mouse
-			  vertico-quick
-			  vertico-buffer
-			  vertico-repeat
-			  vertico-reverse
-			  vertico-directory
-			  vertico-multiform
-			  vertico-unobtrusive
-			  ))
+			      vertico-flat
+			      vertico-grid
+			      vertico-mouse
+			      vertico-quick
+			      vertico-buffer
+			      vertico-repeat
+			      vertico-reverse
+			      vertico-directory
+			      vertico-multiform
+			      vertico-unobtrusive
+			      ))
   :general
   (:keymaps 'vertico-map
 	    "<tab>" #'vertico-insert
@@ -468,8 +453,15 @@
   (all-the-icons-completion-mode))
 
 (use-package consult
-  :bind
-  (("C-c r" . consult-ripgrep)))
+  ;; Enable automatic preview at point in the *Completions* buffer. This is
+  ;; relevant when you use the default completion UI.
+  :hook (completion-list-mode . consult-preview-at-point-mode)
+  :bind (("C-c r" . consult-ripgrep)
+         ([remap switch-to-buffer] . consult-buffer)
+         ("s-i" . consult-buffer)
+         :map minibuffer-local-map
+         ("s-s" . consult-history)
+         ("s-r" . consult-history)))
 
 ;; from the consult wiki
 (defcustom my/consult-ripgrep-or-line-limit 300000
@@ -499,6 +491,13 @@ When the number of characters in a buffer exceeds this threshold,
                    (shell-quote-argument (file-name-nondirectory buffer-file-name))
                    " ")))
       (consult-ripgrep))))
+
+(use-package consult-dir
+  :ensure t
+  :bind (("C-x C-d" . consult-dir)
+         :map minibuffer-local-completion-map
+         ("C-x C-d" . consult-dir)
+         ("C-x C-j" . consult-dir-jump-file)))
 
 (use-package consult-todo
   :demand t
@@ -928,6 +927,45 @@ When the number of characters in a buffer exceeds this threshold,
   :config
   (global-org-modern-mode))
 
+;; From Doom Emacs ui/vc-gutter/config.el
+;; UI: make the fringe small enough that the diff bars aren't too domineering,
+;;   while leaving enough room for other indicators.
+(if (fboundp 'fringe-mode) (fringe-mode '8))
+;; UI: the gutter looks less cramped with some space between it and  buffer.
+(setq-default fringes-outside-margins t)
+
+(use-package git-gutter
+  :hook ((org-mode . git-gutter-mode)
+         (org-src-mode . git-gutter-mode)
+         (prog-mode . git-gutter-mode)
+         (markdown-mode . git-gutter-mode))
+  :custom
+  (git-gutter:update-interval 0.05)
+  (git-gutter:disabled-modes '(fundamental-mode image-mode pdf-vew-mode))
+  ;; Don't go looking for backends I don't use.
+  (git-gutter:handled-backends '(git))
+  ;; Don't ask to commit/revert
+  (git-gutter:ask-p nil)
+  :config
+  ;; UX: update git-gutter on focus (in case I was using git externally)
+  (add-hook 'focus-in-hook #'git-gutter:update-all-windows)
+
+  ;; Stop git-gutter doing things when we don't want
+  (remove-hook 'post-command-hook #'git-gutter:post-command-hook)
+  (advice-remove #'quit-window #'git-gutter:quit-window)
+  (advice-remove #'switch-to-buffer #'git-gutter:switch-to-buffer))
+
+(use-package git-gutter-fringe
+  :config
+  ;; Make added/modified a bar & deleted a triangle.
+  (define-fringe-bitmap 'git-gutter-fr:added [#b11100000] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:modified [#b11100000] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:deleted
+    [#b10000000
+     #b11000000
+     #b11100000
+     #b11110000] nil nil 'bottom))
+
 (use-package git-timemachine
   :config
   (setq git-timemachine-abbreviation-length 14
@@ -957,7 +995,6 @@ When the number of characters in a buffer exceeds this threshold,
   (git-timemachine--start #'my-git-timemachine-show-selected-revision))
 
 (use-package magit
-  :defer t
   :commands (magit-dispatch)
   :general
   (:prefix "C-x"
@@ -984,6 +1021,11 @@ When the number of characters in a buffer exceeds this threshold,
 (use-package forge
   :after magit)
 
+(use-package magit-todos
+  :after magit
+  :config
+  (magit-todos-mode +1))
+
 (use-package markdown-mode
   :defer t
   :commands (markdown-mode gfm-mode)
@@ -995,6 +1037,18 @@ When the number of characters in a buffer exceeds this threshold,
   (setq markdown-command "/opt/homebrew/bin/multimarkdown"
         markdown-header-scaling t)
   )
+
+(use-package vterm
+  :ensure t
+  :hook
+  ;; Change the face so its more obvious we are in an emulator.
+  (vterm-mode . (lambda ()
+                  (set (make-local-variable 'buffer-face-mode-face) 'fixed-pitch)
+                  (buffer-face-mode t)))
+  :custom
+  (vterm-always-compile-module t)
+  (vterm-max-scrollback 100000)               ; the max without changing vterm-module.h and re-compiling
+  (vterm-copy-mode-remove-fake-newlines t))
 
 ;; Trying out matching parens
 ;; https://www.gnu.org/software/emacs/manual/html_node/efaq/Matching-parentheses.html
@@ -1099,7 +1153,7 @@ _h_   _l_   _o_k        _y_ank       /,`.-'`'   .‗  \-;;,‗
   "My old friend C-x C-l in Emacs"
   (interactive)
   (let ((hippie-expand-try-functions-list
-	 '(try-expand-line)))
+     '(try-expand-line)))
     (call-interactively 'hippie-expand)))
 
 (global-unset-key (kbd "C-x C-l")) ; I can downcase the region another way.

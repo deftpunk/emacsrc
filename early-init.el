@@ -16,11 +16,33 @@
                               (time-subtract after-init-time before-init-time)))
                      gcs-done)))
 
-(defvar default-file-name-handler-alist file-name-handler-alist)
-(defvar extended-gc-cons-threshold most-positive-fixnum)
-(defvar default-gc-cons-threshold (* 100 1024 1024))
+(defun load-env-file (file)
+  "Read and set envvars from FILE."
+  (if (null (file-exists-p file))
+      (signal 'file-error
+              (list "No envvar file exists." file
+                    "Run `emacs --quick --script ~/.emacs.d/scripts/gen-env-file.el` from a terminal."))
+    (with-temp-buffer
+      (insert-file-contents file)
+      (when-let (env (read (current-buffer)))
+        (let ((tz (getenv-internal "TZ")))
+          (setq-default
+           process-environment
+           (append env (default-value 'process-environment))
+           exec-path
+           (append (split-string (getenv "PATH") path-separator t)
+                   (list exec-directory))
+           shell-file-name
+           (or (getenv "SHELL")
+               (default-value 'shell-file-name)))
+          (when-let (newtz (getenv-internal "TZ"))
+            (unless (equal tz newtz)
+              (set-time-zone-rule newtz))))
+        env))))
 
-;; Prevents libgccjit error, sort of.
+(load-env-file "~/.emacs.d/var/env.el")
+
+;; Mostly prevents libgccjit errors; manually setting to the latest gcc path is brittle.
 ;; I had to uninstall/re-install, then run `emacs -nw` to get the native-comp to work properly.
 ;; Solution found at: https://github.com/d12frosted/homebrew-emacs-plus/issues/554
 (setenv "LIBRARY_PATH"
@@ -29,6 +51,10 @@
            "/opt/homebrew/opt/libgccjit/lib/gcc/13"
            "/opt/homebrew/opt/gcc/lib/gcc/13/gcc/aarch64-apple-darwin21/13")
          ":"))
+
+(defvar default-file-name-handler-alist file-name-handler-alist)
+(defvar extended-gc-cons-threshold most-positive-fixnum)
+(defvar default-gc-cons-threshold (* 100 1024 1024))
 
 ;; Native Compilation Vars
 (when (featurep 'native-compile)
