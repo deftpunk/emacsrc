@@ -737,6 +737,40 @@ Make the icons in Emacs pretty. Don't forget to run =M-x all-the-icons-install-f
   (use-package all-the-icons)
 #+end_src
 
+*** [[https://github.com/tarsius/hl-todo][hl-todo]]
+
+Highlight TODO and similar keywords in comments and strings.
+
+By default it is only active in modes that derive from prog-mode.
+
+Integrations:
+- =magit-hl-todos=
+- =consult-todos=
+
+This package also provides commands for moving to the next or previous keyword,
+to invoke occur with a regexp that matches all known keywords, and to insert a keyword.
+If you want to use these commands, then you should bind them in hl-todo-mode-map, e.g.:
+
+(define-key hl-todo-mode-map (kbd "C-c p") 'hl-todo-previous)
+(define-key hl-todo-mode-map (kbd "C-c n") 'hl-todo-next)
+(define-key hl-todo-mode-map (kbd "C-c o") 'hl-todo-occur)
+(define-key hl-todo-mode-map (kbd "C-c i") 'hl-todo-insert)
+
+#+begin_src emacs-lisp :name hl-todo
+  (use-package hl-todo
+    :elpaca (hl-todo :depth nil) ; see https://github.com/alphapapa/magit-todos/issues/171
+    :init
+    (setq hl-todo-highlight-punctuation ":"
+          hl-todo-keyword-faces '(("TODO" . "#FF0000")
+                                  ("FIXME" . "#FF9999")
+                                  ("FAIL" . "#FF0000")
+                                  ("DEPRECATED" . "#1F39EF")
+                                  ("HACK" . "#FF0000")
+                                  ("XXX" . "#FF0000")
+                                  ("NOTE" . "#1E90FF")))
+    :hook (prog-mode . hl-todo-mode))
+#+end_src
+
 *** [[https://github.com/hlissner/emacs-solaire-mode][solaire-mode]]
 
 Help visually distinguish buffers. If you don't like the lighter/darker arrangement you can change it with =(add-to-list 'solaire-mode-themes-to-face-swap 'doom-vibrant)=
@@ -1474,7 +1508,6 @@ https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
 
 #+begin_src emacs-lisp :name magit
   (use-package magit
-    :defer t
     :commands (magit-dispatch)
     :general
     (:prefix "C-x"
@@ -1505,8 +1538,22 @@ https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
 TODO: Another codereview from magit tool https://github.com/blahgeek/emacs-pr-review for doing reviews with GitHub
 TODO: fixes code-review: https://github.com/wandersoncferreira/code-review/pull/246#issuecomment-1867538123
 
+**** [[https://github.com/alphapapa/magit-todos][magit-todos]]
+
+Show TODOs in Magit status buffer for each source file.
+
+#+begin_src emacs-lisp :name magit-todos
+  (use-package magit-todos
+    :after magit
+    :config
+    (magit-todos-mode +1))
+#+end_src
+
 ** General Software Development
 *** lispy
+
+TODO: Enable lispy.
+
 ** Miscellaneous File types
 *** Markdown
 **** [[http://jblevins.org/projects/markdown-mode/][Markdown Mode]]
