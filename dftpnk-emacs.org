@@ -439,6 +439,7 @@ Clean up the modeline.  Adds =:blackout= to =use-package= declarations.
   (use-package blackout)
   (elpaca-wait)
 #+end_src
+
 *** [[https://github.com/ajgrf/on.el][on.el]]
 
 Some utility hooks and functions from Doom Emacs.
@@ -692,11 +693,11 @@ Helping keep my ~/.emacs.d clean.
 
 #+begin_src emacs-lisp :name no-littering
   (use-package no-littering
-    :init
-    (setq no-littering-etc-directory deftpunk--etc-dir
-          no-littering-var-directory deftpunk--var-dir)
-    (setq auto-save-file-name-transforms
-          `((".*" ,(expand-file-name "auto-save/" no-littering-var-directory) t))))
+    :custom
+    (no-littering-etc-directory deftpunk--etc-dir)
+    (no-littering-var-directory deftpunk--var-dir)
+    (auto-save-file-name-transforms
+     `((".*" ,(expand-file-name "auto-save/" no-littering-var-directory) t))))
 
   (elpaca-wait) ; So that other packages know where some Emacs system files are.
 #+end_src
