@@ -1878,6 +1878,15 @@ Just like the Neovim "g<letter>" bindings.
   (global-set-key (kbd "C-x C-l") 'my-expand-lines)
 #+end_src
 
+*** Some function based abbreviations
+
+#+begin_src emacs-lisp :name function-abbreviations
+  (defun deftpunk/current-time ()
+    (interactive)
+    (insert (format-time-string "%D %T")))
+  (define-abbrev global-abbrev-table "ydate" "" 'deftpunk/current-time)
+#+end_src
+
 *** [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]]
 
 Map pairs of simultaneously pressed keys to commands.
