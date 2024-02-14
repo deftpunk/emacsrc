@@ -596,11 +596,6 @@ Use hydra for repeating keys.
   (general-add-hook 'emacs-startup-hook #'arco/protected-buffers)
 
     ;;;###autoload
-  (defun deftpunk/timestamp ()
-    (interactive)
-    (insert (format-time-string "%Y-%m-%dT%H:%M:%S")))
-
-    ;;;###autoload
   ;; https://stackoverflow.com/questions/251908/how-can-i-insert-current-date-and-time-into-a-file-using-emacs
   (defun today ()
     "Insert string for today's date nicely formatted in American style,
