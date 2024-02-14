@@ -850,7 +850,7 @@ Vertical completion UI based on the default completion system.
 
 *** [[https://github.com/oantolin/orderless][orderless]]
 
-Provides an =orderless= completion style.
+Provides an =orderless= completion style - a more advanced completion style.
 
 #+begin_src emacs-lisp :name orderless
   (use-package orderless
@@ -871,7 +871,7 @@ Provides an =orderless= completion style.
 
 *** [[https://github.com/minad/marginalia][Marginalia]]
 
-Add marginalia to minibuffer completions.
+Add marginalia to minibuffer completions - annotations in the minibuffer.
 
 #+begin_src emacs-lisp :name marginalia
   (use-package marginalia
