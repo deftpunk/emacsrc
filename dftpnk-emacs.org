@@ -1687,6 +1687,38 @@ Show TODOs in Magit status buffer for each source file.
 
 TODO: Enable lispy.
 
+** Python
+
+*** [[https://github.com/necaris/conda.el][conda]]
+
+For working with miniconda and conda environments; which I prefer to other Python virtual environments.
+
+#+begin_src emacs-lisp :name conda
+  (use-package conda
+    :after python
+    :config
+    ;; taken from doom
+    ;; The location of your anaconda home will be guessed from a list of common
+    ;; possibilities, starting with `conda-anaconda-home''s default value (which
+    ;; will consult a ANACONDA_HOME envvar, if it exists).
+    ;;
+    ;; If none of these work for you, `conda-anaconda-home' must be set
+    ;; explicitly. Afterwards, run M-x `conda-env-activate' to switch between
+    ;; environments
+    (or (cl-loop for dir in (list conda-anaconda-home
+                                  "~/.miniconda3"
+                                  "~/.conda")
+                 if (file-directory-p dir)
+                 return (setq conda-anaconda-home (expand-file-name dir)
+                              conda-env-home-directory (expand-file-name dir)))
+        (message "Cannot find Anaconda installation"))
+    ;; integration with term/eshell
+    (conda-env-initialize-interactive-shells)
+    (add-to-list 'global-mode-string
+                 '(conda-env-current-name (" conda:" conda-env-current-name " "))
+                 'append))
+#+end_src
+
 ** Miscellaneous File types
 *** Markdown
 **** [[http://jblevins.org/projects/markdown-mode/][Markdown Mode]]
