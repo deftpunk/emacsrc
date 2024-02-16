@@ -1312,12 +1312,35 @@ Saving and backing up files. While its nice to assume that everything is in sour
         vc-make-backup-files t         ; Even backup files under version control
         )
 #+end_src
+
+*** [[https://www.gnu.org/software/emacs/manual/html_node/efaq/Displaying-the-current-line-or-column.html][column-number-mode]]
+
+#+begin_src emacs-lisp :name column-number-mode
+  (column-number-mode 1)
+#+end_src
+
 *** Dired
 
 #+begin_src emacs-lisp :name dired
   (use-package dired
     :elpaca nil
+    :custom
+    ;; Allow dired to delete or copy a dir.
+    ;; 02/14/24 17:41:48 - These default to 'top in dired now.
+    ;; 'top means ask every time.
+    ;; 'always means don't ask.
+    (dired-recursive-copies 'top)
+    (dired-recursive-deletes 'top)
     :config
+
+    ;; Open marked files in dired
+    ;; http://xahlee.info/emacs/emacs/emacs_dired_open_marked.html
+    (defun xah-dired-open-marked ()
+      "Open marked files in `dired'.
+  URL `http://xahlee.info/emacs/emacs/emacs_dired_open_marked.html'
+  Version 2019-10-22"
+      (interactive)
+      (mapc 'find-file (dired-get-marked-files)))
 
     ;; Make dired open in the same window when using RET or ^
     ;; Make Dired only use a single buffer when visiting a directory.
