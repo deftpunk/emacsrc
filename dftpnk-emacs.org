@@ -1443,6 +1443,87 @@ Select a link to jump to in Info, help, woman, org or eww modes
      :init (ace-link-setup-default))
 #+end_src
 
+*** [[https://github.com/lccambiaghi/vanilla-emacs#dont-close-windows-on-escape][don't-close-windows-on-escape]]
+
+Sometimes ESC kills my window layout. This advice prevents that from happening.
+Found here: https://www.lucacambiaghi.com/vanilla-emacs/readme.html#h:8BB05594-D909-4E99-960B-5624F915E664
+
+#+begin_src emacs-lisp :name emacs
+  (use-package emacs
+    :elpaca nil
+    :config
+    (defadvice keyboard-escape-quit
+        (around keyboard-escape-quit-dont-close-windows activate)
+      (let ((buffer-quit-function (lambda () ())))
+        ad-do-it)))
+#+end_src
+
+*** [[https://github.com/hlissner/ws-butler][ws-butler]]
+
+The Doom Emacs fork of ws-butler.
+
+Unobtrusively trim spaces from the end of a line.
+
+#+begin_src emacs-lisp :name ws-butler
+  (use-package ws-butler
+    :elpaca (ws-butler :type git :host github :repo "hlissner/ws-butler")
+    :blackout t
+    :hook ((text-mode . ws-butler-mode)
+           (prog-mode . ws-butler-mode))
+    :custom
+    (ws-butler-keep-whitespace-before-point nil))
+
+  ;; show trailing whitespace
+  (setq show-trailing-whitespace t)
+
+  (with-eval-after-load 'ws-butler
+    (blackout 'ws-butler-mode))
+#+end_src
+
+** Help and documentation enhancements
+
+*** [[https://github.com/astoff/devdocs.el][devdocs]]
+
+#+begin_src emacs-lisp :name devdocs
+  (use-package devdocs
+    :init
+    (setq devdocs-data-dir (expand-file-name "devdocs" user-emacs-directory)))
+#+end_src
+
+*** [[https://github.com/blahgeek/emacs-devdocs-browser][emacs-devdocs-browser]]
+
+#+begin_src emacs-lisp :name emacs-devdocs-browser
+  (use-package devdocs-browser
+    :commands (devdocs-browser-open)
+    :general ("C-h D" #'devdocs-browser-open))
+#+end_src
+
+*** [[https://github.com/jguenther/discover-my-major][Discover-My-Major]]
+
+Discover bindings for the current major mode.
+
+#+begin_src emacs-lisp :name discover-my-major
+  (use-package discover-my-major
+    :general
+    ("C-h C-m" #'discover-my-major))
+#+end_src
+
+** [[https://github.com/Wilfred/helpful][Helpful]]
+
+Provide more contextual information in Emacs help
+
+#+begin_src emacs-lisp :name helpful
+  (use-package helpful
+    :general
+    ([remap describe-function]  #'helpful-callable
+     [remap describe-command]   #'helpful-command
+     [remap describe-variable]  #'helpful-variable
+     [remap display-local-help] #'helpful-at-point
+     [remap describe-symbol]    #'helpful-symbol
+     [remap describe-key]       #'helpful-key
+     "C-h x"                    #'helpful-macro))
+#+end_src
+
 ** Org
 
 *** Configuration
