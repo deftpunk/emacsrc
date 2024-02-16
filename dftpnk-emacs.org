@@ -1755,6 +1755,10 @@ TODO: Enable lispy.
 
 For working with miniconda and conda environments; which I prefer to other Python virtual environments.
 
+Using with Tramp & Docker:
+https://www.reddit.com/r/emacs/comments/kymvrz/emacs_lsp_with_docker_conda/
+https://github.com/necaris/conda.el/issues/30
+
 #+begin_src emacs-lisp :name conda
   (use-package conda
     :after python
@@ -1776,6 +1780,15 @@ For working with miniconda and conda environments; which I prefer to other Pytho
         (message "Cannot find Anaconda installation"))
     ;; integration with term/eshell
     (conda-env-initialize-interactive-shells)
+    (after! eshell (conda-env-initialize-eshell))
+
+    ;; auto-activation (see below for details)
+    ;; (conda-env-autoactivate-mode t)
+    ;; automatically activate a conda environment on the opening of a file:
+    ;; (add-hook 'find-file-hook (lambda () (when (and (bound-and-true-p conda-project-env-path) (string-match "\\.py\\'" buffer-file-name))
+    ;;                                       (conda-env-activate-for-buffer))))
+
+    ;; Add to the modeline so that we know which env is activated.
     (add-to-list 'global-mode-string
                  '(conda-env-current-name (" conda:" conda-env-current-name " "))
                  'append))
