@@ -1669,6 +1669,9 @@ TODO: set faces.
        #b11000000
        #b11100000
        #b11110000] nil nil 'bottom))
+
+  ;; Turn off git-gutter in the modeline.
+  (blackout 'git-gutter-mode)
 #+end_src
 
 *** [[https://gitlab.com/pidu/git-timemachine][git-timemachine]]
