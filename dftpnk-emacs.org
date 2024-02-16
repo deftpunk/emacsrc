@@ -1597,7 +1597,7 @@ Implements a "modern" style for Org buffers.
 
 TODO: set faces.
 
-#+begin_src emacs-lisp :name some-fringe
+ #+begin_src emacs-lisp :name some-fringe
   ;; From Doom Emacs ui/vc-gutter/config.el
   ;; UI: make the fringe small enough that the diff bars aren't too domineering,
   ;;   while leaving enough room for other indicators.
