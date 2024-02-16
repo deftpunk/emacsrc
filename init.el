@@ -232,11 +232,6 @@
 (general-add-hook 'emacs-startup-hook #'arco/protected-buffers)
 
   ;;;###autoload
-(defun deftpunk/timestamp ()
-  (interactive)
-  (insert (format-time-string "%Y-%m-%dT%H:%M:%S")))
-
-  ;;;###autoload
 ;; https://stackoverflow.com/questions/251908/how-can-i-insert-current-date-and-time-into-a-file-using-emacs
 (defun today ()
   "Insert string for today's date nicely formatted in American style,
@@ -342,6 +337,13 @@
 
 (use-package all-the-icons)
 
+(use-package beacon
+  :custom
+  (beacon-lighter "")
+  (beacon-size 45)
+  (beacon-blink-when-window-scrolls nil)
+  :config (beacon-mode 1))
+
 (use-package hl-todo
   :elpaca (hl-todo :depth nil) ; see https://github.com/alphapapa/magit-todos/issues/171
   :init
@@ -372,28 +374,31 @@
 (use-package vertico
   :demand t ; otherwise it doesn't come up right away.
   :elpaca (vertico :files (:defaults "extensions/*") ; Special recipe to load extensions conveniently
-		   :includes (vertico-indexed
-			      vertico-flat
-			      vertico-grid
-			      vertico-mouse
-			      vertico-quick
-			      vertico-buffer
-			      vertico-repeat
-			      vertico-reverse
-			      vertico-directory
-			      vertico-multiform
-			      vertico-unobtrusive
-			      ))
+           :includes (vertico-indexed
+                      vertico-flat
+                      vertico-grid
+                      vertico-mouse
+                      vertico-quick
+                      vertico-buffer
+                      vertico-repeat
+                      vertico-reverse
+                      vertico-directory
+                      vertico-multiform
+                      vertico-unobtrusive
+                      ))
   :general
   (:keymaps 'vertico-map
-	    "<tab>" #'vertico-insert
-	    "<escape>" #'keyboard-quit
-	    "<backspace>" #'vertico-directory-delete-char
-	    "C-w" #'vertico-directory-delete-word
-	    "?" #'minibuffer-completion-help
-	    "s-." #'vertico-repeat
-	    )
+        "<tab>" #'vertico-insert
+        "<escape>" #'keyboard-quit
+        "<backspace>" #'vertico-directory-delete-char
+        "C-w" #'vertico-directory-delete-word
+        "?" #'minibuffer-completion-help
+        "s-." #'vertico-repeat
+        )
   :custom
+  (read-file-name-completion-ignore-case t)
+  (read-buffer-completion-ignore-case t)
+  (completion-ignore-case t)
   (vertico-resize t)
   (vertico-cycle t)
   (vertico-count 25)
@@ -409,7 +414,7 @@
      orderless-initialism
      orderless-regexp
      orderless-flex))
-  (completion-styles '(orderless))
+  (completion-styles '(orderless basic))
   (completion-category-defaults nil)
   (completion-category-overrides
    '((file (styles basic-remote                            ; basic-remote for Tramp hostname completion with vertico
@@ -461,7 +466,9 @@
          ("s-i" . consult-buffer)
          :map minibuffer-local-map
          ("s-s" . consult-history)
-         ("s-r" . consult-history)))
+         ("C-r" . consult-history))
+  :custom
+  (completion-in-region-function #'consult-completion-in-region))
 
 ;; from the consult wiki
 (defcustom my/consult-ripgrep-or-line-limit 300000
@@ -746,9 +753,27 @@ When the number of characters in a buffer exceeds this threshold,
       vc-make-backup-files t         ; Even backup files under version control
       )
 
+(column-number-mode 1)
+
 (use-package dired
   :elpaca nil
+  :custom
+  ;; Allow dired to delete or copy a dir.
+  ;; 02/14/24 17:41:48 - These default to 'top in dired now.
+  ;; 'top means ask every time.
+  ;; 'always means don't ask.
+  (dired-recursive-copies 'top)
+  (dired-recursive-deletes 'top)
   :config
+
+  ;; Open marked files in dired
+  ;; http://xahlee.info/emacs/emacs/emacs_dired_open_marked.html
+  (defun xah-dired-open-marked ()
+    "Open marked files in `dired'.
+URL `http://xahlee.info/emacs/emacs/emacs_dired_open_marked.html'
+Version 2019-10-22"
+    (interactive)
+    (mapc 'find-file (dired-get-marked-files)))
 
   ;; Make dired open in the same window when using RET or ^
   ;; Make Dired only use a single buffer when visiting a directory.
@@ -792,6 +817,14 @@ When the number of characters in a buffer exceeds this threshold,
 (add-hook 'save-place-find-file-hook 'recenter)
 (add-hook 'find-file-hook 'save-place-find-file-hook t)
 
+(setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
+(global-visual-line-mode)
+(blackout 'visual-line-mode)
+
+;; Ignore all the *<name>* buffers by regex.
+(setq winner-boring-buffers-regexp "^\\*")
+(winner-mode +1)
+
 (use-package ace-window
   :bind (("C--" . ace-window))
   :init
@@ -804,6 +837,50 @@ When the number of characters in a buffer exceeds this threshold,
 
 (use-package ace-link
   :init (ace-link-setup-default))
+
+(use-package emacs
+  :elpaca nil
+  :config
+  (defadvice keyboard-escape-quit
+      (around keyboard-escape-quit-dont-close-windows activate)
+    (let ((buffer-quit-function (lambda () ())))
+      ad-do-it)))
+
+(use-package ws-butler
+  :elpaca (ws-butler :type git :host github :repo "hlissner/ws-butler")
+  :blackout t
+  :hook ((text-mode . ws-butler-mode)
+         (prog-mode . ws-butler-mode))
+  :custom
+  (ws-butler-keep-whitespace-before-point nil))
+
+;; show trailing whitespace
+(setq show-trailing-whitespace t)
+
+(with-eval-after-load 'ws-butler
+  (blackout 'ws-butler-mode))
+
+(use-package devdocs
+  :init
+  (setq devdocs-data-dir (expand-file-name "devdocs" user-emacs-directory)))
+
+(use-package devdocs-browser
+  :commands (devdocs-browser-open)
+  :general ("C-h D" #'devdocs-browser-open))
+
+(use-package discover-my-major
+  :general
+  ("C-h C-m" #'discover-my-major))
+
+(use-package helpful
+  :general
+  ([remap describe-function]  #'helpful-callable
+   [remap describe-command]   #'helpful-command
+   [remap describe-variable]  #'helpful-variable
+   [remap display-local-help] #'helpful-at-point
+   [remap describe-symbol]    #'helpful-symbol
+   [remap describe-key]       #'helpful-key
+   "C-h x"                    #'helpful-macro))
 
 ;; Make all the lines soft-wrap
 (use-package org
@@ -935,6 +1012,7 @@ When the number of characters in a buffer exceeds this threshold,
 (setq-default fringes-outside-margins t)
 
 (use-package git-gutter
+  :blackout t
   :hook ((org-mode . git-gutter-mode)
          (org-src-mode . git-gutter-mode)
          (prog-mode . git-gutter-mode)
@@ -953,7 +1031,35 @@ When the number of characters in a buffer exceeds this threshold,
   ;; Stop git-gutter doing things when we don't want
   (remove-hook 'post-command-hook #'git-gutter:post-command-hook)
   (advice-remove #'quit-window #'git-gutter:quit-window)
-  (advice-remove #'switch-to-buffer #'git-gutter:switch-to-buffer))
+  (advice-remove #'switch-to-buffer #'git-gutter:switch-to-buffer)
+
+  (defhydra hydra-git-gutter (:body-pre (git-gutter-mode 1)
+                                        :hint nil)
+    "
+ Git gutter:
+   _j_: next hunk        _s_tage hunk     _q_uit
+   _k_: previous hunk    _r_evert hunk    _Q_uit and deactivate git-gutter
+   ^ ^                   _p_opup hunk
+   _h_: first hunk
+   _l_: last hunk        set start _R_evision
+ "
+    ("j" git-gutter:next-hunk)
+    ("k" git-gutter:previous-hunk)
+    ("h" (progn (goto-char (point-min))
+                (git-gutter:next-hunk 1)))
+    ("l" (progn (goto-char (point-min))
+                (git-gutter:previous-hunk 1)))
+    ("s" git-gutter:stage-hunk)
+    ("r" git-gutter:revert-hunk)
+    ("p" git-gutter:popup-hunk)
+    ("R" git-gutter:set-start-revision)
+    ("q" nil :color blue)
+    ("Q" (progn (git-gutter-mode -1)
+                ;; git-gutter-fringe doesn't seem to
+                ;; clear the markup right away
+                (sit-for 0.1)
+                (git-gutter:clear))
+     :color blue)))
 
 (use-package git-gutter-fringe
   :config
@@ -965,6 +1071,9 @@ When the number of characters in a buffer exceeds this threshold,
      #b11000000
      #b11100000
      #b11110000] nil nil 'bottom))
+
+;; Turn off git-gutter in the modeline.
+(blackout 'git-gutter-mode)
 
 (use-package git-timemachine
   :config
@@ -1025,6 +1134,39 @@ When the number of characters in a buffer exceeds this threshold,
   :after magit
   :config
   (magit-todos-mode +1))
+
+(use-package conda
+  :after python
+  :config
+  ;; taken from doom
+  ;; The location of your anaconda home will be guessed from a list of common
+  ;; possibilities, starting with `conda-anaconda-home''s default value (which
+  ;; will consult a ANACONDA_HOME envvar, if it exists).
+  ;;
+  ;; If none of these work for you, `conda-anaconda-home' must be set
+  ;; explicitly. Afterwards, run M-x `conda-env-activate' to switch between
+  ;; environments
+  (or (cl-loop for dir in (list conda-anaconda-home
+                                "~/.miniconda3"
+                                "~/.conda")
+               if (file-directory-p dir)
+               return (setq conda-anaconda-home (expand-file-name dir)
+                            conda-env-home-directory (expand-file-name dir)))
+      (message "Cannot find Anaconda installation"))
+  ;; integration with term/eshell
+  (conda-env-initialize-interactive-shells)
+  (after! eshell (conda-env-initialize-eshell))
+
+  ;; auto-activation (see below for details)
+  ;; (conda-env-autoactivate-mode t)
+  ;; automatically activate a conda environment on the opening of a file:
+  ;; (add-hook 'find-file-hook (lambda () (when (and (bound-and-true-p conda-project-env-path) (string-match "\\.py\\'" buffer-file-name))
+  ;;                                       (conda-env-activate-for-buffer))))
+
+  ;; Add to the modeline so that we know which env is activated.
+  (add-to-list 'global-mode-string
+               '(conda-env-current-name (" conda:" conda-env-current-name " "))
+               'append))
 
 (use-package markdown-mode
   :defer t
@@ -1158,6 +1300,11 @@ _h_   _l_   _o_k        _y_ank       /,`.-'`'   .‗  \-;;,‗
 
 (global-unset-key (kbd "C-x C-l")) ; I can downcase the region another way.
 (global-set-key (kbd "C-x C-l") 'my-expand-lines)
+
+(defun deftpunk/current-time ()
+  (interactive)
+  (insert (format-time-string "%D %T")))
+(define-abbrev global-abbrev-table "ydate" "" 'deftpunk/current-time)
 
 (use-package key-chord
   :commands (key-chord-define-global)
