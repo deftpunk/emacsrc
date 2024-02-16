@@ -732,6 +732,19 @@ Make the icons in Emacs pretty. Don't forget to run =M-x all-the-icons-install-f
   (use-package all-the-icons)
 #+end_src
 
+*** [[https://github.com/Malabarba/beacon][beacon]]
+
+Try not to lose the cursor on moving.
+
+#+begin_src emacs-lisp :name beacon
+  (use-package beacon
+    :custom
+    (beacon-lighter "")
+    (beacon-size 45)
+    (beacon-blink-when-window-scrolls nil)
+    :config (beacon-mode 1))
+#+end_src
+  
 *** [[https://github.com/tarsius/hl-todo][hl-todo]]
 
 Highlight TODO and similar keywords in comments and strings.
