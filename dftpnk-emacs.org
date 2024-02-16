@@ -1369,6 +1369,26 @@ Remembering the last place you visited in a file.
   (add-hook 'find-file-hook 'save-place-find-file-hook t)
 #+end_src
 
+*** visual-line-mode
+
+Visually wrap lines in Emacs.
+
+#+begin_src emacs-lisp :name visual-line-mode
+  (setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
+  (global-visual-line-mode)
+  (blackout 'visual-line-mode)
+#+end_src
+
+*** winner-mode
+
+Allows you to "undo" and "redo" window configuration changes.
+
+#+begin_src emacs-lisp :name winner-mode
+  ;; Ignore all the *<name>* buffers by regex.
+  (setq winner-boring-buffers-regexp "^\\*")
+  (winner-mode +1)
+#+end_src
+
 ** Emacs Enhancements
 *** [[https://github.com/abo-abo/ace-window][ace-window]]
 
