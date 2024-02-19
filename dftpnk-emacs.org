@@ -1689,7 +1689,6 @@ TODO: set faces.
 
 #+begin_src emacs-lisp :name git-gutter
   (use-package git-gutter
-    :blackout t
     :hook ((org-mode . git-gutter-mode)
            (org-src-mode . git-gutter-mode)
            (prog-mode . git-gutter-mode)
