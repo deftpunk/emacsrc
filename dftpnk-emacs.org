@@ -1458,6 +1458,17 @@ Found here: https://www.lucacambiaghi.com/vanilla-emacs/readme.html#h:8BB05594-D
         ad-do-it)))
 #+end_src
 
+*** [[https://github.com/purcell/unfill][unfill]]
+
+Funtions providing the inverse of =fill-paragraph= & =fill-region= .  I most care about =unfill-toggle=
+
+#+begin_src emacs-lisp :name unfill
+  (global-unset-key (kbd "M-u"))
+  (use-package unfill
+    :bind
+    (("M-u" . unfill-toggle)))
+#+end_src
+
 *** [[https://github.com/hlissner/ws-butler][ws-butler]]
 
 The Doom Emacs fork of ws-butler.
