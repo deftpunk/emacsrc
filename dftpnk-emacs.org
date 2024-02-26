@@ -465,10 +465,14 @@ Hooks:
 
 Display keybindings following your prefix command in a popup.
 
+TODO: the which-key-show-toplevel binding doesn't work
+(global-set-key (kbd "C-h <BLAH-m>") 'which-key-show-toplevel)
+Autoloading file /Users/bodine/MyStuff/dftpunk-emacs/var/elpaca/builds/which-key/which-key.elc failed to define function which-key-show-toplevel
+
 #+begin_src emacs-lisp :name which-key
   (use-package which-key
     :blackout
-    :commands (which-key-mode)
+    :commands (which-key-mode which-key-show-toplevel)
     :hook (on-first-input . which-key-mode)
     :custom
     (which-key-enable-exteded-define-key t)
