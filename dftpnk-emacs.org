@@ -1513,17 +1513,7 @@ Unobtrusively trim spaces from the end of a line.
     :general ("C-h D" #'devdocs-browser-open))
 #+end_src
 
-*** [[https://github.com/jguenther/discover-my-major][Discover-My-Major]]
-
-Discover bindings for the current major mode.
-
-#+begin_src emacs-lisp :name discover-my-major
-  (use-package discover-my-major
-    :general
-    ("C-h C-m" #'discover-my-major))
-#+end_src
-
-** [[https://github.com/Wilfred/helpful][Helpful]]
+*** [[https://github.com/Wilfred/helpful][Helpful]]
 
 Provide more contextual information in Emacs help
 
