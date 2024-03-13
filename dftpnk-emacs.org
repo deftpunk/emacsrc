@@ -1107,6 +1107,12 @@ Replace minibuffer-local-completion-map above with
 
 *** cape
 
+#+begin_src emacs-lisp :name cap
+  (use-package cape
+    :config
+    (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster))
+#+end_src
+
 *** [[https://github.com/minad/corfu][corfu]]
 
 In-buffer completion - text completion like =company-mode=
@@ -1123,7 +1129,7 @@ Some config options from here: https://kristofferbalintona.me/posts/202202270056
 #+begin_src emacs-lisp :name corfu
   (use-package corfu
     :elpaca (corfu :files (:defaults "extensions/*")
-           :includes (corfu-info corfu-history))
+           :includes (corfu-info corfu-history corfu-popupinfo))
     :general
     (:keymaps 'corfu-map
           :states 'insert
