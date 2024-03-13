@@ -749,10 +749,10 @@ Try not to lose the cursor on moving.
     :custom
     (beacon-lighter "")
     (beacon-size 45)
-    (beacon-blink-when-window-scrolls nil)
-    :config (beacon-mode 1))
+    :config
+    (beacon-mode 1))
 #+end_src
-  
+
 *** [[https://github.com/tarsius/hl-todo][hl-todo]]
 
 Highlight TODO and similar keywords in comments and strings.
