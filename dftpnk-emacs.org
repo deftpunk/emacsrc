@@ -1326,7 +1326,62 @@ Add some icons to completion prefixes.
   (setq create-lockfiles nil)
 #+end_src
 
+*** [[https://github.com/emacsmirror/undo-fu][undo-fu]]
+
+Simple, stable linear undo with redo for Emacs.
+
+#+begin_src emacs-lisp :name undo-fu
+  (use-package undo-fu)
+#+end_src
+
+*** [[https://github.com/emacsmirror/undo-fu-session][undo-fu-session]]
+
+#+begin_src emacs-lisp :name unfo-fu-session
+  (use-package undo-fu-session
+    :config
+    (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
+    (undo-fu-session-global-mode))
+#+end_src
+*** [[https://github.com/casouri/vundo][vundo]]
+
+Vundo (visual undo) displays the undo history as a tree and lets you move in the tree to go back to
+previous buffer states.
+
+#+begin_src emacs-lisp :name vundo
+  (use-package vundo
+    :commands (vundo)
+    :elpaca (vundo :type git :host github :repo "casouri/vundo")
+    :custom
+    ;; Take less on-screen space.
+    (vundo-compact-display t)
+    :config
+
+    ;; Better contrasting highlight.
+    (custom-set-faces
+      '(vundo-node ((t (:foreground "#808080"))))
+      '(vundo-stem ((t (:foreground "#808080"))))
+      '(vundo-highlight ((t (:foreground "#FFFF00")))))
+
+    ;; Use `HJKL` VIM-like motion, also Home/End to jump around.
+    (define-key vundo-mode-map (kbd "l") #'vundo-forward)
+    (define-key vundo-mode-map (kbd "<right>") #'vundo-forward)
+    (define-key vundo-mode-map (kbd "h") #'vundo-backward)
+    (define-key vundo-mode-map (kbd "<left>") #'vundo-backward)
+    (define-key vundo-mode-map (kbd "j") #'vundo-next)
+    (define-key vundo-mode-map (kbd "<down>") #'vundo-next)
+    (define-key vundo-mode-map (kbd "k") #'vundo-previous)
+    (define-key vundo-mode-map (kbd "<up>") #'vundo-previous)
+    (define-key vundo-mode-map (kbd "<home>") #'vundo-stem-root)
+    (define-key vundo-mode-map (kbd "<end>") #'vundo-stem-end)
+    (define-key vundo-mode-map (kbd "q") #'vundo-quit)
+    (define-key vundo-mode-map (kbd "C-g") #'vundo-quit)
+    (define-key vundo-mode-map (kbd "RET") #'vundo-confirm)
+
+    (global-define-key (kbd "C-M-u") 'vundo))
+#+end_src
+
 ** Emacs builtin modes
+
 *** [[https://www.emacswiki.org/emacs/AbbrevMode][abbreviations]]
 
 The abbreviations file is saved by =no-littering= into our =etc/= directory as =abbrev.el=
