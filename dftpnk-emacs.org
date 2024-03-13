@@ -806,6 +806,57 @@ Supported themes:
     (solaire-global-mode +1))
 #+end_src
 
+*** Themes
+
+**** [[https://github.com/catppuccin/emacs][catppuccin]]
+
+#+begin_src emacs-lisp :name catppuccin
+  (use-package catppuccin-theme
+    :config
+    (load-theme 'catppuccin :no-confirm)
+    (setq catppquccin-flavor 'mocha) ;; or 'latte, 'macchiato, or 'mocha
+    (catppuccin-reload))
+#+end_src
+
+*** Doom modeline
+
+#+begin_src emacs-lisp :name doom-modeline
+  (use-package doom-modeline
+    :custom
+    (doom-modeline-buffer-file-name-style 'truncate-upto-root)
+    (doom-modeline-buffer-name t)
+    (doom-modeline-vcs-max-length 35)
+    (doom-modeline-icon t)
+    :init
+    (doom-modeline-mode 1)
+    :config
+    (setq inhibit-compacting-font-caches t) ;; Don´t compact font caches during GC
+
+    (unless (eq system-type 'darwin)
+      (if (facep 'mode-line-active)
+          (set-face-attribute 'mode-line-active nil
+                              :family "Hack"
+                              :height 100) ; For 29+
+        (set-face-attribute 'mode-line nil
+                            :family "Hack"
+                            :height 100))
+      (set-face-attribute 'mode-line-inactive nil
+                          :family "Hack"
+                          :height 100))
+
+    (when (eq system-type 'darwin)
+      (if (facep 'mode-line-active)
+          (set-face-attribute 'mode-line-active nil
+                              :family "Hack Nerd Font"
+                              :height 130) ; For 29+
+        (set-face-attribute 'mode-line nil
+                            :family "Hack Nerd Font"
+                            :height 130))
+      (set-face-attribute 'mode-line-inactive nil
+                          :family "Hack Nerd Font"
+                          :height 130)))
+#+end_src
+
 ** Completion Frameworks
 
 *** Some minibuffer mappings first
