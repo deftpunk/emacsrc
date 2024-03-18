@@ -1355,6 +1355,15 @@ The abbreviations file is saved by =no-littering= into our =etc/= directory as =
   (quietly-read-abbrev-file)
 #+end_src
 
+**** Some function based abbreviations
+
+#+begin_src emacs-lisp :name function-abbreviations
+  (defun deftpunk/current-time ()
+    (interactive)
+    (insert (format-time-string "%D %T")))
+  (define-abbrev global-abbrev-table "ydate" "" 'deftpunk/current-time)
+#+end_src
+
 *** auto-revert
 
 #+begin_src emacs-lisp :name auto-revert
@@ -1445,7 +1454,47 @@ Saving and backing up files. While its nice to assume that everything is in sour
                                            (find-alternate-file ".."))))  ; was dired-up-directory
 #+end_src
 
-***  [[https://www.emacswiki.org/emacs/RecentFiles][recentf]]
+*** [[https://www.gnu.org/software/emacs/manual/html_mono/ediff.html][ediff]]
+
+Visual interface to diff and patch.
+
+#+begin_src emacs-lisp :name ediff
+  (use-package ediff
+    :elpaca nil
+    :hook (ediff-after-quit-hook-internal . winner-undo) ; restore the window configuration.
+    :custom
+    (setq ediff-diff-options "-w"
+          ediff-use-long-help-message t
+          ediff-split-window-function #'split-window-horizontally
+          ediff-window-setup-function #'ediff-setup-windows-plain))
+#+end_src
+
+*** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Cursor-Display.html#index-highlight-current-line][hl-line-mode]]
+
+Highlight the current line.
+
+#+begin_src emacs-lisp :name hl-line
+  (use-package hl-line
+    :elpaca nil
+    :custom
+    (hl-line-sticky-flag nil) ; Don't highlight current line across windows.
+    :config
+    (defun eat/hl-line-setup ()
+      "Disable `hl-line-mode' if region is active."
+      (when (and (bound-and-true-p hl-line-mode)
+                 (region-active-p))
+        (hl-line-unhighlight)))
+
+    (with-eval-after-load 'hl-line
+      (add-hook 'post-command-hook #'eat/hl-line-setup))
+
+    (add-hook 'prog-mode-hook #'hl-line-mode)
+    (add-hook 'text-mode-hook #'hl-line-mode))
+#+end_src
+
+*** [[https://www.emacswiki.org/emacs/RecentFiles][recentf]]
+
+Keep track of recently used files.
 
 #+begin_src emacs-lisp :name recentf
   (use-package emacs
@@ -1509,6 +1558,24 @@ Remembering the last place you visited in a file.
   (save-place-mode 1)
   (add-hook 'save-place-find-file-hook 'recenter)
   (add-hook 'find-file-hook 'save-place-find-file-hook t)
+#+end_src
+
+*** [[https://www.gnu.org/software/tramp/][Tramp]]
+
+Accessing remote files transparently
+
+#+begin_src emacs-lisp :name Tramp
+  (use-package tramp
+    :elpaca nil
+    :custom
+    (tramp-default-method "ssh")
+    :config
+    (setq remote-file-name-inhibit-cache nil)
+    (setq vc-ignore-dir-regexp
+          (format "%s\\|%s"
+                  vc-ignore-dir-regexp
+                  tramp-file-name-regexp))
+    (setq tramp-verbose 1))
 #+end_src
 
 *** visual-line-mode
