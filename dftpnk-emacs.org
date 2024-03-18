@@ -739,6 +739,18 @@ Make the icons in Emacs pretty. Don't forget to run =M-x all-the-icons-install-f
 #+begin_src emacs-lisp :name all_the_icons
   (use-package all-the-icons)
 #+end_src
+**** [[https://github.com/jtbm37/all-the-icons-dired][all-the-icons-dired]]
+
+Add some =all-the-icons= to dired.
+
+#+begin_src emacs-lisp :name all-the-icons-dired
+  (use-package all-the-icons-dired
+    :config
+    :hook (dired-mode . (lambda ()
+                          (interactive)
+                          (unless (file-remote-p default-directory)
+                            (all-the-icons-dired-mode)))))
+#+end_src
 
 *** [[https://github.com/Malabarba/beacon][beacon]]
 
