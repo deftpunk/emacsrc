@@ -1411,6 +1411,12 @@ Saving and backing up files. While its nice to assume that everything is in sour
 #+begin_src emacs-lisp :name dired
   (use-package dired
     :elpaca nil
+    :general
+    (:keymaps 'dired-mode-map
+              "RET" #'dired-find-alternate-file
+              "^" (lambda ()
+                    (interactive)
+                    (find-alternate-file "..")))
     :custom
     ;; Allow dired to delete or copy a dir.
     ;; 02/14/24 17:41:48 - These default to 'top in dired now.
