@@ -1639,6 +1639,113 @@ Found here: https://www.lucacambiaghi.com/vanilla-emacs/readme.html#h:8BB05594-D
         ad-do-it)))
 #+end_src
 
+*** [[https://github.com/magnars/expand-region.el][expand-region]]
+
+Expand the selected region by semantic units.
+
+#+begin_src emacs-lisp :name expand-region
+  (use-package expand-region
+    :bind ("C-=" . er/expand-region))
+#+end_src
+
+*** [[https://github.com/Malabarba/emacs-google-this][google-this]]
+
+A set of emacs functions and bindings to google under point.
+
+#+begin_src emacs-lisp :name google-this
+  (use-package google-this)
+#+end_src
+
+*** [[https://github.com/emacsorphanage/osx-trash][osx-trash]]
+
+Make =delete-by-moving-to-trash= do what we expect on MacOSX. Don't forget to =brew install trash= for better performance.
+
+#+begin_src emacs-lisp :name osx-trash
+  (use-package osx-trash
+    :config
+    (when (eq system-type 'darwin)
+      (osx-trash-setup))
+    (setq delete-by-moving-to-trash t))
+#+end_src
+
+*** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Projects.html][project]] & [[https://github.com/karthink/project-x][project-x]]
+
+Builtin project management & some extensions.
+
+#+begin_src emacs-lisp :name project
+
+
+  (use-package project-x
+    :after project
+    :config
+    (setq project-x-save-interval 600)    ;Save project state every 10 min
+    (project-x-mode 1))
+#+end_src
+
+*** [[https://github.com/Kungsgeten/selected.el][selected.el]]
+
+Keybindings you want enabled when a region is active.
+
+#+begin_src emacs-lisp :name selected
+  (use-package selected
+    :commands selected-minor-mode
+    :init
+    (setq selected-org-mode-map (make-sparse-keymap))
+    :bind (:map selected-keymap
+                ("q" . selected-off)
+                ("u" . upcase-region)
+                ("d" . downcase-region)
+                ("m" . apply-macro-to-region-lines)
+                :map selected-org-mode-map
+                ("t" . org-table-convert-region)))
+#+end_src
+
+*** [[https://github.com/hrehfeld/emacs-smart-hungry-delete][smart-hungry-delete]]
+
+#+begin_src emacs-lisp :name smart-hungry-delete
+  (use-package smart-hungry-delete
+    :bind (([remap backward-delete-char-untabify] . smart-hungry-delete-backward-char)
+           ([remap delete-backward-char] . smart-hungry-delete-backward-char)
+           ([remap delete-char] . smart-hungry-delete-forward-char))
+    :init (smart-hungry-delete-add-default-hooks))
+#+end_src
+
+*** [[https://github.com/bbatsov/super-save][super-save]]
+
+Auto-saves your buffers  when certain events happen.
+
+#+begin_src emacs-lisp :name super-save
+  (setq auto-save-default nil) ; turn off the builtin auto-save
+  (use-package super-save
+    :blackout t
+    :custom
+    (super-save-silent t)
+    (super-save-delete-trailing-whitespace t)
+    (super-save-remote-files nil)
+    (super-save-auto-save-when-idle t)
+    (super-save-exclude '(".gpg"))
+    :config
+    (add-to-list 'super-save-triggers 'ace-window)
+    (add-to-list 'super-save-hook-triggers 'find-file-hook)
+    (super-save-mode +1))
+#+end_src
+
+*** [[https://github.com/emacsmirror/undo-fu][undo-fu]]
+
+Simple, stable linear undo with redo for Emacs.
+
+#+begin_src emacs-lisp :name undo-fu
+  (use-package undo-fu)
+#+end_src
+
+*** [[https://github.com/emacsmirror/undo-fu-session][undo-fu-session]]
+
+#+begin_src emacs-lisp :name unfo-fu-session
+  (use-package undo-fu-session
+    :config
+    (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
+    (undo-fu-session-global-mode))
+#+end_src
 *** [[https://github.com/purcell/unfill][unfill]]
 
 Funtions providing the inverse of =fill-paragraph= & =fill-region= .  I most care about =unfill-toggle=
