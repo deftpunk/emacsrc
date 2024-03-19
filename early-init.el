@@ -74,8 +74,12 @@
               frame-inhibit-implied-resize t
               inhibit-default-init t
               site-run-file nil
-              load-prefer-newer t
-              read-process-output-max (* 1024 1024 3))
+              load-prefer-newer t)
+
+;; 02/28/24 19:36:07
+;; Looks like read-process-output-max can't be fine tuned on MacOS.  Its stuck at 64kb.  Maybe the patch to Emacs30 will help(?).
+;; https://github.com/emacs-lsp/lsp-mode/discussions/3561
+;; (read-process-output-max (* 1024 1024 3))
 
 (setq file-name-handler-alist nil
       package-enable-at-startup nil

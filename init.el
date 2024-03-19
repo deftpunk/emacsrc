@@ -114,7 +114,7 @@
 
 (use-package which-key
   :blackout
-  :commands (which-key-mode)
+  :commands (which-key-mode which-key-show-toplevel)
   :hook (on-first-input . which-key-mode)
   :custom
   (which-key-enable-exteded-define-key t)
@@ -125,6 +125,45 @@
 
 (use-package hydra)
 (elpaca-wait)
+
+(use-package major-mode-hydra
+;  :straight (major-mode-hydra :type git :host github :repo "jerrypnz/major-mode-hydra.el")
+  :init
+  ;; Set the default major-mode-hydra title using all-the-icons icon
+  ;; for the major mode.  THis is just in case we don't use any of the
+  ;; "with=*" functions below.
+  (setq major-mode-hydra-title-generator
+    '(lambda (mode)
+       (s-concat "\n"
+                 (s-repeat 10 " ")
+                 (all-the-icons-icon-for-mode mode :v-adjust 0.05)
+                 " "
+                 (symbol-name mode)
+                 ""))))
+
+;; A bunch of utility functions from https://gist.github.com/mbuczko/e15d61363d31cf78ff17427072e0c325
+(defun with-faicon (icon str &optional height v-adjust)
+  (s-concat (all-the-icons-faicon icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+
+(defun with-fileicon (icon str &optional height v-adjust)
+  (s-concat (all-the-icons-fileicon icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+
+(defun with-octicon (icon str &optional height v-adjust)
+  (s-concat (all-the-icons-octicon icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+
+(defun with-material (icon str &optional height v-adjust)
+  (s-concat (all-the-icons-material icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+
+(defun with-mode-icon (mode str &optional height nospace face)
+  (let* ((v-adjust (if (eq major-mode 'emacs-lisp-mode) 0.0 0.05))
+         (args     `(:height ,(or height 1) :v-adjust ,v-adjust))
+         (_         (when face
+                      (lax-plist-put args :face face)))
+         (icon     (apply #'all-the-icons-icon-for-mode mode args))
+         (icon     (if (symbolp icon)
+                       (apply #'all-the-icons-octicon "file-text" args)
+                     icon)))
+    (s-concat icon (if nospace "" " ") str)))
 
 ;;; Some convenience macros from our favorite martian - Doom Emacs creator Henrik Lissner ;;;
 
@@ -337,12 +376,19 @@
 
 (use-package all-the-icons)
 
+(use-package all-the-icons-dired
+  :config
+  :hook (dired-mode . (lambda ()
+                        (interactive)
+                        (unless (file-remote-p default-directory)
+                          (all-the-icons-dired-mode)))))
+
 (use-package beacon
   :custom
   (beacon-lighter "")
   (beacon-size 45)
-  (beacon-blink-when-window-scrolls nil)
-  :config (beacon-mode 1))
+  :config
+  (beacon-mode 1))
 
 (use-package hl-todo
   :elpaca (hl-todo :depth nil) ; see https://github.com/alphapapa/magit-todos/issues/171
@@ -360,6 +406,57 @@
 (use-package solaire-mode
   :config
   (solaire-global-mode +1))
+
+(use-package catppuccin-theme
+  :config
+  (load-theme 'catppuccin :no-confirm)
+  (setq catppquccin-flavor 'mocha) ;; or 'latte, 'macchiato, or 'mocha
+  (catppuccin-reload))
+
+(use-package doom-modeline
+  :custom
+  (doom-modeline-buffer-file-name-style 'truncate-upto-root)
+  (doom-modeline-buffer-name t)
+  (doom-modeline-vcs-max-length 35)
+  (doom-modeline-icon t)
+  :init
+  (doom-modeline-mode 1)
+  :config
+  (setq inhibit-compacting-font-caches t) ;; Don´t compact font caches during GC
+
+  (unless (eq system-type 'darwin)
+    (if (facep 'mode-line-active)
+        (set-face-attribute 'mode-line-active nil
+                            :family "Hack"
+                            :height 100) ; For 29+
+      (set-face-attribute 'mode-line nil
+                          :family "Hack"
+                          :height 100))
+    (set-face-attribute 'mode-line-inactive nil
+                        :family "Hack"
+                        :height 100))
+
+  (when (eq system-type 'darwin)
+    (if (facep 'mode-line-active)
+        (set-face-attribute 'mode-line-active nil
+                            :family "Hack Nerd Font"
+                            :height 130) ; For 29+
+      (set-face-attribute 'mode-line nil
+                          :family "Hack Nerd Font"
+                          :height 130))
+    (set-face-attribute 'mode-line-inactive nil
+                        :family "Hack Nerd Font"
+                        :height 130)))
+
+(use-package hide-mode-mode
+  :elpaca (:host github :repo "hlissner/emacs-hide-mode-line")
+  :hook ((completion-list-mode . hide-mode-line-mode))
+  :config
+  (hide-mode-line-mode))
+
+(use-package rainbow-delimiters
+  :config
+  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 
 (keymap-set minibuffer-local-map "C-w" 'backword-kill-word)
 (keymap-set minibuffer-local-completion-map "C-w" 'backword-kill-word)
@@ -389,7 +486,7 @@
   :general
   (:keymaps 'vertico-map
         "<tab>" #'vertico-insert
-        "<escape>" #'keyboard-quit
+        "<escape>" #'minibuffer-keyboard-quit
         "<backspace>" #'vertico-directory-delete-char
         "C-w" #'vertico-directory-delete-word
         "?" #'minibuffer-completion-help
@@ -417,7 +514,7 @@
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
   (completion-category-overrides
-   '((file (styles basic-remote                            ; basic-remote for Tramp hostname completion with vertico
+   '((file (styles basic basic-remote                            ; basic-remote for Tramp hostname completion with vertico
                    orderless partial-completion)))))
 
 (use-package marginalia
@@ -527,9 +624,13 @@ When the number of characters in a buffer exceeds this threshold,
 (use-package embark-consult
   :after (embark consult))
 
+(use-package cape
+  :config
+  (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster))
+
 (use-package corfu
   :elpaca (corfu :files (:defaults "extensions/*")
-         :includes (corfu-info corfu-history))
+         :includes (corfu-info corfu-history corfu-popupinfo))
   :general
   (:keymaps 'corfu-map
         :states 'insert
@@ -668,7 +769,7 @@ When the number of characters in a buffer exceeds this threshold,
 (setq datetime-timezone "America/Denver")
 
 ;; I actually find the custom system a nuisance; move the file out of the way.
-(setq custom-file (expand-file-name "custom.el" deftpunk--etc-dir))
+(setq custom-file (expand-file-name "custom.el" deftpunk--var-dir))
 
 ;; Replace yes/no prompts with y/n
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -723,6 +824,16 @@ When the number of characters in a buffer exceeds this threshold,
 ;; Read the abbrev file on startup.
 (quietly-read-abbrev-file)
 
+(defun deftpunk/current-time ()
+  (interactive)
+  (insert (format-time-string "%D %T")))
+(define-abbrev global-abbrev-table "ydate" "" 'deftpunk/current-time)
+
+;; Revert Dired and other buffers
+(setq global-auto-revert-non-file-buffers t)
+;; Revert buffers when the underlying file has changed.
+(global-auto-revert-mode 1)
+
 ;; https://www.emacswiki.org/emacs/BackupDirectory
 ;; https://stackoverflow.com/questions/151945/how-do-i-control-how-emacs-makes-backup-files
 
@@ -757,6 +868,12 @@ When the number of characters in a buffer exceeds this threshold,
 
 (use-package dired
   :elpaca nil
+  :general
+  (:keymaps 'dired-mode-map
+            "RET" #'dired-find-alternate-file
+            "^" (lambda ()
+                  (interactive)
+                  (find-alternate-file "..")))
   :custom
   ;; Allow dired to delete or copy a dir.
   ;; 02/14/24 17:41:48 - These default to 'top in dired now.
@@ -784,6 +901,50 @@ Version 2019-10-22"
                                          (interactive)
                                          (find-alternate-file ".."))))  ; was dired-up-directory
 
+(use-package ediff
+  :elpaca nil
+  :hook (ediff-after-quit-hook-internal . winner-undo) ; restore the window configuration.
+  :custom
+  (setq ediff-diff-options "-w"
+        ediff-use-long-help-message t
+        ediff-split-window-function #'split-window-horizontally
+        ediff-window-setup-function #'ediff-setup-windows-plain))
+
+(use-package hl-line
+  :elpaca nil
+  :custom
+  (hl-line-sticky-flag nil) ; Don't highlight current line across windows.
+  :config
+  (defun eat/hl-line-setup ()
+    "Disable `hl-line-mode' if region is active."
+    (when (and (bound-and-true-p hl-line-mode)
+               (region-active-p))
+      (hl-line-unhighlight)))
+
+  (with-eval-after-load 'hl-line
+    (add-hook 'post-command-hook #'eat/hl-line-setup))
+
+  (add-hook 'prog-mode-hook #'hl-line-mode)
+  (add-hook 'text-mode-hook #'hl-line-mode))
+
+(use-package emacs
+  :elpaca nil
+  :custom
+  (recentf-max-saved-items 250)
+  (recentf-max-menu-items 15)
+      ;; disable recentf-cleanup on Emacs start, because it can cause
+      ;; problems with remote files, ie. Tramp files.
+  (recentf-save-file "~/.emacs.d/etc/recentf-save.el")
+  (recentf-auto-cleanup 'never)
+  (recentf-exclude (list "/scp:"
+                         "/ssh:"
+                         "/sudo:"
+                         "/tmp/"
+                         "~$"
+                         "COMMIT_EDITMSG"))
+  :config
+  (recentf-mode +1))
+
 (setq savehist-file (expand-file-name "savehist" deftpunk--var-dir)
       history-length 65                                                ; reducing size helps reduce startup cost.
       history-delete-duplicates t
@@ -810,12 +971,28 @@ Version 2019-10-22"
 (put 'buffer-name-history                   'history-length 50)
 (put 'file-name-history                     'history-length 50)
 
-(setq save-place-file (expand-file-name "emacs-places" deftpunk--var-dir)
-      save-place-forget-unreadable-files nil  ; Setting to t has the potential to make exiting slow
-      )
-(save-place-mode 1)
-(add-hook 'save-place-find-file-hook 'recenter)
-(add-hook 'find-file-hook 'save-place-find-file-hook t)
+(use-package saveplace
+  :elpaca nil
+  :custom
+  (save-place-limit 100)
+  (save-place-file (expand-file-name "emacs-places" deftpunk--var-dir))
+  (save-place-forget-unreadable-files nil)  ; Setting to t has the potential to make exiting slow
+  :config
+  (save-place-mode 1)
+  (add-hook 'save-place-find-file-hook 'recenter)
+  (add-hook 'find-file-hook 'save-place-find-file-hook t))
+
+(use-package tramp
+  :elpaca nil
+  :custom
+  (tramp-default-method "ssh")
+  :config
+  (setq remote-file-name-inhibit-cache nil)
+  (setq vc-ignore-dir-regexp
+        (format "%s\\|%s"
+                vc-ignore-dir-regexp
+                tramp-file-name-regexp))
+  (setq tramp-verbose 1))
 
 (setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
 (global-visual-line-mode)
@@ -846,6 +1023,116 @@ Version 2019-10-22"
     (let ((buffer-quit-function (lambda () ())))
       ad-do-it)))
 
+(use-package expand-region
+  :bind ("C-=" . er/expand-region))
+
+(use-package google-this)
+
+(use-package move-text
+  :config
+  (defun indent-region-advice (&rest ignored)
+    "Indent after moving"
+    (let ((deactivate deactivate-mark))
+      (if (region-active-p)
+          (indent-region (region-beginning) (region-end))
+        (indent-region (line-beginning-position) (line-end-position)))
+      (setq deactivate-mark deactivate)))
+
+  (advice-add 'move-text-up :after 'indent-region-advice)
+  (advice-add 'move-text-down :after 'indent-region-advice))
+
+
+(global-set-key (kbd "s-C-j") #'move-text-down)
+(global-set-key (kbd "s-C-k") #'move-text-up)
+
+(use-package osx-trash
+  :config
+  (when (eq system-type 'darwin)
+    (osx-trash-setup))
+  (setq delete-by-moving-to-trash t))
+
+(use-package project-x
+  :elpaca (:host github :repo "karthink/project-x")
+  :after project
+  :config
+  (setq project-x-save-interval 600)    ;Save project state every 10 min
+  (project-x-mode 1))
+
+(use-package selected
+  :commands selected-minor-mode
+  :init
+  (setq selected-org-mode-map (make-sparse-keymap))
+  :bind (:map selected-keymap
+              ("q" . selected-off)
+              ("u" . upcase-region)
+              ("d" . downcase-region)
+              ("m" . apply-macro-to-region-lines)
+              :map selected-org-mode-map
+              ("t" . org-table-convert-region)))
+
+(use-package smart-hungry-delete
+  :bind (([remap backward-delete-char-untabify] . smart-hungry-delete-backward-char)
+         ([remap delete-backward-char] . smart-hungry-delete-backward-char)
+         ([remap delete-char] . smart-hungry-delete-forward-char))
+  :init (smart-hungry-delete-add-default-hooks))
+
+(setq auto-save-default nil) ; turn off the builtin auto-save
+(use-package super-save
+  :blackout t
+  :custom
+  (super-save-silent t)
+  (super-save-delete-trailing-whitespace t)
+  (super-save-remote-files nil)
+  (super-save-auto-save-when-idle t)
+  (super-save-exclude '(".gpg"))
+  :config
+  (add-to-list 'super-save-triggers 'ace-window)
+  (add-to-list 'super-save-hook-triggers 'find-file-hook)
+  (super-save-mode +1))
+
+(use-package undo-fu)
+
+(use-package undo-fu-session
+  :config
+  (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
+  (undo-fu-session-global-mode))
+
+(global-unset-key (kbd "M-u"))
+(use-package unfill
+  :bind
+  (("M-u" . unfill-toggle)))
+
+(use-package vundo
+  :commands (vundo)
+  :elpaca (vundo :type git :host github :repo "casouri/vundo")
+  :custom
+  ;; Take less on-screen space.
+  (vundo-compact-display t)
+  :config
+
+  ;; Better contrasting highlight.
+  (custom-set-faces
+    '(vundo-node ((t (:foreground "#808080"))))
+    '(vundo-stem ((t (:foreground "#808080"))))
+    '(vundo-highlight ((t (:foreground "#FFFF00")))))
+
+  ;; Use `HJKL` VIM-like motion, also Home/End to jump around.
+  (define-key vundo-mode-map (kbd "l") #'vundo-forward)
+  (define-key vundo-mode-map (kbd "<right>") #'vundo-forward)
+  (define-key vundo-mode-map (kbd "h") #'vundo-backward)
+  (define-key vundo-mode-map (kbd "<left>") #'vundo-backward)
+  (define-key vundo-mode-map (kbd "j") #'vundo-next)
+  (define-key vundo-mode-map (kbd "<down>") #'vundo-next)
+  (define-key vundo-mode-map (kbd "k") #'vundo-previous)
+  (define-key vundo-mode-map (kbd "<up>") #'vundo-previous)
+  (define-key vundo-mode-map (kbd "<home>") #'vundo-stem-root)
+  (define-key vundo-mode-map (kbd "<end>") #'vundo-stem-end)
+  (define-key vundo-mode-map (kbd "q") #'vundo-quit)
+  (define-key vundo-mode-map (kbd "C-g") #'vundo-quit)
+  (define-key vundo-mode-map (kbd "RET") #'vundo-confirm)
+
+  (global-define-key (kbd "C-M-u") 'vundo))
+
 (use-package ws-butler
   :elpaca (ws-butler :type git :host github :repo "hlissner/ws-butler")
   :blackout t
@@ -860,6 +1147,21 @@ Version 2019-10-22"
 (with-eval-after-load 'ws-butler
   (blackout 'ws-butler-mode))
 
+(use-package yasnippet-snippets)
+
+(use-package yasnippet
+  :hook (prog-mode-hook . yas-minor-mode)
+  :custom
+  (yas-verbosity 3)
+  (yas-also-auto-indent-first-line t)
+  :init
+  ;; Remove default ~/.emacs.d/snippets
+  ;; (defvar yas-snippet-dirs nil)
+
+  :config
+  ;; Allow private snippets.
+  (add-to-list 'yas-snippet-dirs (expand-file-name "snippets" user-emacs-directory)))
+
 (use-package devdocs
   :init
   (setq devdocs-data-dir (expand-file-name "devdocs" user-emacs-directory)))
@@ -867,10 +1169,6 @@ Version 2019-10-22"
 (use-package devdocs-browser
   :commands (devdocs-browser-open)
   :general ("C-h D" #'devdocs-browser-open))
-
-(use-package discover-my-major
-  :general
-  ("C-h C-m" #'discover-my-major))
 
 (use-package helpful
   :general
@@ -1012,7 +1310,6 @@ Version 2019-10-22"
 (setq-default fringes-outside-margins t)
 
 (use-package git-gutter
-  :blackout t
   :hook ((org-mode . git-gutter-mode)
          (org-src-mode . git-gutter-mode)
          (prog-mode . git-gutter-mode)
@@ -1135,6 +1432,81 @@ Version 2019-10-22"
   :config
   (magit-todos-mode +1))
 
+(use-package jsonrpc
+  :elpaca (:inherit elpaca-menu-gnu-devel-elpa))
+
+(elpaca-wait)
+
+(use-package eldoc
+  :elpaca (:inherit elpaca-menu-gnu-devel-elpa))
+
+(elpaca-wait)
+
+(use-package eglot
+  :elpaca (:inherit elpaca-menu-gnu-devel-elpa)
+  :custom
+  (fset #'jsonrpc--log-event #'ignore)
+  (eglot-sync-connect nil)
+  (eglot-connect-timeout nil)
+  (eglot-autoshutdown t)
+  (eglot-send-changes-idle-time 3)
+  (flymake-no-changes-timeout 5)
+  (eldoc-echo-area-use-multiline-p nil)
+  (setq eglot-ignored-server-capabilities '( :documentHighlightProvider))
+  (setf (plist-get eglot-events-buffer-config :size) 0)
+
+  :config
+  (add-to-list 'eglot-server-programs '((python-mode python-ts-mode) . ("pyright-langserver" "--stdio"))))
+
+;; exclude modes from eglot
+(defun maybe-start-eglot ()
+  "Exlude some mode from eglot."
+  (let ((disabled-modes '(emacs-lisp-mode dockerfile-ts-mode)))
+    (unless (apply 'derived-mode-p disabled-modes)
+      (eglot-ensure))))
+
+(add-hook 'prog-mode-hook #'maybe-start-eglot)
+
+;; use native eglot booster
+(use-package eglot-booster
+  :elpaca (:type git :host github :repo "jdtsmith/eglot-booster")
+  :after eglot
+  :config
+  (eglot-booster-mode))
+
+(with-eval-after-load 'eglot
+  (setq completion-category-defaults nil))
+
+(defun emacswiki/comment-auto-fill ()
+  " Set up auto-file / wrapping of comments."
+  (setq-local comment-auto-fill-only-comments t)
+  (auto-fill-mode 1))
+
+;; Spellchecking in comments.
+(add-hook 'prog-mode-hook #'flyspell-prog-mode)
+
+;; Take care of color codes in the output
+(require 'ansi-color)
+(add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
+
+;; Scroll to the bottom
+(setq compilation-scroll-output t)
+
+(add-hook 'after-save-hook
+          'executable-make-buffer-file-executable-if-script-p)
+
+(use-package fill-function-arguments
+  :hook
+  ((prog-mode . (lambda ()
+                  (local-set-key (kbd "M-q") #'fill-function-arguments-dwim)))
+   (emacs-lisp-mode . (lambda ()
+                        (setq-local fill-function-arguments-second-argument-same-line t)
+                        (setq-local fill-function-arguments-last-argument-same-line t)
+                        (setq-local fill-function-arguments-argument-separator " "))))
+  :custom
+  (fill-function-arguments-indent-after-fill t)
+  (fill-function-arguments-indent-first-argument-same-line t))
+
 (use-package conda
   :after python
   :config
@@ -1170,15 +1542,15 @@ Version 2019-10-22"
 
 (use-package markdown-mode
   :defer t
+  :after magit
   :commands (markdown-mode gfm-mode)
   :hook (markdown-mode . flyspell-mode)
   :mode (("README\\.md\\'" . gfm-mode)
          ("\\.md\\'"       . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
-  :init
-  (setq markdown-command "/opt/homebrew/bin/multimarkdown"
-        markdown-header-scaling t)
-  )
+  :custom
+  (markdown-command "/opt/homebrew/bin/multimarkdown")
+  (markdown-header-scaling t))
 
 (use-package vterm
   :ensure t
@@ -1265,7 +1637,7 @@ _h_   _l_   _o_k        _y_ank       /,`.-'`'   .‗  \-;;,‗
 
 (general-create-definer deftpunk-g-def
   :keymaps 'override
-  :prefix "s-g"
+  :global-prefix "s-g"
   "g" goto-line
   "s-g" goto-line
   "o" ace-link
@@ -1281,6 +1653,34 @@ _h_   _l_   _o_k        _y_ank       /,`.-'`'   .‗  \-;;,‗
 (global-set-key (kbd "s-l") 'windmove-right)
 
 (defalias 'ff 'find-file)
+
+;; https://www.reddit.com/r/emacs/comments/r7l3ar/comment/hn3kuwh/?utm_source=share&utm_medium=web2x&context=3
+(defun my/scroll-down-half-page ()
+  "scroll down half a page while keeping the cursor centered"
+  (interactive)
+  (let ((ln (line-number-at-pos (point)))
+        (lmax (line-number-at-pos (point-max))))
+    (cond ((= ln 1) (move-to-window-line nil))
+          ((= ln lmax) (recenter (window-end)))
+          (t (progn
+               (move-to-window-line -1)
+               (recenter))))))
+
+(defun my/scroll-up-half-page ()
+  "scroll up half a page while keeping the cursor centered"
+  (interactive)
+  (let ((ln (line-number-at-pos (point)))
+        (lmax (line-number-at-pos (point-max))))
+    (cond ((= ln 1) nil)
+          ((= ln lmax) (move-to-window-line nil))
+          (t (progn
+               (move-to-window-line 0)
+               (recenter))))))
+
+(global-unset-key (kbd "s-u"))
+(global-unset-key (kbd "s-d"))
+(global-set-key (kbd "s-u") 'my/scroll-up-half-page)
+(global-set-key (kbd "s-d") 'my/scroll-down-half-page)
 
 ;; Using C-j for jumping around.
 (global-unset-key (kbd "C-j"))
@@ -1301,16 +1701,15 @@ _h_   _l_   _o_k        _y_ank       /,`.-'`'   .‗  \-;;,‗
 (global-unset-key (kbd "C-x C-l")) ; I can downcase the region another way.
 (global-set-key (kbd "C-x C-l") 'my-expand-lines)
 
-(defun deftpunk/current-time ()
-  (interactive)
-  (insert (format-time-string "%D %T")))
-(define-abbrev global-abbrev-table "ydate" "" 'deftpunk/current-time)
+;; (global-set-key (kbd "C-<space>") 'leader/body)
 
 (use-package key-chord
   :commands (key-chord-define-global)
   :init
   (key-chord-mode 1)
+  :config
+  (key-chord-define-global "jk" 'execute-extended-command)
+  (key-chord-define-global "hh" 'split-window-below)
+  (key-chord-define-global "vv" 'split-window-right))
 
-(key-chord-define-global "jk" 'execute-extended-command)
-(key-chord-define-global "hh" 'split-window-below)
-(key-chord-define-global "vv" 'split-window-right))
+(server-start)
