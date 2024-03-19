@@ -2491,15 +2491,15 @@ Major mode for editing [[http://daringfireball.net/projects/markdown/][Markdown]
 #+begin_src emacs-lisp :name markdown
   (use-package markdown-mode
     :defer t
+    :after magit
     :commands (markdown-mode gfm-mode)
     :hook (markdown-mode . flyspell-mode)
     :mode (("README\\.md\\'" . gfm-mode)
            ("\\.md\\'"       . markdown-mode)
            ("\\.markdown\\'" . markdown-mode))
-    :init
-    (setq markdown-command "/opt/homebrew/bin/multimarkdown"
-          markdown-header-scaling t)
-    )
+    :custom
+    (markdown-command "/opt/homebrew/bin/multimarkdown")
+    (markdown-header-scaling t))
 #+end_src
 
 ** Terminals & Shells
