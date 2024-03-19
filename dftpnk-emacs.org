@@ -2192,10 +2192,121 @@ Show TODOs in Magit status buffer for each source file.
     (magit-todos-mode +1))
 #+end_src
 
+** LSP
+*** [[https://github.com/joaotavora/eglot][eglot]]
+
+The builtin Emacs LSP client.
+
+Using the dev version of eglot and the [[https://github.com/jdtsmith/eglot-booster][eglot-booster]]
+
+#+begin_src emacs-lisp :name eglot
+  (use-package jsonrpc
+    :elpaca (:inherit elpaca-menu-gnu-devel-elpa))
+
+  (elpaca-wait)
+
+  (use-package eldoc
+    :elpaca (:inherit elpaca-menu-gnu-devel-elpa))
+
+  (elpaca-wait)
+
+  (use-package eglot
+    :elpaca (:inherit elpaca-menu-gnu-devel-elpa)
+    :custom
+    (fset #'jsonrpc--log-event #'ignore)
+    (eglot-sync-connect nil)
+    (eglot-connect-timeout nil)
+    (eglot-autoshutdown t)
+    (eglot-send-changes-idle-time 3)
+    (flymake-no-changes-timeout 5)
+    (eldoc-echo-area-use-multiline-p nil)
+    (setq eglot-ignored-server-capabilities '( :documentHighlightProvider))
+    (setf (plist-get eglot-events-buffer-config :size) 0)
+
+    :config
+    (add-to-list 'eglot-server-programs '((python-mode python-ts-mode) . ("pyright-langserver" "--stdio"))))
+
+  ;; exclude modes from eglot
+  (defun maybe-start-eglot ()
+    "Exlude some mode from eglot."
+    (let ((disabled-modes '(emacs-lisp-mode dockerfile-ts-mode)))
+      (unless (apply 'derived-mode-p disabled-modes)
+        (eglot-ensure))))
+
+  (add-hook 'prog-mode-hook #'maybe-start-eglot)
+
+  ;; use native eglot booster
+  (use-package eglot-booster
+    :elpaca (:type git :host github :repo "jdtsmith/eglot-booster")
+    :after eglot
+    :config
+    (eglot-booster-mode))
+
+  (with-eval-after-load 'eglot
+    (setq completion-category-defaults nil))
+#+end_src
+
 ** General Software Development
+*** Comments: auto-fill & spellcheck
+
+#+begin_src emacs-lisp :name comments
+  (defun emacswiki/comment-auto-fill ()
+    " Set up auto-file / wrapping of comments."
+    (setq-local comment-auto-fill-only-comments t)
+    (auto-fill-mode 1))
+
+  ;; Spellchecking in comments.
+  (add-hook 'prog-mode-hook #'flyspell-prog-mode)
+#+end_src
+
+*** compile
+
+#+begin_src emacs-lisp :name compile
+  ;; Take care of color codes in the output
+  (require 'ansi-color)
+  (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
+
+  ;; Scroll to the bottom
+  (setq compilation-scroll-output t)
+#+end_src
+
+*** Make script executeable
+
+Make a buffer executable automatically if its a script
+
+#+begin_src emacs-lisp :name make-executeable
+  (add-hook 'after-save-hook
+            'executable-make-buffer-file-executable-if-script-p)
+#+end_src
+
+*** [[https://github.com/davidshepherd7/fill-function-arguments][fill-function-arguments]]
+
+Add/remove line breaks between function arguments and similar constructs
+
+#+begin_src emacs-lisp :name fill-function-arguments
+  (use-package fill-function-arguments
+    :hook
+    ((prog-mode . (lambda ()
+                    (local-set-key (kbd "M-q") #'fill-function-arguments-dwim)))
+     (emacs-lisp-mode . (lambda ()
+                          (setq-local fill-function-arguments-second-argument-same-line t)
+                          (setq-local fill-function-arguments-last-argument-same-line t)
+                          (setq-local fill-function-arguments-argument-separator " "))))
+    :custom
+    (fill-function-arguments-indent-after-fill t)
+    (fill-function-arguments-indent-first-argument-same-line t))
+#+end_src
+
+** Lisp Languages
 *** lispy
 
 TODO: Enable lispy.
+
+*** Clojure
+*** Common Lisp
+**** Sly
+*** Emacs Lisp
+
 
 ** Python
 
