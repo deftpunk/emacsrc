@@ -2658,3 +2658,9 @@ Start the emacs server as a last thing to do.
 #+begin_src emacs-lisp :name emacs-server
   (server-start)
 #+end_src
+
+** Investigations
+*** SOPS encrypt/decrypt
+https://github.com/djgoku/sops
+*** dirvish
+https://github.com/alexluigit/dirvish
