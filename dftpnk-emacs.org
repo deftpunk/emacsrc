@@ -18,6 +18,11 @@ Dependencies:
 - git
 - ripgrep
 - cmake   -> for compiling libvterm
+- building emacs-lsp-booster
+  - clone the repo
+  - update Rust toolchain -> rustup update
+  - cargo build --release
+  - cp target/release/emacs-lsp-booster to $PATH
 
 I am using emacs-plus: https://github.com/d12frosted/homebrew-emacs-plus
 
