@@ -2575,6 +2575,34 @@ Just like the Neovim "g<letter>" bindings.
 *** Deftpunk keybindings
 
 #+begin_src emacs-lisp :name deftpunk-keybindings
+  ;; https://www.reddit.com/r/emacs/comments/r7l3ar/comment/hn3kuwh/?utm_source=share&utm_medium=web2x&context=3
+  (defun my/scroll-down-half-page ()
+    "scroll down half a page while keeping the cursor centered"
+    (interactive)
+    (let ((ln (line-number-at-pos (point)))
+          (lmax (line-number-at-pos (point-max))))
+      (cond ((= ln 1) (move-to-window-line nil))
+            ((= ln lmax) (recenter (window-end)))
+            (t (progn
+                 (move-to-window-line -1)
+                 (recenter))))))
+
+  (defun my/scroll-up-half-page ()
+    "scroll up half a page while keeping the cursor centered"
+    (interactive)
+    (let ((ln (line-number-at-pos (point)))
+          (lmax (line-number-at-pos (point-max))))
+      (cond ((= ln 1) nil)
+            ((= ln lmax) (move-to-window-line nil))
+            (t (progn
+                 (move-to-window-line 0)
+                 (recenter))))))
+
+  (global-unset-key (kbd "s-u"))
+  (global-unset-key (kbd "s-d"))
+  (global-set-key (kbd "s-u") 'my/scroll-up-half-page)
+  (global-set-key (kbd "s-d") 'my/scroll-down-half-page)
+
   ;; Using C-j for jumping around.
   (global-unset-key (kbd "C-j"))
   (global-set-key (kbd "C-j") 'avy-goto-char-timer)
