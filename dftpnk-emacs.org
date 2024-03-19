@@ -500,6 +500,59 @@ Use hydra for repeating keys.
   (elpaca-wait)
 #+end_src
 
+*** [[https://github.com/jerrypnz/major-mode-hydra.el][major-mode-hydra]]
+
+ Major Mode Hydra & Pretty Mode Hydra
+
+- pretty-hydra provides a macro pretty-hydra-define to make it easy to create
+  hydras with a pretty table layout with some other bells and whistles
+- Based on pretty-hydra, major-mode-hydra allows you to create pretty hydras
+  with a similar API and summon them with the same key across different major
+  modes.
+
+unicode box characters: https://en.wikipedia.org/wiki/Box-drawing_character
+
+#+BEGIN_SRC emacs-lisp :name major-mode-hydra
+  (use-package major-mode-hydra
+  ;  :straight (major-mode-hydra :type git :host github :repo "jerrypnz/major-mode-hydra.el")
+    :init
+    ;; Set the default major-mode-hydra title using all-the-icons icon
+    ;; for the major mode.  THis is just in case we don't use any of the
+    ;; "with=*" functions below.
+    (setq major-mode-hydra-title-generator
+      '(lambda (mode)
+         (s-concat "\n"
+                   (s-repeat 10 " ")
+                   (all-the-icons-icon-for-mode mode :v-adjust 0.05)
+                   " "
+                   (symbol-name mode)
+                   ""))))
+
+  ;; A bunch of utility functions from https://gist.github.com/mbuczko/e15d61363d31cf78ff17427072e0c325
+  (defun with-faicon (icon str &optional height v-adjust)
+    (s-concat (all-the-icons-faicon icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+
+  (defun with-fileicon (icon str &optional height v-adjust)
+    (s-concat (all-the-icons-fileicon icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+
+  (defun with-octicon (icon str &optional height v-adjust)
+    (s-concat (all-the-icons-octicon icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+
+  (defun with-material (icon str &optional height v-adjust)
+    (s-concat (all-the-icons-material icon :v-adjust (or v-adjust 0) :height (or height 1)) " " str))
+
+  (defun with-mode-icon (mode str &optional height nospace face)
+    (let* ((v-adjust (if (eq major-mode 'emacs-lisp-mode) 0.0 0.05))
+           (args     `(:height ,(or height 1) :v-adjust ,v-adjust))
+           (_         (when face
+                        (lax-plist-put args :face face)))
+           (icon     (apply #'all-the-icons-icon-for-mode mode args))
+           (icon     (if (symbolp icon)
+                         (apply #'all-the-icons-octicon "file-text" args)
+                       icon)))
+      (s-concat icon (if nospace "" " ") str)))
+#+END_SRC
+
 ** Some useful functions
 
 #+begin_src emacs-lisp :name some-macros-and-functions
