@@ -1665,6 +1665,30 @@ A set of emacs functions and bindings to google under point.
   (use-package google-this)
 #+end_src
 
+*** [[https://github.com/emacsfodder/move-text][move-text]]
+
+Move the current line or region
+
+#+begin_src emacs-lisp :name move-text
+  (use-package move-text
+    :config
+    (defun indent-region-advice (&rest ignored)
+      "Indent after moving"
+      (let ((deactivate deactivate-mark))
+        (if (region-active-p)
+            (indent-region (region-beginning) (region-end))
+          (indent-region (line-beginning-position) (line-end-position)))
+        (setq deactivate-mark deactivate)))
+
+    (advice-add 'move-text-up :after 'indent-region-advice)
+    (advice-add 'move-text-down :after 'indent-region-advice))
+
+
+  (global-set-key (kbd "s-C-j") #'move-text-down)
+  (global-set-key (kbd "s-C-k") #'move-text-up)
+
+#+end_src
+
 *** [[https://github.com/emacsorphanage/osx-trash][osx-trash]]
 
 Make =delete-by-moving-to-trash= do what we expect on MacOSX. Don't forget to =brew install trash= for better performance.
