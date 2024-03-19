@@ -927,6 +927,28 @@ Supported themes:
                           :height 130)))
 #+end_src
 
+*** [[https://github.com/hlissner/emacs-hide-mode-line][hide-modeline-mode]]
+
+Hide the modeline for certain buffers, e.g. shells, terminals
+
+#+begin_src emacs-lisp :name hide-modeline-mode
+  (use-package hide-mode-mode
+    :elpaca (:host github :repo "hlissner/emacs-hide-mode-line")
+    :hook ((completion-list-mode . hide-mode-line-mode))
+    :config
+    (hide-mode-line-mode))
+#+end_src
+
+*** [[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]]
+
+Make parenthesis' standout no matter your language.
+
+#+begin_src emacs-lisp :name rainbow-delimiters
+  (use-package rainbow-delimiters
+    :config
+    (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+#+end_src
+
 ** Completion Frameworks
 
 *** Some minibuffer mappings first
