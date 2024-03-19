@@ -1827,6 +1827,33 @@ Unobtrusively trim spaces from the end of a line on save.
     (blackout 'ws-butler-mode))
 #+end_src
 
+*** [[https://github.com/joaotavora/yasnippet][yasnippet]]
+
+All of our snippet needs - the yasnippet [[http://joaotavora.github.io/yasnippet/][manual]].
+
+Writing snippets: [[https://joaotavora.github.io/yasnippet/snippet-development.html][snippet-development]]
+
+View available snippets for give mode: ~ya-visit-snippet-file~
+Show list of available snippets & their trigger words: ~ya-describe-tables~
+Reload all snippets: ~ya-reload-all~
+
+#+begin_src emacs-lisp :name yasnippet
+  (use-package yasnippet-snippets)
+
+  (use-package yasnippet
+    :hook (prog-mode-hook . yas-minor-mode)
+    :custom
+    (yas-verbosity 3)
+    (yas-also-auto-indent-first-line t)
+    :init
+    ;; Remove default ~/.emacs.d/snippets
+    ;; (defvar yas-snippet-dirs nil)
+
+    :config
+    ;; Allow private snippets.
+    (add-to-list 'yas-snippet-dirs (expand-file-name "snippets" user-emacs-directory)))
+#+end_src
+
 ** Help and documentation enhancements
 
 *** [[https://github.com/astoff/devdocs.el][devdocs]]
