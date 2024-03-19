@@ -1685,6 +1685,7 @@ Builtin project management & some extensions.
 
 
   (use-package project-x
+    :elpaca (:host github :repo "karthink/project-x")
     :after project
     :config
     (setq project-x-save-interval 600)    ;Save project state every 10 min
