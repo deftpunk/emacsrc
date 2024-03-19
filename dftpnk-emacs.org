@@ -2533,25 +2533,25 @@ https://oremacs.com/2015/02/25/rectangle-hydra/
 Just like the Neovim "g<letter>" bindings.
 
 #+begin_src emacs-lisp :name deftpunk-g-def
-  ;; NOTE: The org-open-at-point will open a "Babel Results" window when this function is called
-  ;;       inside a src block
-  (defun deftpunk/url-at-point ()
-    "Make opening the url at point a little more flexible."
-    (interactive)
-    (if (string-equal major-mode "org-mode")
-        (unless (ignore-errors (or (org-open-at-point) t))
-          (ace-link))
-      (unless (ignore-errors (or (browse-url-at-point) t))
-        (ace-link))))
+    ;; NOTE: The org-open-at-point will open a "Babel Results" window when this function is called
+    ;;       inside a src block
+    (defun deftpunk/url-at-point ()
+      "Make opening the url at point a little more flexible."
+      (interactive)
+      (if (string-equal major-mode "org-mode")
+          (unless (ignore-errors (or (org-open-at-point) t))
+            (ace-link))
+        (unless (ignore-errors (or (browse-url-at-point) t))
+          (ace-link))))
 
-  (general-create-definer deftpunk-g-def
-    :keymaps 'override
-    :prefix "s-g"
-    "g" goto-line
-    "s-g" goto-line
-    "o" ace-link
-    "x" deftpunk/url-at-point
-    )
+    (general-create-definer deftpunk-g-def
+      :keymaps 'override
+      :global-prefix "s-g"
+      "g" goto-line
+      "s-g" goto-line
+      "o" ace-link
+      "x" deftpunk/url-at-point
+      )
 #+end_src
 
 *** Window management/navigation bindings
