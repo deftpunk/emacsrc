@@ -1372,7 +1372,7 @@ Add some icons to completion prefixes.
   (setq datetime-timezone "America/Denver")
 
   ;; I actually find the custom system a nuisance; move the file out of the way.
-  (setq custom-file (expand-file-name "custom.el" deftpunk--etc-dir))
+  (setq custom-file (expand-file-name "custom.el" deftpunk--var-dir))
 
   ;; Replace yes/no prompts with y/n
   (fset 'yes-or-no-p 'y-or-n-p)
