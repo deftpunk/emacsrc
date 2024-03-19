@@ -1270,6 +1270,7 @@ Add some icons to completion prefixes.
 #+end_src
 
 ** Emacs Defaults
+
 #+begin_src emacs-lisp :name defaults
   (setq-default
    display-time-default-load-average nil            ; Don't display load average
@@ -2135,6 +2136,8 @@ Implements a "modern" style for Org buffers.
     :config
     (global-org-modern-mode))
 #+end_src
+
+** TODO: Org-roam
 
 ** Source Control
 *** [[https://github.com/emacsorphanage/git-gutter][git-gutter]] & [[https://github.com/emacsorphanage/git-gutter-fringe][git-gutter-fringe]]
