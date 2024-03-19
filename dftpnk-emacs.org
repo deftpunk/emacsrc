@@ -923,7 +923,7 @@ Vertical completion UI based on the default completion system.
     :general
     (:keymaps 'vertico-map
           "<tab>" #'vertico-insert
-          "<escape>" #'keyboard-quit
+          "<escape>" #'minibuffer-keyboard-quit
           "<backspace>" #'vertico-directory-delete-char
           "C-w" #'vertico-directory-delete-word
           "?" #'minibuffer-completion-help
@@ -957,7 +957,7 @@ Provides an =orderless= completion style - a more advanced completion style.
     (completion-styles '(orderless basic))
     (completion-category-defaults nil)
     (completion-category-overrides
-     '((file (styles basic-remote                            ; basic-remote for Tramp hostname completion with vertico
+     '((file (styles basic basic-remote                            ; basic-remote for Tramp hostname completion with vertico
                      orderless partial-completion)))))
 #+end_src
 
