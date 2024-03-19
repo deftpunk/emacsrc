@@ -1557,12 +1557,16 @@ Save the minibuffer history.
 Remembering the last place you visited in a file.
 
 #+begin_src emacs-lisp :name saveplace
-  (setq save-place-file (expand-file-name "emacs-places" deftpunk--var-dir)
-        save-place-forget-unreadable-files nil  ; Setting to t has the potential to make exiting slow
-        )
-  (save-place-mode 1)
-  (add-hook 'save-place-find-file-hook 'recenter)
-  (add-hook 'find-file-hook 'save-place-find-file-hook t)
+  (use-package saveplace
+    :elpaca nil
+    :custom
+    (save-place-limit 100)
+    (save-place-file (expand-file-name "emacs-places" deftpunk--var-dir))
+    (save-place-forget-unreadable-files nil)  ; Setting to t has the potential to make exiting slow
+    :config
+    (save-place-mode 1)
+    (add-hook 'save-place-find-file-hook 'recenter)
+    (add-hook 'find-file-hook 'save-place-find-file-hook t))
 #+end_src
 
 *** [[https://www.gnu.org/software/tramp/][Tramp]]
