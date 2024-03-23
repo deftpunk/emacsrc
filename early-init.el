@@ -52,6 +52,9 @@
            "/opt/homebrew/opt/gcc/lib/gcc/13/gcc/aarch64-apple-darwin21/13")
          ":"))
 
+;; Use plists for deserialization for lsp-mode
+(setenv "LSP_USE_PLISTS" "true")
+
 (defvar default-file-name-handler-alist file-name-handler-alist)
 (defvar extended-gc-cons-threshold most-positive-fixnum)
 (defvar default-gc-cons-threshold (* 100 1024 1024))
