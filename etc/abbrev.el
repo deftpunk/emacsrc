@@ -299,4 +299,10 @@
     ("ydate" "" deftpunk/current-time :count 2)
     ("yor" "your" nil :count 1)
     ("yusing" "using" nil :count 1)
+    ("trn" "turn" nil :count 2)
+    ))
+
+(define-abbrev-table 'text-mode-abbrev-table
+  '(
+    ("devops" "DEVOPS" nil :count 1)
    ))
