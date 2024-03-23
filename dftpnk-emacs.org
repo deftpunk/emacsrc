@@ -108,6 +108,9 @@ https://gist.github.com/Linerre/f11ad4a6a934dcf01ee8415c9457e7b2
              "/opt/homebrew/opt/libgccjit/lib/gcc/13"
              "/opt/homebrew/opt/gcc/lib/gcc/13/gcc/aarch64-apple-darwin21/13")
            ":"))
+
+  ;; Use plists for deserialization for lsp-mode
+  (setenv "LSP_USE_PLISTS" "true")
 #+end_src
 
 ** Adjust garbage collection & other startup/performance optimizations
