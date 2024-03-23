@@ -97,6 +97,11 @@
 
 (elpaca-wait)
 
+;; Leader key
+(general-create-definer deftpunk-leader-def
+  :keymaps 'override
+  :prefix "s-SPC")
+
 ;; local leader
 ;; This allows for finer granularity than hydra-major-mode by binding to individual key maps.
 (general-create-definer deftpunk-local-leader-def
@@ -407,11 +412,19 @@
   :config
   (solaire-global-mode +1))
 
-(use-package catppuccin-theme
+;; (use-package catppuccin-theme
+;;   :config
+;;   (load-theme 'catppuccin :no-confirm)
+;;   (setq catppquccin-flavor 'mocha) ;; or 'latte, 'macchiato, or 'mocha
+;;   (catppuccin-reload))
+
+(use-package ef-themes
   :config
-  (load-theme 'catppuccin :no-confirm)
-  (setq catppquccin-flavor 'mocha) ;; or 'latte, 'macchiato, or 'mocha
-  (catppuccin-reload))
+  (load-theme 'ef-spring :no-confirm))
+
+(use-package doom-themes)
+
+(use-package modus-themes)
 
 (use-package doom-modeline
   :custom
@@ -448,8 +461,8 @@
                         :family "Hack Nerd Font"
                         :height 130)))
 
-(use-package hide-mode-mode
-  :elpaca (:host github :repo "hlissner/emacs-hide-mode-line")
+(use-package hide-mode-line
+  :elpaca (:host github :repo "hlissner/emacs-hide-mode-line" :main "hide-mode-line.el")
   :hook ((completion-list-mode . hide-mode-line-mode))
   :config
   (hide-mode-line-mode))
@@ -558,7 +571,8 @@
   ;; Enable automatic preview at point in the *Completions* buffer. This is
   ;; relevant when you use the default completion UI.
   :hook (completion-list-mode . consult-preview-at-point-mode)
-  :bind (("C-c r" . consult-ripgrep)
+  :bind (("C-s" . consult-line)
+         ("C-c r" . consult-ripgrep)
          ([remap switch-to-buffer] . consult-buffer)
          ("s-i" . consult-buffer)
          :map minibuffer-local-map
@@ -602,6 +616,20 @@ When the number of characters in a buffer exceeds this threshold,
          :map minibuffer-local-completion-map
          ("C-x C-d" . consult-dir)
          ("C-x C-j" . consult-dir-jump-file)))
+
+(use-package consult-flyspell
+  :elpaca (consult-flyspell :type git :host gitlab :repo "OlMon/consult-flyspell" :branch "master")
+  :config
+  ;; default settings
+  (setq consult-flyspell-select-function nil
+        consult-flyspell-set-point-after-word t
+        consult-flyspell-select-function 'flyspell-correct-at-point
+        consult-flyspell-always-check-buffer nil))
+
+(use-package consult-project-extra
+  :bind
+  (("C-c p f" . consult-project-extra-find)
+   ("C-c p o" . consult-project-extra-find-other-window)))
 
 (use-package consult-todo
   :demand t
@@ -910,6 +938,11 @@ Version 2019-10-22"
         ediff-split-window-function #'split-window-horizontally
         ediff-window-setup-function #'ediff-setup-windows-plain))
 
+;; Remove the C-; key so that we can use it for a local-leader
+(general-define-key
+ :keymaps 'flyspell-mode-map
+ "C-;" nil)
+
 (use-package hl-line
   :elpaca nil
   :custom
@@ -1041,7 +1074,7 @@ Version 2019-10-22"
   (advice-add 'move-text-up :after 'indent-region-advice)
   (advice-add 'move-text-down :after 'indent-region-advice))
 
-
+;; Cuz general won't  add these as part of use-package declaration??
 (global-set-key (kbd "s-C-j") #'move-text-down)
 (global-set-key (kbd "s-C-k") #'move-text-up)
 
@@ -1090,12 +1123,18 @@ Version 2019-10-22"
   (add-to-list 'super-save-hook-triggers 'find-file-hook)
   (super-save-mode +1))
 
+(use-package tree-sitter
+  :hook (prog-mode . tree-sitter-hl-mode))
+
+(use-package tree-sitter-langs)
+
 (use-package undo-fu)
 
 (use-package undo-fu-session
   :config
   (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
   (undo-fu-session-global-mode))
+(elpaca-wait)
 
 (global-unset-key (kbd "M-u"))
 (use-package unfill
@@ -1422,7 +1461,8 @@ Version 2019-10-22"
          ;; Don't autosave repo buffers. This is too magical, and saving can
          ;; trigger a bunch of unwanted side-effects, like save hooks and
          ;; formatters. Trust us to know what we're doing.
-         magit-save-repository-buffers nil))
+         magit-save-repository-buffers nil)
+  (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1))
 
 (use-package forge
   :after magit)
@@ -1492,6 +1532,10 @@ Version 2019-10-22"
 ;; Scroll to the bottom
 (setq compilation-scroll-output t)
 
+(deftpunk-local-leader-def
+  :keymaps 'compilation-mode-map
+  "o" '(ace-link :which-keys "Highlight links in compilation buffer"))
+
 (add-hook 'after-save-hook
           'executable-make-buffer-file-executable-if-script-p)
 
@@ -1506,6 +1550,57 @@ Version 2019-10-22"
   :custom
   (fill-function-arguments-indent-after-fill t)
   (fill-function-arguments-indent-first-argument-same-line t))
+
+(use-package highlight-indent-guides
+  :blackout t
+  :hook (python-mode . highlight-indent-guides-mode)
+  :init (setq highlight-indent-guides-method 'character
+              highlight-indent-guides-responsive 'top))
+
+(after! highlight-indent-guides-mode
+  (progn
+   (set-face-background 'highlight-indent-guides-odd-face "gray48")
+   (set-face-background 'highlight-indent-guides-even-face "gray48")
+   (set-face-foreground 'highlight-indent-guides-character-face "gray28")
+   (set-face-foreground 'highlight-indent-guides-top-character-face "orchid1")))
+
+(defun deftpunk/python-mode-hook ()
+  "Setting up some basics for Python."
+  (setq-local fill-column 105)
+  ;; (smartparens-strict-mode)
+  (highlight-indent-guides-mode)
+  (display-line-numbers-mode 1))
+
+(use-package python
+  :elpaca nil
+  :mode ((rx ".py" string-end) . python-mode)
+  :hook ((python-mode . deftpunk/python-mode-hook))
+  :config
+  (setq-local flycheck-python-pylint-executable "pylint")
+  (setq-local flycheck-python-flake8-executable "flake8")
+
+  (setq python-shell-interpreter (executable-find "ipython")
+        python-shell-interpreter-args "-i --simple-prompt --no-color-info"
+        python-shell-prompt-block-regexp "\\.\\.\\.\\.: "
+        python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+        python-shell-completion-setup-code
+        "from IPython.core.completerlib import module_completion"
+        python-shell-completion-string-code
+        "';'.join(get_ipython().Completer.all_completions('''%s'''))\n")
+
+  ;; some smartparens "smartness" for single quotes
+  ;; (sp-local-pair 'python-mode "'" nil
+  ;;                :unless '(sp-point-before-word-p
+  ;;                          sp-point-after-word-p
+  ;;                          sp-point-before-same-p))
+  )
+
+(deftpunk-local-leader-def
+  :keymaps 'python-mode-map
+  "c" '(conda-env-activate :which-key "Activate conda env")
+  "d" '(conda-env-deactivate :which-key "Deactivate conda env")
+  "t" '(python-pytest-dispatch :which-key "Pytest dispatch")
+  )
 
 (use-package conda
   :after python
@@ -1540,6 +1635,12 @@ Version 2019-10-22"
                '(conda-env-current-name (" conda:" conda-env-current-name " "))
                'append))
 
+(use-package python-pytest)
+
+(use-package python-docstring-mode
+  :hook (python-mode . python-docstring-mode)
+  :elpaca (:host github :repo "glyph/python-docstring-mode" :main "python-docstring.el"))
+
 (use-package markdown-mode
   :defer t
   :after magit
@@ -1551,6 +1652,61 @@ Version 2019-10-22"
   :custom
   (markdown-command "/opt/homebrew/bin/multimarkdown")
   (markdown-header-scaling t))
+
+(use-package yaml-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
+
+(use-package yaml-pro
+  :hook (yaml-mode . yaml-ts-mode-hook)
+  :config
+  ;; the original bindings will work as well, these are shorter if you prefer them.
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-n" #'yaml-pro-ts-next-subtree)
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-p" #'yaml-pro-ts-prev-subtree)
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-u" #'yaml-pro-ts-up-level)
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-d" #'yaml-pro-ts-down-level)
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-k" #'yaml-pro-ts-kill-subtree)
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-<backspace>" #'yaml-pro-ts-kill-subtree)
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-a" #'yaml-pro-ts-first-sibling)
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-e" #'yaml-pro-ts-last-sibling)
+
+  (deftpunk-local-leader-def
+    :keymaps 'yaml-pro-ts-mode-map
+    "n" '(yaml-pro-ts-next-subtree :which-key "Next subtree")
+    "p" '(yaml-pro-ts-prev-subtree :which-key "Previous subtree")
+    "u" '(yaml-pro-ts-up-level :which-key "Up subtree")
+    "d" '(yaml-pro-ts-down-level :which-key "Down subtree")
+    "k" '(yaml-pro-ts-kill-subtree :which-key "Kill subtree")
+    "<backspace>" '(yaml-pro-ts-kill-subtree :which-key "Kill subtree")
+    "a" '(yaml-pro-ts-first-sibling :which-key "First sibling")
+    "e" '(yaml-pro-ts-last-sibling :which-key "Last sibling")
+    )
+
+  (defvar-keymap my/yaml-pro/tree-repeat-map
+    :repeat t
+    "n" #'yaml-pro-ts-next-subtree
+    "p" #'yaml-pro-ts-prev-subtree
+    "u" #'yaml-pro-ts-up-level
+    "d" #'yaml-pro-ts-down-level
+    "m" #'yaml-pro-ts-mark-subtree
+    "k" #'yaml-pro-ts-kill-subtree
+    "a" #'yaml-pro-ts-first-sibling
+    "e" #'yaml-pro-ts-last-sibling
+    "SPC" #'my/yaml-pro/set-mark)
+
+  (defun my/yaml-pro/set-mark ()
+    (interactive)
+    (my/region/set-mark 'my/yaml-pro/set-mark))
+
+  (defun my/region/set-mark (command-name)
+    (if (eq last-command command-name)
+        (if (region-active-p)
+            (progn
+              (deactivate-mark)
+              (message "Mark deactivated"))
+          (activate-mark)
+          (message "Mark activated"))
+      (set-mark-command nil))))
 
 (use-package vterm
   :ensure t
@@ -1701,7 +1857,13 @@ _h_   _l_   _o_k        _y_ank       /,`.-'`'   .‗  \-;;,‗
 (global-unset-key (kbd "C-x C-l")) ; I can downcase the region another way.
 (global-set-key (kbd "C-x C-l") 'my-expand-lines)
 
-;; (global-set-key (kbd "C-<space>") 'leader/body)
+(deftpunk-leader-def
+  "g" '(google-this-search :which-key "Search on Google")
+  "i" '(consult-buffer :which-key "Show buffers")
+  "k" '(kill-buffer :which-key "Kill current buffer")
+  "w" '(save-buffer :which-key "Save current buffer")
+  "-" '(ace-window :which-key "Ace windows")
+)
 
 (use-package key-chord
   :commands (key-chord-define-global)

@@ -436,6 +436,11 @@ Better manage some keybindings.
 
   (elpaca-wait)
 
+  ;; Leader key
+  (general-create-definer deftpunk-leader-def
+    :keymaps 'override
+    :prefix "s-SPC")
+
   ;; local leader
   ;; This allows for finer granularity than hydra-major-mode by binding to individual key maps.
   (general-create-definer deftpunk-local-leader-def
@@ -881,16 +886,37 @@ Supported themes:
 
 *** Themes
 
+I want something that looks good for Python, Clojure
+
 **** [[https://github.com/catppuccin/emacs][catppuccin]]
 
 #+begin_src emacs-lisp :name catppuccin
-  (use-package catppuccin-theme
-    :config
-    (load-theme 'catppuccin :no-confirm)
-    (setq catppquccin-flavor 'mocha) ;; or 'latte, 'macchiato, or 'mocha
-    (catppuccin-reload))
+  ;; (use-package catppuccin-theme
+  ;;   :config
+  ;;   (load-theme 'catppuccin :no-confirm)
+  ;;   (setq catppquccin-flavor 'mocha) ;; or 'latte, 'macchiato, or 'mocha
+  ;;   (catppuccin-reload))
 #+end_src
 
+**** ef-themes
+
+#+begin_src emacs-lisp :name ef-themes
+  (use-package ef-themes
+    :config
+    (load-theme 'ef-spring :no-confirm))
+#+end_src
+
+**** Doom themes
+
+#+begin_src emacs-lisp :name doom-themes
+  (use-package doom-themes)
+#+end_src
+
+**** modus-themes
+
+#+begin_src emacs-lisp :name modus-themes
+  (use-package modus-themes)
+#+end_src
 *** Doom modeline
 
 #+begin_src emacs-lisp :name doom-modeline
@@ -935,8 +961,8 @@ Supported themes:
 Hide the modeline for certain buffers, e.g. shells, terminals
 
 #+begin_src emacs-lisp :name hide-modeline-mode
-  (use-package hide-mode-mode
-    :elpaca (:host github :repo "hlissner/emacs-hide-mode-line")
+  (use-package hide-mode-line
+    :elpaca (:host github :repo "hlissner/emacs-hide-mode-line" :main "hide-mode-line.el")
     :hook ((completion-list-mode . hide-mode-line-mode))
     :config
     (hide-mode-line-mode))
@@ -1097,7 +1123,8 @@ Search and navigation commands based on the Emacs completion function
     ;; Enable automatic preview at point in the *Completions* buffer. This is
     ;; relevant when you use the default completion UI.
     :hook (completion-list-mode . consult-preview-at-point-mode)
-    :bind (("C-c r" . consult-ripgrep)
+    :bind (("C-s" . consult-line)
+           ("C-c r" . consult-ripgrep)
            ([remap switch-to-buffer] . consult-buffer)
            ("s-i" . consult-buffer)
            :map minibuffer-local-map
@@ -1166,6 +1193,36 @@ Replace minibuffer-local-completion-map above with
            ("C-x C-j" . consult-dir-jump-file)))
 #+end_src
 
+*** [[https://gitlab.com/OlMon/consult-flyspell][consult-flyspell]]
+
+Choose a misspelled word, jump to it and optionally apply a function to it.
+
+#+begin_src emacs-lisp :name consult-flyspell
+  (use-package consult-flyspell
+    :elpaca (consult-flyspell :type git :host gitlab :repo "OlMon/consult-flyspell" :branch "master")
+    :config
+    ;; default settings
+    (setq consult-flyspell-select-function nil
+          consult-flyspell-set-point-after-word t
+          consult-flyspell-select-function 'flyspell-correct-at-point
+          consult-flyspell-always-check-buffer nil))
+#+end_src
+
+**** [[https://github.com/Qkessler/consult-project-extra][consult-project-extra]]
+
+Add some extras to using consult + project.el
+
+Bind a key to `consult-project-extra-find`
+- narrow to project buffer(s)
+- narrow to project file(s)
+- narrow to known project(s)
+
+#+begin_src emacs-lisp :name
+  (use-package consult-project-extra
+    :bind
+    (("C-c p f" . consult-project-extra-find)
+     ("C-c p o" . consult-project-extra-find-other-window)))
+#+end_src
 **** [[https://github.com/liuyinz/consult-todo][consult-todo]]
 
 
@@ -1553,6 +1610,15 @@ Visual interface to diff and patch.
           ediff-window-setup-function #'ediff-setup-windows-plain))
 #+end_src
 
+*** flyspell
+
+#+begin_src emacs-lisp :name flyspell
+  ;; Remove the C-; key so that we can use it for a local-leader
+  (general-define-key
+   :keymaps 'flyspell-mode-map
+   "C-;" nil)
+#+end_src
+
 *** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Cursor-Display.html#index-highlight-current-line][hl-line-mode]]
 
 Highlight the current line.
@@ -1762,7 +1828,7 @@ Move the current line or region
     (advice-add 'move-text-up :after 'indent-region-advice)
     (advice-add 'move-text-down :after 'indent-region-advice))
 
-
+  ;; Cuz general won't  add these as part of use-package declaration??
   (global-set-key (kbd "s-C-j") #'move-text-down)
   (global-set-key (kbd "s-C-k") #'move-text-up)
 
@@ -1843,6 +1909,17 @@ Auto-saves your buffers  when certain events happen.
     (super-save-mode +1))
 #+end_src
 
+*** tree-sitter and tree-sitter-langs
+
+I know that treesitter is now in Emacs29+, I just don't think its really usable in its current form.  Trying to get highlighting running is a descent into complications I just don't want to deal with.
+
+#+begin_src emacs-lisp :name treesitter
+  (use-package tree-sitter
+    :hook (prog-mode . tree-sitter-hl-mode))
+
+  (use-package tree-sitter-langs)
+#+end_src
+
 *** [[https://github.com/emacsmirror/undo-fu][undo-fu]]
 
 Simple, stable linear undo with redo for Emacs.
@@ -1858,7 +1935,9 @@ Simple, stable linear undo with redo for Emacs.
     :config
     (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
     (undo-fu-session-global-mode))
+  (elpaca-wait)
 #+end_src
+
 *** [[https://github.com/purcell/unfill][unfill]]
 
 Funtions providing the inverse of =fill-paragraph= & =fill-region= .  I most care about =unfill-toggle=
@@ -1930,7 +2009,7 @@ Unobtrusively trim spaces from the end of a line on save.
     (blackout 'ws-butler-mode))
 #+end_src
 
-*** [[https://github.com/joaotavora/yasnippet][yasnippet]]
+*** [[https://github.com/joaotavora/yasnippet][yasnippet]] & [[https://github.com/AndreaCrotti/yasnippet-snippets][yasnippet-snippets]]
 
 All of our snippet needs - the yasnippet [[http://joaotavora.github.io/yasnippet/][manual]].
 
@@ -2304,7 +2383,8 @@ https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
            ;; Don't autosave repo buffers. This is too magical, and saving can
            ;; trigger a bunch of unwanted side-effects, like save hooks and
            ;; formatters. Trust us to know what we're doing.
-           magit-save-repository-buffers nil))
+           magit-save-repository-buffers nil)
+    (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1))
 
   (use-package forge
     :after magit)
@@ -2400,6 +2480,10 @@ Using the dev version of eglot and the [[https://github.com/jdtsmith/eglot-boost
 
   ;; Scroll to the bottom
   (setq compilation-scroll-output t)
+
+  (deftpunk-local-leader-def
+    :keymaps 'compilation-mode-map
+    "o" '(ace-link :which-keys "Highlight links in compilation buffer"))
 #+end_src
 
 *** Make script executeable
@@ -2429,6 +2513,25 @@ Add/remove line breaks between function arguments and similar constructs
     (fill-function-arguments-indent-first-argument-same-line t))
 #+end_src
 
+*** [[https://github.com/DarthFennec/highlight-indent-guides/][highlight-indent-guides]]
+
+Having a discrete indication of the indentation is useful for Python.
+
+#+begin_src emacs-lisp :name highlight-indent-guides
+  (use-package highlight-indent-guides
+    :blackout t
+    :hook (python-mode . highlight-indent-guides-mode)
+    :init (setq highlight-indent-guides-method 'character
+                highlight-indent-guides-responsive 'top))
+
+  (after! highlight-indent-guides-mode
+    (progn
+     (set-face-background 'highlight-indent-guides-odd-face "gray48")
+     (set-face-background 'highlight-indent-guides-even-face "gray48")
+     (set-face-foreground 'highlight-indent-guides-character-face "gray28")
+     (set-face-foreground 'highlight-indent-guides-top-character-face "orchid1")))
+#+end_src
+
 ** Lisp Languages
 *** lispy
 
@@ -2441,6 +2544,47 @@ TODO: Enable lispy.
 
 
 ** Python
+*** Python Configuration
+
+#+begin_src emacs-lisp :name python-mode
+  (defun deftpunk/python-mode-hook ()
+    "Setting up some basics for Python."
+    (setq-local fill-column 105)
+    ;; (smartparens-strict-mode)
+    (highlight-indent-guides-mode)
+    (display-line-numbers-mode 1))
+
+  (use-package python
+    :elpaca nil
+    :mode ((rx ".py" string-end) . python-mode)
+    :hook ((python-mode . deftpunk/python-mode-hook))
+    :config
+    (setq-local flycheck-python-pylint-executable "pylint")
+    (setq-local flycheck-python-flake8-executable "flake8")
+
+    (setq python-shell-interpreter (executable-find "ipython")
+          python-shell-interpreter-args "-i --simple-prompt --no-color-info"
+          python-shell-prompt-block-regexp "\\.\\.\\.\\.: "
+          python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+          python-shell-completion-setup-code
+          "from IPython.core.completerlib import module_completion"
+          python-shell-completion-string-code
+          "';'.join(get_ipython().Completer.all_completions('''%s'''))\n")
+
+    ;; some smartparens "smartness" for single quotes
+    ;; (sp-local-pair 'python-mode "'" nil
+    ;;                :unless '(sp-point-before-word-p
+    ;;                          sp-point-after-word-p
+    ;;                          sp-point-before-same-p))
+    )
+
+  (deftpunk-local-leader-def
+    :keymaps 'python-mode-map
+    "c" '(conda-env-activate :which-key "Activate conda env")
+    "d" '(conda-env-deactivate :which-key "Deactivate conda env")
+    "t" '(python-pytest-dispatch :which-key "Pytest dispatch")
+    )
+#+end_src
 
 *** [[https://github.com/necaris/conda.el][conda]]
 
@@ -2485,6 +2629,22 @@ https://github.com/necaris/conda.el/issues/30
                  'append))
 #+end_src
 
+*** [[https://github.com/wbolster/emacs-python-pytest][emacs-python-pytest]]
+
+#+begin_src emacs-lisp :name emacs-python-pytest
+  (use-package python-pytest)
+#+end_src
+
+*** [[https://github.com/glyph/python-docstring-mode][python-docstring-mode]]
+
+Minor mode for editing Python docstrings.  Can handle different formats.
+
+#+begin_src emacs-lisp :name python-docstring-mode
+  (use-package python-docstring-mode
+    :hook (python-mode . python-docstring-mode)
+    :elpaca (:host github :repo "glyph/python-docstring-mode" :main "python-docstring.el"))
+#+end_src
+
 ** Miscellaneous File types
 *** Markdown
 **** [[http://jblevins.org/projects/markdown-mode/][Markdown Mode]]
@@ -2503,6 +2663,74 @@ Major mode for editing [[http://daringfireball.net/projects/markdown/][Markdown]
     :custom
     (markdown-command "/opt/homebrew/bin/multimarkdown")
     (markdown-header-scaling t))
+#+end_src
+
+*** YAML
+**** [[https://github.com/yoshiki/yaml-mode][yaml-mode]]
+
+Yaml minor mode.
+
+#+begin_src emacs-lisp :name yaml-mode
+  (use-package yaml-mode
+    :config
+    (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
+#+end_src
+
+**** [[https://github.com/zkry/yaml-pro][yaml-pro]]
+
+Use treesitter to make yaml mode go faster.
+
+#+begin_src emacs-lisp :name yaml-pro
+  (use-package yaml-pro
+    :hook (yaml-mode . yaml-ts-mode-hook)
+    :config
+    ;; the original bindings will work as well, these are shorter if you prefer them.
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-n" #'yaml-pro-ts-next-subtree)
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-p" #'yaml-pro-ts-prev-subtree)
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-u" #'yaml-pro-ts-up-level)
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-d" #'yaml-pro-ts-down-level)
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-k" #'yaml-pro-ts-kill-subtree)
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-<backspace>" #'yaml-pro-ts-kill-subtree)
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-a" #'yaml-pro-ts-first-sibling)
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-e" #'yaml-pro-ts-last-sibling)
+
+    (deftpunk-local-leader-def
+      :keymaps 'yaml-pro-ts-mode-map
+      "n" '(yaml-pro-ts-next-subtree :which-key "Next subtree")
+      "p" '(yaml-pro-ts-prev-subtree :which-key "Previous subtree")
+      "u" '(yaml-pro-ts-up-level :which-key "Up subtree")
+      "d" '(yaml-pro-ts-down-level :which-key "Down subtree")
+      "k" '(yaml-pro-ts-kill-subtree :which-key "Kill subtree")
+      "<backspace>" '(yaml-pro-ts-kill-subtree :which-key "Kill subtree")
+      "a" '(yaml-pro-ts-first-sibling :which-key "First sibling")
+      "e" '(yaml-pro-ts-last-sibling :which-key "Last sibling")
+      )
+
+    (defvar-keymap my/yaml-pro/tree-repeat-map
+      :repeat t
+      "n" #'yaml-pro-ts-next-subtree
+      "p" #'yaml-pro-ts-prev-subtree
+      "u" #'yaml-pro-ts-up-level
+      "d" #'yaml-pro-ts-down-level
+      "m" #'yaml-pro-ts-mark-subtree
+      "k" #'yaml-pro-ts-kill-subtree
+      "a" #'yaml-pro-ts-first-sibling
+      "e" #'yaml-pro-ts-last-sibling
+      "SPC" #'my/yaml-pro/set-mark)
+
+    (defun my/yaml-pro/set-mark ()
+      (interactive)
+      (my/region/set-mark 'my/yaml-pro/set-mark))
+
+    (defun my/region/set-mark (command-name)
+      (if (eq last-command command-name)
+          (if (region-active-p)
+              (progn
+                (deactivate-mark)
+                (message "Mark deactivated"))
+            (activate-mark)
+            (message "Mark activated"))
+        (set-mark-command nil))))
 #+end_src
 
 ** Terminals & Shells
@@ -2707,7 +2935,13 @@ Just like the Neovim "g<letter>" bindings.
 *** Leader
 
 #+begin_src emacs-lisp :leader
-  ;; (global-set-key (kbd "C-<space>") 'leader/body)
+  (deftpunk-leader-def
+    "g" '(google-this-search :which-key "Search on Google")
+    "i" '(consult-buffer :which-key "Show buffers")
+    "k" '(kill-buffer :which-key "Kill current buffer")
+    "w" '(save-buffer :which-key "Save current buffer")
+    "-" '(ace-window :which-key "Ace windows")
+  )
 #+end_src
 
 *** [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]]
@@ -2731,6 +2965,72 @@ I use something similar in Neovim to bring up ":"
     (key-chord-define-global "hh" 'split-window-below)
     (key-chord-define-global "vv" 'split-window-right))
 #+end_src
+
+** Evil
+
+  (use-package evil
+    :demand t
+    :custom
+    (evil-undo-system 'undo-fu)
+    (undo-limit 8000000)
+    (undo-strong-limit 8000000)
+    (undo-outer-limit 8000000)
+    (evil-default-state 'normal)
+    (evil-want-C-u-scroll t)
+    (evil-want-C-w-delete t)
+    (evil-esc-delay 0)
+    (evil-shift-width 4)
+    (evil-want-integration t)
+    (evil-want-keybinding nil)   ; this is for evil-collection
+    (evil-toggle-key "s-z") ; I want C-z for other things
+    (evil-want-C-i-jump t)
+    :init
+    (setq-default evil-symbol-word-search 1)
+    (setq evil-want-Y-yank-to-eol t)
+    :config
+
+    (evil-mode 1)
+    (elpaca-wait)
+
+    (fset 'evil-visual-update-x-selection 'ignore)
+
+    (evil-set-initial-state 'help-mode 'emacs)
+    (evil-set-initial-state 'messages-buffer-mode 'emacs)
+    (evil-set-initial-state 'view-mode 'emacs)
+    (evil-set-initial-state 'inferior-python-mode 'emacs)
+
+    ;; Make leader work in *Messages* buffer
+    ;; https://emacs.stackexchange.com/questions/70703/general-leader-key-not-working-in-some-modes-messages-on-initial-startup-onl
+    (with-eval-after-load 'evil
+      (general-add-hook 'after-init-hook
+                        (lambda (&rest _)
+                          (when-let ((messages-buffer (get-buffer "*Messages*")))
+                            (with-current-buffer messages-buffer
+                              (evil-normalize-keymaps))))
+                        nil
+                        nil
+                        t))
+
+
+    ;; Add some bindings to the window "C-w <something" map.
+    ;; Thu Nov 22 22:54:18 2018 - we have to bind evil-window-map this way, as
+    ;; opposed to using general.el to this to work(??)
+    (define-key evil-window-map "b" 'balance-windows)          ; replaces evil-window-bottom-right.
+    (define-key evil-window-map "d" 'ace-delete-window)        ; was unused
+    (define-key evil-window-map "f" 'make-frame)               ; was unused
+    (define-key evil-window-map "i" 'ace-maximize-window)      ; was unused
+    (define-key evil-window-map "r" 'winner-redo)              ; replaces evil-window-rotate-downwards
+    (define-key evil-window-map "u" 'winner-undo)              ; was unused
+    (define-key evil-window-map "-" 'ace-window)               ; was unused
+
+    ;; More Esc quits
+    (define-key evil-normal-state-map [escape] 'keyboard-quit)
+    (define-key evil-visual-state-map [escape] 'keyboard-quit)
+    (define-key evil-insert-state-map [escape] 'evil-normal-state)
+    (global-set-key [escape] 'evil-exit-emacs-state)
+
+    (evil-define-key 'normal org-mode-map (kbd "<tab>") #'org-cycle)
+    )
 
 ** Server
 
