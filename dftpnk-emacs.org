@@ -832,6 +832,18 @@ Try not to lose the cursor on moving.
     (beacon-mode 1))
 #+end_src
 
+*** [[https://github.com/Fanael/highlight-numbers][highlight-numbers]]
+
+Highlight numbers in the buffer.
+
+#+begin_src emacs-lisp :name highlight-numbers
+  (use-package highlight-numbers
+    :hook (prog-mode . highlight-numbers-mode)
+    :config
+    ;; setting to magenta-warmer for ef-spring theme.
+    (set-face-attribute 'highlight-numbers-number nil :foreground "#cb26a0"))
+#+end_src
+
 *** [[https://github.com/tarsius/hl-todo][hl-todo]]
 
 Highlight TODO and similar keywords in comments and strings.
