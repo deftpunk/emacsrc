@@ -16,6 +16,7 @@ My notes for installing from scratch.
 Dependencies:
 - zsh + oh-my-zsh
 - git
+- delta
 - ripgrep
 - cmake   -> for compiling libvterm
 - building emacs-lsp-booster
@@ -2384,6 +2385,8 @@ https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
            ;; trigger a bunch of unwanted side-effects, like save hooks and
            ;; formatters. Trust us to know what we're doing.
            magit-save-repository-buffers nil)
+
+    ;; Open magit-status in entire window
     (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1))
 
   (use-package forge
@@ -2392,6 +2395,16 @@ https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
 
 TODO: Another codereview from magit tool https://github.com/blahgeek/emacs-pr-review for doing reviews with GitHub
 TODO: fixes code-review: https://github.com/wandersoncferreira/code-review/pull/246#issuecomment-1867538123
+
+**** [[https://github.com/dandavison/magit-delta][magit-delta]]
+
+Use delta when displaying diffs.
+
+#+begin_src emacs-lisp :name magit-delta
+  (use-package magit-delta
+    :after magit
+    :hook (magit-mode . magit-delta-mode))
+#+end_src
 
 **** [[https://github.com/alphapapa/magit-todos][magit-todos]]
 

@@ -1462,10 +1462,16 @@ Version 2019-10-22"
          ;; trigger a bunch of unwanted side-effects, like save hooks and
          ;; formatters. Trust us to know what we're doing.
          magit-save-repository-buffers nil)
+
+  ;; Open magit-status in entire window
   (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1))
 
 (use-package forge
   :after magit)
+
+(use-package magit-delta
+  :after magit
+  :hook (magit-mode . magit-delta-mode))
 
 (use-package magit-todos
   :after magit
