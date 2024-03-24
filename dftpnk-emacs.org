@@ -2325,6 +2325,18 @@ TODO: set faces.
   (blackout 'git-gutter-mode)
 #+end_src
 
+*** [[https://githubkj.com/magit/git-modes][git-modes]]
+
+Major modes for various Git config files: .gitconfig, .gitattributes, .gitignore, etc.
+
+#+begin_src emacs-lisp :name git-modes
+(use-package git-modes
+  :config
+  ;; This works for .dockerignore and other .*ignore files as well.
+  (dolist (pattern '("/.dockeringnore\\'"))
+    (add-to-list 'auto-mode-alist (cons pattern #'gitignore-mode))))
+#+end_src
+
 *** [[https://gitlab.com/pidu/git-timemachine][git-timemachine]]
 
 Step through historic versions of a git controlled file.
