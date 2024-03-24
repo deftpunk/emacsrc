@@ -2049,6 +2049,16 @@ Reload all snippets: ~ya-reload-all~
     (add-to-list 'yas-snippet-dirs (expand-file-name "snippets" user-emacs-directory)))
 #+end_src
 
+*** [[https://github.com/mrkkrp/zzz-to-char][zzz-to-char]]
+
+=zzz-to-char= & =zzz-up-to-char= -> Zap to char and zap up to char but you get to pick which char.
+
+TODO: Find a keybinding.
+
+#+begin_src emacs-lisp :name zzz-to-char
+  (use-package zzz-to-char)
+#+end_src
+
 ** Help and documentation enhancements
 
 *** [[https://github.com/astoff/devdocs.el][devdocs]]
