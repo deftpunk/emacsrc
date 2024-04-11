@@ -395,6 +395,12 @@
   :config
   (beacon-mode 1))
 
+(use-package highlight-numbers
+  :hook (prog-mode . highlight-numbers-mode)
+  :config
+  ;; setting to magenta-warmer for ef-spring theme.
+  (set-face-attribute 'highlight-numbers-number nil :foreground "#cb26a0"))
+
 (use-package hl-todo
   :elpaca (hl-todo :depth nil) ; see https://github.com/alphapapa/magit-todos/issues/171
   :init
@@ -571,8 +577,7 @@
   ;; Enable automatic preview at point in the *Completions* buffer. This is
   ;; relevant when you use the default completion UI.
   :hook (completion-list-mode . consult-preview-at-point-mode)
-  :bind (("C-s" . consult-line)
-         ("C-c r" . consult-ripgrep)
+  :bind (("C-c r" . consult-ripgrep)
          ([remap switch-to-buffer] . consult-buffer)
          ("s-i" . consult-buffer)
          :map minibuffer-local-map
@@ -581,41 +586,14 @@
   :custom
   (completion-in-region-function #'consult-completion-in-region))
 
-;; from the consult wiki
-(defcustom my/consult-ripgrep-or-line-limit 300000
-  "Buffer size threshold for `my/consult-ripgrep-or-line'.
-When the number of characters in a buffer exceeds this threshold,
-`consult-ripgrep' will be used instead of `consult-line'."
-  :type 'integer)
-
-(defun my/consult-ripgrep-or-line ()
-  "Call `consult-line' for small buffers or `consult-ripgrep' for large files."
-  (interactive)
-  (if (or (not buffer-file-name)
-          (buffer-narrowed-p)
-          (ignore-errors
-            (file-remote-p buffer-file-name))
-          (jka-compr-get-compression-info buffer-file-name)
-          (<= (buffer-size)
-              (/ my/consult-ripgrep-or-line-limit
-                 (if (eq major-mode 'org-mode) 4 1))))
-      (consult-line)
-    (when (file-writable-p buffer-file-name)
-      (save-buffer))
-    (let ((consult-ripgrep-args
-           (concat consult-ripgrep-args
-                   ;; filter to desired filename
-                   " -g "
-                   (shell-quote-argument (file-name-nondirectory buffer-file-name))
-                   " ")))
-      (consult-ripgrep))))
-
 (use-package consult-dir
   :ensure t
   :bind (("C-x C-d" . consult-dir)
          :map minibuffer-local-completion-map
          ("C-x C-d" . consult-dir)
          ("C-x C-j" . consult-dir-jump-file)))
+
+(use-package consult-flycheck)
 
 (use-package consult-flyspell
   :elpaca (consult-flyspell :type git :host gitlab :repo "OlMon/consult-flyspell" :branch "master")
@@ -696,6 +674,8 @@ When the number of characters in a buffer exceeds this threshold,
   (svg-lib-icons-dir (no-littering-expand-var-file-name "svg-lib/cache"))
   :config
   (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+
 
 (setq-default
  display-time-default-load-average nil            ; Don't display load average
@@ -1109,6 +1089,44 @@ Version 2019-10-22"
          ([remap delete-char] . smart-hungry-delete-forward-char))
   :init (smart-hungry-delete-add-default-hooks))
 
+(use-package smartparens
+  :commands (sp-local-pair)
+  :config
+  ;; smartparens doesn't recognize the sly-mrepl-mode
+  (add-to-list 'sp-lisp-modes 'sly-mrepl-mode)
+
+  ;; load the default smartparens rules for various languages.
+  (require 'smartparens-config)
+
+  ;; Overlays are too distracting and not terribly helpful. show-parens does
+  ;; this for us already (and is faster), so...
+  (setq sp-highlight-pair-overlay nil
+        sp-highlight-wrap-overlay nil
+        sp-highlight-wrap-tag-overlay nil)
+
+  ;; The default is 100, because smartparen's scans are relatively expensive
+  ;; (especially with large pair lists for some modes), we reduce it, as a
+  ;; better compromise between performance and accuracy.
+  (setq sp-max-prefix-length 25)
+  ;; No pair has any business being longer than 4 characters; if they must, set
+  ;; it buffer-locally. It's less work for smartparens.
+  (setq sp-max-pair-length 4)
+  ;; This isn't always smart enough to determine when we're in a string or not.
+  ;; See https://github.com/Fuco1/smartparens/issues/783.
+  (setq sp-escape-quotes-after-insert nil)
+
+  ;; Silence some harmless but annoying echo-area spam
+  (dolist (key '(:unmatched-expression :no-matching-tag))
+    (setf (alist-get key sp-message-alist) nil))
+
+  ;; You're likely writing lisp in the minibuffer, therefore, disable these
+  ;; quote pairs, which lisps doesn't use for strings:
+  (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil)
+  (sp-local-pair 'minibuffer-inactive-mode "`" nil :actions nil))
+
+(add-hook 'prog-mode #'smartparens-strict-mode)
+;; (add-hook 'lisp-interaction-mode #'smartparens-strict-mode)
+
 (setq auto-save-default nil) ; turn off the builtin auto-save
 (use-package super-save
   :blackout t
@@ -1200,6 +1218,8 @@ Version 2019-10-22"
   :config
   ;; Allow private snippets.
   (add-to-list 'yas-snippet-dirs (expand-file-name "snippets" user-emacs-directory)))
+
+(use-package zzz-to-char)
 
 (use-package devdocs
   :init
@@ -1341,6 +1361,14 @@ Version 2019-10-22"
   :config
   (global-org-modern-mode))
 
+(setenv "GPG_AGENT_INFO" nil)
+(setq epg-gpg-program "gpg2")
+
+(use-package git-commit
+  :hook ((git-commit-mode . flyspell-mode)
+         (git-commit-mode . git-commit-save-message)
+         (git-commit-mode . turn-on-auto-fill)))
+
 ;; From Doom Emacs ui/vc-gutter/config.el
 ;; UI: make the fringe small enough that the diff bars aren't too domineering,
 ;;   while leaving enough room for other indicators.
@@ -1411,6 +1439,12 @@ Version 2019-10-22"
 ;; Turn off git-gutter in the modeline.
 (blackout 'git-gutter-mode)
 
+(use-package git-modes
+  :config
+  ;; This works for .dockerignore and other .*ignore files as well.
+  (dolist (pattern '("/.dockeringnore\\'"))
+    (add-to-list 'auto-mode-alist (cons pattern #'gitignore-mode))))
+
 (use-package git-timemachine
   :config
   (setq git-timemachine-abbreviation-length 14
@@ -1440,16 +1474,17 @@ Version 2019-10-22"
   (git-timemachine--start #'my-git-timemachine-show-selected-revision))
 
 (use-package magit
-  :commands (magit-dispatch)
-  :general
-  (:prefix "C-x"
-           "g" 'magit-status
-           "C-g" 'magit-status)
   :hook (git-commit-setup-hook . git-commit-turn-on-flyspell)
   :init
   (if IS-MAC
       (setq magit-git-executable "/opt/homebrew/bin/git")
     (setq magit-git-executable "/usr/local/bin/git"))
+  :custom
+  ;; Setting magit-define-global-keybindings does the following:
+  ;; C-x g -> magit-status
+  ;; C-c g -> magit-dispatch
+  ;; C-c f -> magit-file-dispatch
+  (magit-define-global-keybindings 'recommended)
   :config
   ;; Add git-timemachine to the magit-dispatch transient map.
   (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
@@ -1478,50 +1513,52 @@ Version 2019-10-22"
   :config
   (magit-todos-mode +1))
 
-(use-package jsonrpc
-  :elpaca (:inherit elpaca-menu-gnu-devel-elpa))
-
-(elpaca-wait)
-
-(use-package eldoc
-  :elpaca (:inherit elpaca-menu-gnu-devel-elpa))
-
-(elpaca-wait)
-
-(use-package eglot
-  :elpaca (:inherit elpaca-menu-gnu-devel-elpa)
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook (((python-mode python-ts-mode) . lsp)
+         (clojure-mode . lsp-deferred))
   :custom
-  (fset #'jsonrpc--log-event #'ignore)
-  (eglot-sync-connect nil)
-  (eglot-connect-timeout nil)
-  (eglot-autoshutdown t)
-  (eglot-send-changes-idle-time 3)
-  (flymake-no-changes-timeout 5)
-  (eldoc-echo-area-use-multiline-p nil)
-  (setq eglot-ignored-server-capabilities '( :documentHighlightProvider))
-  (setf (plist-get eglot-events-buffer-config :size) 0)
+  (lsp-completion-provider :company)
+  (lsp-completion-show-detail t)
+  (lsp-competion-show-kind t)
+  (lsp-keymap-prefix "C-c l")
+  (lsp-enable-symbol-highlighting t)
+  (lsp-lens-enable t)
+  (lsp-headerline-breadcrumb-enable t)
+  (lsp-enabled-which-key-integration nil)
+  (lsp-diagnostics-provider :flycheck)
+  (lsp-completion-show-detail t)
+  (lsp-completion-show-kind t))
 
-  :config
-  (add-to-list 'eglot-server-programs '((python-mode python-ts-mode) . ("pyright-langserver" "--stdio"))))
+;; lsp-clients
+;; TODO: pyright on VDT
+;; (lsp-register-client
+;;  (make-lsp-client :new-connection (lsp-tramp-connection "pyright")
+;;                   :major-modes '(python-mode python-ts-mode)
+;;                   :remote? t
+;;                   :server-id 'pyright-vdt))
 
-;; exclude modes from eglot
-(defun maybe-start-eglot ()
-  "Exlude some mode from eglot."
-  (let ((disabled-modes '(emacs-lisp-mode dockerfile-ts-mode)))
-    (unless (apply 'derived-mode-p disabled-modes)
-      (eglot-ensure))))
+(use-package lsp-pyright
+  :ensure t
+  :hook ((python-mode python-ts-mode) . (lambda ()
+                                          (require 'lsp-pyright)
+                                          (lsp))))  ; or lsp-deferred
 
-(add-hook 'prog-mode-hook #'maybe-start-eglot)
+(use-package lsp-ui
+  :commands (lsp-ui-mode)
+  :general
+  (:keymaps 'lsp-ui-mode-map
+            [remap xref-find-definitions] #'lsp-ui-peek-find-definitions
+            [remap xref-find-references] #'lsp-ui-peek-find-references)
+  :hook (lsp-mode . lsp-ui-mode)
+  :init
+  (setq lsp-ui-doc-position 'bottom
+        lsp-ui-doc-header t
+        lsp-ui-sideline-show-hover t
+        lsp-ui-sideline-show-diagnostics t
+        lsp-ui-doc-include-signature t))
 
-;; use native eglot booster
-(use-package eglot-booster
-  :elpaca (:type git :host github :repo "jdtsmith/eglot-booster")
-  :after eglot
-  :config
-  (eglot-booster-mode))
-
-(with-eval-after-load 'eglot
-  (setq completion-category-defaults nil))
+(use-package lsp-ivy)
 
 (defun emacswiki/comment-auto-fill ()
   " Set up auto-file / wrapping of comments."
@@ -1569,6 +1606,13 @@ Version 2019-10-22"
    (set-face-background 'highlight-indent-guides-even-face "gray48")
    (set-face-foreground 'highlight-indent-guides-character-face "gray28")
    (set-face-foreground 'highlight-indent-guides-top-character-face "orchid1")))
+
+(use-package nim-mode
+  :hook ((nim-mode . nimsuggest-mode)
+         (nim-mode . subword-mode)
+         (nim-mode . rainbow-delimiters-mode))
+  :mode (("\\.nim.?\\'" . nim-mode))
+  )
 
 (defun deftpunk/python-mode-hook ()
   "Setting up some basics for Python."
@@ -1641,11 +1685,18 @@ Version 2019-10-22"
                '(conda-env-current-name (" conda:" conda-env-current-name " "))
                'append))
 
-(use-package python-pytest)
+(use-package python-pytest
+  :hook (python-mode . (lambda ()
+                         (when-let ((r (locate-dominating-file default-directory ".gitignore")))
+                           (setq python-pytest-executable
+                                 (concat "PYTHONPATH=" r " " "pytest"))))))
 
 (use-package python-docstring-mode
   :hook (python-mode . python-docstring-mode)
   :elpaca (:host github :repo "glyph/python-docstring-mode" :main "python-docstring.el"))
+
+(use-package dockerfile-mode
+  :mode "Dockerfile.*\\'")
 
 (use-package markdown-mode
   :defer t
@@ -1849,7 +1900,7 @@ _h_   _l_   _o_k        _y_ank       /,`.-'`'   .‗  \-;;,‗
 (global-set-key (kbd "C-j") 'avy-goto-char-timer)
 (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
 
-(global-set-key (kbd "s-s") 'my/consult-ripgrep-or-line)
+(global-set-key (kbd "s-s") 'consult-line)
 
 ;; Figure out hippie-expand
 ;; From https://stackoverflow.com/a/43665319
@@ -1862,14 +1913,6 @@ _h_   _l_   _o_k        _y_ank       /,`.-'`'   .‗  \-;;,‗
 
 (global-unset-key (kbd "C-x C-l")) ; I can downcase the region another way.
 (global-set-key (kbd "C-x C-l") 'my-expand-lines)
-
-(deftpunk-leader-def
-  "g" '(google-this-search :which-key "Search on Google")
-  "i" '(consult-buffer :which-key "Show buffers")
-  "k" '(kill-buffer :which-key "Kill current buffer")
-  "w" '(save-buffer :which-key "Save current buffer")
-  "-" '(ace-window :which-key "Ace windows")
-)
 
 (use-package key-chord
   :commands (key-chord-define-global)

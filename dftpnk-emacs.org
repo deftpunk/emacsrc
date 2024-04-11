@@ -25,6 +25,11 @@ Dependencies:
   - cargo build --release
   - cp target/release/emacs-lsp-booster to $PATH
 
+GPG:
+- brew install gpg2 pinentry-mac
+- add =pinentry-program /opt/homebrew/bin/pinentry-mac= to ~//.gnupg/gpg-agent.conf
+- =killall gpg-agent=
+
 I am using emacs-plus: https://github.com/d12frosted/homebrew-emacs-plus
 
 1. brew tap d12frosted/emacs-plus
@@ -1136,8 +1141,7 @@ Search and navigation commands based on the Emacs completion function
     ;; Enable automatic preview at point in the *Completions* buffer. This is
     ;; relevant when you use the default completion UI.
     :hook (completion-list-mode . consult-preview-at-point-mode)
-    :bind (("C-s" . consult-line)
-           ("C-c r" . consult-ripgrep)
+    :bind (("C-c r" . consult-ripgrep)
            ([remap switch-to-buffer] . consult-buffer)
            ("s-i" . consult-buffer)
            :map minibuffer-local-map
@@ -1145,35 +1149,6 @@ Search and navigation commands based on the Emacs completion function
            ("C-r" . consult-history))
     :custom
     (completion-in-region-function #'consult-completion-in-region))
-
-  ;; from the consult wiki
-  (defcustom my/consult-ripgrep-or-line-limit 300000
-    "Buffer size threshold for `my/consult-ripgrep-or-line'.
-  When the number of characters in a buffer exceeds this threshold,
-  `consult-ripgrep' will be used instead of `consult-line'."
-    :type 'integer)
-
-  (defun my/consult-ripgrep-or-line ()
-    "Call `consult-line' for small buffers or `consult-ripgrep' for large files."
-    (interactive)
-    (if (or (not buffer-file-name)
-            (buffer-narrowed-p)
-            (ignore-errors
-              (file-remote-p buffer-file-name))
-            (jka-compr-get-compression-info buffer-file-name)
-            (<= (buffer-size)
-                (/ my/consult-ripgrep-or-line-limit
-                   (if (eq major-mode 'org-mode) 4 1))))
-        (consult-line)
-      (when (file-writable-p buffer-file-name)
-        (save-buffer))
-      (let ((consult-ripgrep-args
-             (concat consult-ripgrep-args
-                     ;; filter to desired filename
-                     " -g "
-                     (shell-quote-argument (file-name-nondirectory buffer-file-name))
-                     " ")))
-        (consult-ripgrep))))
 #+end_src
 
 **** [[https://github.com/karthink/consult-dir][consult-dir]]
@@ -1206,7 +1181,15 @@ Replace minibuffer-local-completion-map above with
            ("C-x C-j" . consult-dir-jump-file)))
 #+end_src
 
-*** [[https://gitlab.com/OlMon/consult-flyspell][consult-flyspell]]
+**** [[https://github.com/minad/consult-flycheck][consult-flycheck]]
+
+Consult integration for flycheck.
+
+#+begin_src emacs-lisp :name consult-flycheck
+  (use-package consult-flycheck)
+#+end_src
+
+**** [[https://gitlab.com/OlMon/consult-flyspell][consult-flyspell]]
 
 Choose a misspelled word, jump to it and optionally apply a function to it.
 
@@ -1340,6 +1323,13 @@ Add some icons to completion prefixes.
     (svg-lib-icons-dir (no-littering-expand-var-file-name "svg-lib/cache"))
     :config
     (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+#+end_src
+
+*** company
+
+Company works better with lsp-mode
+
+#+begin_src emacs-lisp :name company
 #+end_src
 
 ** Emacs Defaults
@@ -1902,6 +1892,52 @@ Keybindings you want enabled when a region is active.
     :init (smart-hungry-delete-add-default-hooks))
 #+end_src
 
+*** [[https://github.com/Fuco1/smartparens][smartparens]]
+
+Keep my pairs clean-ish.
+
+https://ebzzry.com/en/emacs-pairs/ - comprehensive article about smartparens and bindings.
+
+#+begin_src emacs-lisp :name smartparens
+  (use-package smartparens
+    :commands (sp-local-pair)
+    :config
+    ;; smartparens doesn't recognize the sly-mrepl-mode
+    (add-to-list 'sp-lisp-modes 'sly-mrepl-mode)
+
+    ;; load the default smartparens rules for various languages.
+    (require 'smartparens-config)
+
+    ;; Overlays are too distracting and not terribly helpful. show-parens does
+    ;; this for us already (and is faster), so...
+    (setq sp-highlight-pair-overlay nil
+          sp-highlight-wrap-overlay nil
+          sp-highlight-wrap-tag-overlay nil)
+
+    ;; The default is 100, because smartparen's scans are relatively expensive
+    ;; (especially with large pair lists for some modes), we reduce it, as a
+    ;; better compromise between performance and accuracy.
+    (setq sp-max-prefix-length 25)
+    ;; No pair has any business being longer than 4 characters; if they must, set
+    ;; it buffer-locally. It's less work for smartparens.
+    (setq sp-max-pair-length 4)
+    ;; This isn't always smart enough to determine when we're in a string or not.
+    ;; See https://github.com/Fuco1/smartparens/issues/783.
+    (setq sp-escape-quotes-after-insert nil)
+
+    ;; Silence some harmless but annoying echo-area spam
+    (dolist (key '(:unmatched-expression :no-matching-tag))
+      (setf (alist-get key sp-message-alist) nil))
+
+    ;; You're likely writing lisp in the minibuffer, therefore, disable these
+    ;; quote pairs, which lisps doesn't use for strings:
+    (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil)
+    (sp-local-pair 'minibuffer-inactive-mode "`" nil :actions nil))
+
+  (add-hook 'prog-mode #'smartparens-strict-mode)
+  ;; (add-hook 'lisp-interaction-mode #'smartparens-strict-mode)
+#+end_src
+
 *** [[https://github.com/bbatsov/super-save][super-save]]
 
 Auto-saves your buffers  when certain events happen.
@@ -2244,8 +2280,28 @@ Implements a "modern" style for Org buffers.
 
 ** TODO: Org-roam
 
+** Security
+
+#+begin_src emacs-lisp :name security
+  (setenv "GPG_AGENT_INFO" nil)
+  (setq epg-gpg-program "gpg2")
+#+end_src
+
 ** Source Control
+** [[https://magit.vc/manual/magit/Commit-Mode-and-Hooks.html][git-commit-mode]]
+
+Setting up some usefull things for git-commit mode that magit uses during commit.
+
+#+begin_src emacs-lisp :name git-commit-mode
+  (use-package git-commit
+    :hook ((git-commit-mode . flyspell-mode)
+           (git-commit-mode . git-commit-save-message)
+           (git-commit-mode . turn-on-auto-fill)))
+#+end_src
+
 *** [[https://github.com/emacsorphanage/git-gutter][git-gutter]] & [[https://github.com/emacsorphanage/git-gutter-fringe][git-gutter-fringe]]
+
+Highlighting uncommitted changes in the buffer.
 
 TODO: set faces.
 
@@ -2396,35 +2452,36 @@ https://emacsair.me/2017/09/01/the-magical-git-interface/
 https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
 
 #+begin_src emacs-lisp :name magit
-  (use-package magit
-    :commands (magit-dispatch)
-    :general
-    (:prefix "C-x"
-             "g" 'magit-status
-             "C-g" 'magit-status)
-    :hook (git-commit-setup-hook . git-commit-turn-on-flyspell)
-    :init
-    (if IS-MAC
-        (setq magit-git-executable "/opt/homebrew/bin/git")
-      (setq magit-git-executable "/usr/local/bin/git"))
-    :config
-    ;; Add git-timemachine to the magit-dispatch transient map.
-    (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
+    (use-package magit
+      :hook (git-commit-setup-hook . git-commit-turn-on-flyspell)
+      :init
+      (if IS-MAC
+          (setq magit-git-executable "/opt/homebrew/bin/git")
+        (setq magit-git-executable "/usr/local/bin/git"))
+      :custom
+      ;; Setting magit-define-global-keybindings does the following:
+      ;; C-x g -> magit-status
+      ;; C-c g -> magit-dispatch
+      ;; C-c f -> magit-file-dispatch
+      (magit-define-global-keybindings 'recommended)
+      :config
+      ;; Add git-timemachine to the magit-dispatch transient map.
+      (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
 
-    (setq  magit-log-arguments '("--graph" "--decorate" "--color")
-           magit-revert-buffers 'silent
-           magit-revision-show-gravatars '("^Author:     " . "^Commit:     ")
-           magit-diff-refine-hunk t ; show granular diffs in selected hunk
-           ;; Don't autosave repo buffers. This is too magical, and saving can
-           ;; trigger a bunch of unwanted side-effects, like save hooks and
-           ;; formatters. Trust us to know what we're doing.
-           magit-save-repository-buffers nil)
+      (setq  magit-log-arguments '("--graph" "--decorate" "--color")
+             magit-revert-buffers 'silent
+             magit-revision-show-gravatars '("^Author:     " . "^Commit:     ")
+             magit-diff-refine-hunk t ; show granular diffs in selected hunk
+             ;; Don't autosave repo buffers. This is too magical, and saving can
+             ;; trigger a bunch of unwanted side-effects, like save hooks and
+             ;; formatters. Trust us to know what we're doing.
+             magit-save-repository-buffers nil)
 
-    ;; Open magit-status in entire window
-    (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1))
+      ;; Open magit-status in entire window
+      (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1))
 
-  (use-package forge
-    :after magit)
+    (use-package forge
+      :after magit)
 #+end_src
 
 TODO: Another codereview from magit tool https://github.com/blahgeek/emacs-pr-review for doing reviews with GitHub
@@ -2458,7 +2515,9 @@ The builtin Emacs LSP client.
 
 Using the dev version of eglot and the [[https://github.com/jdtsmith/eglot-booster][eglot-booster]]
 
-#+begin_src emacs-lisp :name eglot
+03/25/24 21:59:33 - turning off in favor of lsp-mode
+
+
   (use-package jsonrpc
     :elpaca (:inherit elpaca-menu-gnu-devel-elpa))
 
@@ -2503,7 +2562,82 @@ Using the dev version of eglot and the [[https://github.com/jdtsmith/eglot-boost
 
   (with-eval-after-load 'eglot
     (setq completion-category-defaults nil))
+
+*** [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]]
+
+- M-x lsp-rename
+- M-x lsp-execute-code-action / C-c C-c a
+
+https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
+
+#+begin_src emacs-lisp :name lsp-mode
+  (use-package lsp-mode
+    :commands (lsp lsp-deferred)
+    :hook (((python-mode python-ts-mode) . lsp)
+           (clojure-mode . lsp-deferred))
+    :custom
+    (lsp-completion-provider :company)
+    (lsp-completion-show-detail t)
+    (lsp-competion-show-kind t)
+    (lsp-keymap-prefix "C-c l")
+    (lsp-enable-symbol-highlighting t)
+    (lsp-lens-enable t)
+    (lsp-headerline-breadcrumb-enable t)
+    (lsp-enabled-which-key-integration nil)
+    (lsp-diagnostics-provider :flycheck)
+    (lsp-completion-show-detail t)
+    (lsp-completion-show-kind t))
+
+  ;; lsp-clients
+  ;; TODO: pyright on VDT
+  ;; (lsp-register-client
+  ;;  (make-lsp-client :new-connection (lsp-tramp-connection "pyright")
+  ;;                   :major-modes '(python-mode python-ts-mode)
+  ;;                   :remote? t
+  ;;                   :server-id 'pyright-vdt))
+
+  (use-package lsp-pyright
+    :ensure t
+    :hook ((python-mode python-ts-mode) . (lambda ()
+                                            (require 'lsp-pyright)
+                                            (lsp))))  ; or lsp-deferred
 #+end_src
+
+*** [[https://github.com/emacs-lsp/lsp-ui][lsp-ui]]
+
+Higher level UI elements for lsp-mode, e.g. flycheck support, code lenses.
+
+#+begin_src emacs-lisp :name lsp-ui
+  (use-package lsp-ui
+    :commands (lsp-ui-mode)
+    :general
+    (:keymaps 'lsp-ui-mode-map
+              [remap xref-find-definitions] #'lsp-ui-peek-find-definitions
+              [remap xref-find-references] #'lsp-ui-peek-find-references)
+    :hook (lsp-mode . lsp-ui-mode)
+    :init
+    (setq lsp-ui-doc-position 'bottom
+          lsp-ui-doc-header t
+          lsp-ui-sideline-show-hover t
+          lsp-ui-sideline-show-diagnostics t
+          lsp-ui-doc-include-signature t))
+#+end_src
+
+*** [[https://github.com/emacs-lsp/lsp-ivy][lsp-ivy]]
+
+Ivy interface to workspace symbol functionality offered by `lsp-mode`.
+
+- lsp-ivy-workspace-symbol
+- lsp-ivy-global-workspace-symbol
+
+#+begin_src emacs-lisp :name lsp-ivy
+  (use-package lsp-ivy)
+#+end_src
+
+*** [[https://github.com/emacs-lsp/dap-mode/tree/a31f2496605d076d50d49393116f77fbb29f2631][dap-mode]]
+
+https://emacs-lsp.github.io/dap-mode/page/configuration/#python
+
 
 ** General Software Development
 *** Comments: auto-fill & spellcheck
@@ -2589,6 +2723,16 @@ TODO: Enable lispy.
 **** Sly
 *** Emacs Lisp
 
+** Nim
+
+#+begin_src emacs-lisp :name nim-mode
+  (use-package nim-mode
+    :hook ((nim-mode . nimsuggest-mode)
+           (nim-mode . subword-mode)
+           (nim-mode . rainbow-delimiters-mode))
+    :mode (("\\.nim.?\\'" . nim-mode))
+    )
+#+end_src
 
 ** Python
 *** Python Configuration
@@ -2679,7 +2823,11 @@ https://github.com/necaris/conda.el/issues/30
 *** [[https://github.com/wbolster/emacs-python-pytest][emacs-python-pytest]]
 
 #+begin_src emacs-lisp :name emacs-python-pytest
-  (use-package python-pytest)
+  (use-package python-pytest
+    :hook (python-mode . (lambda ()
+                           (when-let ((r (locate-dominating-file default-directory ".gitignore")))
+                             (setq python-pytest-executable
+                                   (concat "PYTHONPATH=" r " " "pytest"))))))
 #+end_src
 
 *** [[https://github.com/glyph/python-docstring-mode][python-docstring-mode]]
@@ -2693,6 +2841,16 @@ Minor mode for editing Python docstrings.  Can handle different formats.
 #+end_src
 
 ** Miscellaneous File types
+*** [[https://github.com/spotify/dockerfile-mode][Dockerfile]]
+
+A Dockerfile mode for Emacs.
+You can use =C-c C-b= to build from the buffer & =C-c M-b= to bypass the build cache.
+
+#+begin_src emacs-lisp :name dockerfile
+  (use-package dockerfile-mode
+    :mode "Dockerfile.*\\'")
+#+end_src
+
 *** Markdown
 **** [[http://jblevins.org/projects/markdown-mode/][Markdown Mode]]
 
@@ -2964,7 +3122,7 @@ Just like the Neovim "g<letter>" bindings.
   (global-set-key (kbd "C-j") 'avy-goto-char-timer)
   (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
 
-  (global-set-key (kbd "s-s") 'my/consult-ripgrep-or-line)
+  (global-set-key (kbd "s-s") 'consult-line)
 
   ;; Figure out hippie-expand
   ;; From https://stackoverflow.com/a/43665319
@@ -2977,18 +3135,6 @@ Just like the Neovim "g<letter>" bindings.
 
   (global-unset-key (kbd "C-x C-l")) ; I can downcase the region another way.
   (global-set-key (kbd "C-x C-l") 'my-expand-lines)
-#+end_src
-
-*** Leader
-
-#+begin_src emacs-lisp :leader
-  (deftpunk-leader-def
-    "g" '(google-this-search :which-key "Search on Google")
-    "i" '(consult-buffer :which-key "Show buffers")
-    "k" '(kill-buffer :which-key "Kill current buffer")
-    "w" '(save-buffer :which-key "Save current buffer")
-    "-" '(ace-window :which-key "Ace windows")
-  )
 #+end_src
 
 *** [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]]
@@ -3012,72 +3158,6 @@ I use something similar in Neovim to bring up ":"
     (key-chord-define-global "hh" 'split-window-below)
     (key-chord-define-global "vv" 'split-window-right))
 #+end_src
-
-** Evil
-
-  (use-package evil
-    :demand t
-    :custom
-    (evil-undo-system 'undo-fu)
-    (undo-limit 8000000)
-    (undo-strong-limit 8000000)
-    (undo-outer-limit 8000000)
-    (evil-default-state 'normal)
-    (evil-want-C-u-scroll t)
-    (evil-want-C-w-delete t)
-    (evil-esc-delay 0)
-    (evil-shift-width 4)
-    (evil-want-integration t)
-    (evil-want-keybinding nil)   ; this is for evil-collection
-    (evil-toggle-key "s-z") ; I want C-z for other things
-    (evil-want-C-i-jump t)
-    :init
-    (setq-default evil-symbol-word-search 1)
-    (setq evil-want-Y-yank-to-eol t)
-    :config
-
-    (evil-mode 1)
-    (elpaca-wait)
-
-    (fset 'evil-visual-update-x-selection 'ignore)
-
-    (evil-set-initial-state 'help-mode 'emacs)
-    (evil-set-initial-state 'messages-buffer-mode 'emacs)
-    (evil-set-initial-state 'view-mode 'emacs)
-    (evil-set-initial-state 'inferior-python-mode 'emacs)
-
-    ;; Make leader work in *Messages* buffer
-    ;; https://emacs.stackexchange.com/questions/70703/general-leader-key-not-working-in-some-modes-messages-on-initial-startup-onl
-    (with-eval-after-load 'evil
-      (general-add-hook 'after-init-hook
-                        (lambda (&rest _)
-                          (when-let ((messages-buffer (get-buffer "*Messages*")))
-                            (with-current-buffer messages-buffer
-                              (evil-normalize-keymaps))))
-                        nil
-                        nil
-                        t))
-
-
-    ;; Add some bindings to the window "C-w <something" map.
-    ;; Thu Nov 22 22:54:18 2018 - we have to bind evil-window-map this way, as
-    ;; opposed to using general.el to this to work(??)
-    (define-key evil-window-map "b" 'balance-windows)          ; replaces evil-window-bottom-right.
-    (define-key evil-window-map "d" 'ace-delete-window)        ; was unused
-    (define-key evil-window-map "f" 'make-frame)               ; was unused
-    (define-key evil-window-map "i" 'ace-maximize-window)      ; was unused
-    (define-key evil-window-map "r" 'winner-redo)              ; replaces evil-window-rotate-downwards
-    (define-key evil-window-map "u" 'winner-undo)              ; was unused
-    (define-key evil-window-map "-" 'ace-window)               ; was unused
-
-    ;; More Esc quits
-    (define-key evil-normal-state-map [escape] 'keyboard-quit)
-    (define-key evil-visual-state-map [escape] 'keyboard-quit)
-    (define-key evil-insert-state-map [escape] 'evil-normal-state)
-    (global-set-key [escape] 'evil-exit-emacs-state)
-
-    (evil-define-key 'normal org-mode-map (kbd "<tab>") #'org-cycle)
-    )
 
 ** Server
 
