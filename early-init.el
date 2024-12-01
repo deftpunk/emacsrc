@@ -16,6 +16,20 @@
                               (time-subtract after-init-time before-init-time)))
                      gcs-done)))
 
+;; Uncomment and run use-package-report to get a basic profile of how long packages are taking to run.
+(setq use-package-compute-statistics t)
+
+;; https://github.com/LionyxML/lemacs/blob/995924f3aea3793e8a729b3a00f4a63ff2630274/early-init.el#L7
+(defun lemacs/avoid-initial-flash-of-light ()
+  "Avoid flash of light when starting Emacs."
+  (setq mode-line-format nil)
+  ;; These colors should match your selected theme for maximum effect
+  ;; Note that for catppuccin whenever we create a new frame or open it on terminal
+  ;; it is necessary to reload the theme.
+  (set-face-attribute 'mode-line nil :background "#1E1E2D" :foreground "#1E1E2D" :box 'unspecified))
+
+(lemacs/avoid-initial-flash-of-light)
+
 (defun load-env-file (file)
   "Read and set envvars from FILE."
   (if (null (file-exists-p file))
@@ -26,15 +40,10 @@
       (insert-file-contents file)
       (when-let (env (read (current-buffer)))
         (let ((tz (getenv-internal "TZ")))
-          (setq-default
-           process-environment
-           (append env (default-value 'process-environment))
-           exec-path
-           (append (split-string (getenv "PATH") path-separator t)
-                   (list exec-directory))
-           shell-file-name
-           (or (getenv "SHELL")
-               (default-value 'shell-file-name)))
+          (setq-default process-environment (append env (default-value 'process-environment))
+                        exec-path (append (split-string (getenv "PATH") path-separator t)
+                                          (list exec-directory))
+                        shell-file-name (or (getenv "SHELL") (default-value 'shell-file-name)))
           (when-let (newtz (getenv-internal "TZ"))
             (unless (equal tz newtz)
               (set-time-zone-rule newtz))))
@@ -43,13 +52,13 @@
 (load-env-file "~/.emacs.d/var/env.el")
 
 ;; Mostly prevents libgccjit errors; manually setting to the latest gcc path is brittle.
-;; I had to uninstall/re-install, then run `emacs -nw` to get the native-comp to work properly.
+;; I had to update the path below to the latest gcc/libgccjit, uninstall/re-install emacs-plus, then run `emacs -nw` to get the native-comp to work properly.
 ;; Solution found at: https://github.com/d12frosted/homebrew-emacs-plus/issues/554
 (setenv "LIBRARY_PATH"
         (string-join
-         '("/opt/homebrew/opt/gcc/lib/gcc/13"
-           "/opt/homebrew/opt/libgccjit/lib/gcc/13"
-           "/opt/homebrew/opt/gcc/lib/gcc/13/gcc/aarch64-apple-darwin21/13")
+         '("/opt/homebrew/lib/gcc/current"
+           "/opt/homebrew/opt/libgccjit/lib/gcc/14"
+           "/opt/homebrew/opt/gcc/lib/gcc/14/gcc/aarch64-apple-darwin21/14")
          ":"))
 
 ;; Use plists for deserialization for lsp-mode
@@ -71,8 +80,7 @@
         (add-to-list 'native-comp-eln-load-path (convert-standard-filename (expand-file-name "var/eln-cache/" user-emacs-directory)))
       (startup-redirect-eln-cache (convert-standard-filename (expand-file-name "var/eln-cache/" user-emacs-directory))))))
 
-(setq-default auto-window-vscroll nil
-              bidi-display-reordering 'left-to-right
+(setq-default bidi-display-reordering 'left-to-right
               bidi-paragraph-direction 'left-to-right
               frame-inhibit-implied-resize t
               inhibit-default-init t
@@ -154,6 +162,9 @@
 ;; 2023-08-11T22:19:27 > this looks funky w/out a tiling window manager.
 ;; (add-to-list 'default-frame-alist '(undecorated . t))
 
+(setq frame-resize-pixelwise t
+      frame-inhibit-implied-resize t)
+
 (setq default-input-method nil
       utf-translate-cjk-mode nil)
 (set-language-environment 'utf-8)
@@ -197,15 +208,22 @@
        ;; it to whatever you like .
        ))))
 
-;; Unbind some Super keys.
+;; Unbind some Super keys on my Mac
 (global-unset-key (kbd "s-a"))
+(global-unset-key (kbd "s-d"))
 (global-unset-key (kbd "s-f"))
 (global-unset-key (kbd "s-g"))
+(global-unset-key (kbd "s-h"))
 (global-unset-key (kbd "s-i"))
+(global-unset-key (kbd "s-j"))
+(global-unset-key (kbd "s-k"))
+(global-unset-key (kbd "s-m"))
 (global-unset-key (kbd "s-o"))
 (global-unset-key (kbd "s-p"))
 (global-unset-key (kbd "s-s"))
 (global-unset-key (kbd "s-t"))
+(global-unset-key (kbd "s-u"))
+(global-unset-key (kbd "s-w"))
 (global-unset-key (kbd "s-y"))
 
 (provide 'early-init)
