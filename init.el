@@ -1143,10 +1143,12 @@ Version 2019-10-22"
 (use-package dired+
   :ensure (dired+ :type git :host github :repo "emacsmirror/dired-plus"))
 
+;; 12/02/24 23:05:16 changed from :general to :bind in order to avoid "dired-subtree/:catch: Wrong
+;; type argument: listp, dired-subtree-toggle" error... ??
 (use-package dired-subtree
   :ensure t
-  :general
-  (:keymaps 'dired-mode-map
+  :after dired
+  :bind (:map dired-mode-map
             ("i" . dired-subtree-insert)
             (";" . dired-subtree-remove)
             ("<tab>" . dired-subtree-toggle)
@@ -2396,7 +2398,6 @@ _h_   _l_   _o_k        _y_ank       /,`.-'`'   .‗  \-;;,‗
   :config
   (key-chord-define-global "jk" 'execute-extended-command)
   (key-chord-define-global "hh" 'split-window-below)
-  (key-chord-define-global "vv" 'split-window-right)
-  (key-chord-define-global "  " 'deftpunk-leader/body))
+  (key-chord-define-global "vv" 'split-window-right))
 
 (server-start)

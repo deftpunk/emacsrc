@@ -1913,13 +1913,17 @@ Saving and backing up files. While its nice to assume that everything is in sour
     :ensure (dired+ :type git :host github :repo "emacsmirror/dired-plus"))
 #+end_src
 
-**** dired-subtree
+**** [[https://github.com/Fuco1/dired-hacks/blob/master/dired-subtree.el][dired-subtree]]
+
+view/toggle subtrees(dirs) in dired.
 
 #+begin_src emacs-lisp :name dired-subtree
+  ;; 12/02/24 23:05:16 changed from :general to :bind in order to avoid "dired-subtree/:catch: Wrong
+  ;; type argument: listp, dired-subtree-toggle" error... ??
   (use-package dired-subtree
     :ensure t
-    :general
-    (:keymaps 'dired-mode-map
+    :after dired
+    :bind (:map dired-mode-map
               ("i" . dired-subtree-insert)
               (";" . dired-subtree-remove)
               ("<tab>" . dired-subtree-toggle)
@@ -3889,8 +3893,7 @@ I use something similar in Neovim to bring up ":"
     :config
     (key-chord-define-global "jk" 'execute-extended-command)
     (key-chord-define-global "hh" 'split-window-below)
-    (key-chord-define-global "vv" 'split-window-right)
-    (key-chord-define-global "  " 'deftpunk-leader/body))
+    (key-chord-define-global "vv" 'split-window-right))
 #+end_src
 
 ** Server
