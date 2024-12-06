@@ -2259,6 +2259,16 @@ Found here: https://www.lucacambiaghi.com/vanilla-emacs/readme.html#h:8BB05594-D
     (elfeed-org))
 #+end_src
 
+*** [[https://github.com/redguardtoo/evil-nerd-commenter][evil-nerd-commenter]]
+
+A Nerd Commenter emulation, help you comment code efficiently... with or without using evil mode.
+
+#+begin_src emacs-lisp :name evil-nerd-commenter
+  (use-package evil-nerd-commenter
+    :config
+    (evilnc-default-hotkeys))
+#+end_src
+
 *** [[https://github.com/magnars/expand-region.el][expand-region]]
 
 Expand the selected region by semantic units.
