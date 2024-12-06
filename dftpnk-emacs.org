@@ -1138,7 +1138,11 @@ Hide the modeline for certain buffers, e.g. shells, terminals
 #+begin_src emacs-lisp :name hide-modeline-mode
   (use-package hide-mode-line
     :ensure (:host github :repo "hlissner/emacs-hide-mode-line" :main "hide-mode-line.el")
-    :hook ((completion-list-mode . hide-mode-line-mode))
+    :hook (((completion-list-mode
+             eshell-mode shell-mode
+             term-mode vterm-mode
+             lsp-ui-menu-mode
+             pdf-annot-list-mode) . hide-mode-line-mode))
     :config
     (hide-mode-line-mode))
 #+end_src
