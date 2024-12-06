@@ -2411,7 +2411,7 @@ Project management for Emacs
 
 **** [[https://gitlab.com/OlMon/consult-projectile][consult-projectile]]
 
-Incorporate projectile into consult
+Incorporate projectile into consult.  This plus persp-projectile allows us to quickly switch between projects+perspectives
 
 #+begin_src emacs-lisp :name consult-projectile
   (use-package consult-projectile
@@ -3561,8 +3561,8 @@ Yaml minor mode.
 
 #+begin_src emacs-lisp :name yaml-mode
   (use-package yaml-mode
-    :config
-    (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
+    :mode "\\.y[a]ml\\'"
+    :mode "\\.y[a]ml\\.j2\\'")
 #+end_src
 
 **** [[https://github.com/zkry/yaml-pro][yaml-pro]]
