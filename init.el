@@ -563,7 +563,11 @@
 
 (use-package hide-mode-line
   :ensure (:host github :repo "hlissner/emacs-hide-mode-line" :main "hide-mode-line.el")
-  :hook ((completion-list-mode . hide-mode-line-mode))
+  :hook (((completion-list-mode
+           eshell-mode shell-mode
+           term-mode vterm-mode
+           lsp-ui-menu-mode
+           pdf-annot-list-mode) . hide-mode-line-mode))
   :config
   (hide-mode-line-mode))
 
@@ -1369,6 +1373,10 @@ Version 2019-10-22"
   (setq rmh-elfeed-org-files (list (expand-file-name deftpunk--etc-dir "elfeed.org")))
   (elfeed-org))
 
+(use-package evil-nerd-commenter
+  :config
+  (evilnc-default-hotkeys))
+
 (use-package expand-region
   :bind ("C-=" . er/expand-region))
 
@@ -2131,8 +2139,8 @@ Version 2019-10-22"
   :mode "Dockerfile.*\\'")
 
 (use-package yaml-mode
-  :config
-  (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
+  :mode "\\.y[a]ml\\'"
+  :mode "\\.y[a]ml\\.j2\\'")
 
 (use-package yaml-pro
   :hook (yaml-mode . yaml-ts-mode-hook)
