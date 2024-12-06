@@ -1910,7 +1910,9 @@ Saving and backing up files. While its nice to assume that everything is in sour
                                            (find-alternate-file ".."))))  ; was dired-up-directory
 #+end_src
 
-**** dired-plus
+**** [[https://github.com/emacsmirror/dired-plus/blob/master/dired%2B.el][dired-plus]]
+
+Many extensions to dired by the prolific Drew Adams.
 
 #+begin_src emacs-lisp :name dired-plus
   (use-package dired+
