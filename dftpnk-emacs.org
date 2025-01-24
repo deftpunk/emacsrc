@@ -16,6 +16,7 @@ My notes for installing from scratch.
 Dependencies:
 - zsh + oh-my-zsh
 - git
+- trash
 - delta
 - ripgrep
 - cmake   -> for compiling libvterm
@@ -3681,7 +3682,7 @@ TODO: Use consult to choose multi-vterms.  See =multi-vterm-project-root= functi
   (global-set-key "%" 'match-paren)
 #+end_src
 
-*** Making escape do more quiting.
+*** Making escape do more quiting & make C-g more helpful
 
 I might as well take advantage of my Neovim habit.
 
