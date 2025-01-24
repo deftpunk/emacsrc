@@ -2619,7 +2619,6 @@ Visual feedback to some operations.
     :hook ((prog-mode text-mode) . volatile-highlights-mode)
     :config)
 
-
 *** [[https://github.com/casouri/vundo][vundo]]
 
 Vundo (visual undo) displays the undo history as a tree and lets you move in the tree to go back to
@@ -2629,6 +2628,8 @@ previous buffer states.
   (use-package vundo
     :commands (vundo)
     :ensure (vundo :type git :host github :repo "casouri/vundo")
+    :bind
+    (("C-s-u" . vundo))
     :custom
     ;; Take less on-screen space.
     (vundo-compact-display t)
@@ -2653,9 +2654,7 @@ previous buffer states.
     (define-key vundo-mode-map (kbd "<end>") #'vundo-stem-end)
     (define-key vundo-mode-map (kbd "q") #'vundo-quit)
     (define-key vundo-mode-map (kbd "C-g") #'vundo-quit)
-    (define-key vundo-mode-map (kbd "RET") #'vundo-confirm)
-
-    (global-define-key (kbd "C-M-u") 'vundo))
+    (define-key vundo-mode-map (kbd "RET") #'vundo-confirm))
 #+end_src
 
 *** [[https://github.com/mhayashi1120/Emacs-wgrep][wgrep]]
