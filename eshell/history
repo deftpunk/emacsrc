@@ -1,0 +1,4 @@
+l
+ls
+diff init.el.minimal init.el
+exit

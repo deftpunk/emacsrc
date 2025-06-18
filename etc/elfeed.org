@@ -1,0 +1,18 @@
+* Blogs  :elfeed:
+
+** Fun  :fun:
+
+*** https://xkcd.com/rss.xml
+
+** Software Development  :dev:
+
+*** Emacs  :emacs:mustread:
+
+
+**** http://terminally-incoherent.com/blog/feed
+
+**** http://nullprogram.com/feed
+
+**** http://planet.emacsen.org/atom.
+
+**** http://www.reddit.com/r/emacs.rss
