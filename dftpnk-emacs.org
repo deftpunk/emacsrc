@@ -1,6 +1,6 @@
 #+title Deftpunk Emacs
 #+author: Erick Bodine <erick.bodine@gmail.com>
-#+property: header-args :tangle "/Users/bodine/MyStuff/dftpunk-emacs/init.el"
+#+property: header-args :tangle "/Users/ebodine/MyStuff/dftpunk-emacs/init.el"
 #+startup: content
 #+auto_tangle: t
 
@@ -42,7 +42,7 @@ Run =emacs --quick --script ~/.emacs.d/scripts/get-env.el= to generate the envir
 
 * Early-Init
 :properties:
-:header-args: :tangle "/Users/bodine/MyStuff/dftpunk-emacs/early-init.el"
+:header-args: :tangle "/Users/ebodine/MyStuff/dftpunk-emacs/early-init.el"
 :end:
 #+name: early-init-header-block
 #+begin_src emacs-lisp :exports none
@@ -385,7 +385,7 @@ Type =M-x elpaca-manager= to search, get info, etc.
 The Basics: https://www.youtube.com/watch?v=5Ud-TE3iIQY
 
 #+begin_src emacs-lisp :name elpaca
-  (defvar elpaca-installer-version 0.7)
+  (defvar elpaca-installer-version 0.11)
   (defvar elpaca-directory (expand-file-name "elpaca/" deftpunk--var-dir))
   (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
   (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))

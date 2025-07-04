@@ -45,8 +45,9 @@
 (setenv "LIBRARY_PATH"
         (string-join
          '("/opt/homebrew/lib/gcc/current"
-           "/opt/homebrew/opt/libgccjit/lib/gcc/14"
-           "/opt/homebrew/opt/gcc/lib/gcc/14/gcc/aarch64-apple-darwin21/14")
+           "/opt/homebrew/opt/libgccjit/lib/gcc/current"
+           "/opt/homebrew/opt/gcc/lib/gcc/current"
+           "/opt/homebrew/opt/gcc/lib/gcc/15/gcc/aarch64-apple-darwin24/15")
          ":"))
 
 ;; Use plists for deserialization for lsp-mode
