@@ -6,6 +6,7 @@
 
 # Backup files
 *~
+*.bak
 
 # ignore broken files
 *.broken
@@ -24,6 +25,8 @@ var/
 eln-cache/
 straight/
 auto-save-list/
+elpaca/
+undo-fu-session/
 
 # We can't get these through melpa so I git clone them.  I don't like submodules.
 emacswikilibs/

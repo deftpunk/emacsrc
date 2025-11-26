@@ -24,11 +24,11 @@
 (defconst IS-LINUX (eq system-type 'gnu/linux))
 
 (defvar elpaca-installer-version 0.11)
-(defvar elpaca-directory (expand-file-name "elpaca/" deftpunk--var-dir))
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                              :ref nil :depth 1
+                              :ref nil :depth 1 :inherit ignore
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
                               :build (:not elpaca--activate-package)))
 (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
@@ -38,60 +38,62 @@
   (add-to-list 'load-path (if (file-exists-p build) build repo))
   (unless (file-exists-p repo)
     (make-directory repo t)
-    (when (< emacs-major-version 28) (require 'subr-x))
+    (when (<= emacs-major-version 28) (require 'subr-x))
     (condition-case-unless-debug err
-        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                 ((zerop (call-process "git" nil buffer t "clone"
-                                       (plist-get order :repo) repo)))
-                 ((zerop (call-process "git" nil buffer t "checkout"
-                                       (or (plist-get order :ref) "--"))))
-                 (emacs (concat invocation-directory invocation-name))
-                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                 ((require 'elpaca))
-                 ((elpaca-generate-autoloads "elpaca" repo)))
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
             (progn (message "%s" (buffer-string)) (kill-buffer buffer))
           (error "%s" (with-current-buffer buffer (buffer-string))))
       ((error) (warn "%s" err) (delete-directory repo 'recursive))))
   (unless (require 'elpaca-autoloads nil t)
     (require 'elpaca)
     (elpaca-generate-autoloads "elpaca" repo)
-    (load "./elpaca-autoloads")))
+    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
-;; Install a package via the elpaca macro
-;; See the "recipes" section of the manual for more details.
+  ;; Install a package via the elpaca macro
+  ;; See the "recipes" section of the manual for more details.
 
-;; (elpaca example-package)
+  ;; (elpaca example-package)
 
-;; Install use-package support
-(elpaca elpaca-use-package
-  ;; Enable :elpaca use-package keyword.
-  (elpaca-use-package-mode)
-  ;; Assume :elpaca t unless otherwise specified.
-  (setq elpaca-use-package-by-default t))
+  ;; Install use-package support
+  (elpaca elpaca-use-package
+    ;; Enable :elpaca use-package keyword.
+    (elpaca-use-package-mode)
+    ;; Assume :elpaca t unless otherwise specified.
+    (setq elpaca-use-package-by-default t))
 
-;; Block until current queue processed.
-(elpaca-wait)
+  ;; Block until current queue processed.
+  (elpaca-wait)
 
-;;When installing a package which modifies a form used at the top-level
-;;(e.g. a package which adds a use-package key word),
-;;use `elpaca-wait' to block until that package has been installed/configured.
-;;For example:
-;;(use-package general :demand t)
-;;(elpaca-wait)
+  ;;When installing a package which modifies a form used at the top-level
+  ;;(e.g. a package which adds a use-package key word),
+  ;;use `elpaca-wait' to block until that package has been installed/configured.
+  ;;For example:
+  ;;(use-package general :demand t)
+  ;;(elpaca-wait)
 
-;; Expands to: (elpaca evil (use-package evil :demand t))
-;; (use-package evil :demand t)
+  ;; Expands to: (elpaca evil (use-package evil :demand t))
+  ;; (use-package evil :demand t)
 
-;;Turns off elpaca-use-package-mode current declaration
-;;Note this will cause the declaration to be interpreted immediately (not deferred).
-;;Useful for configuring built-in emacs features.
-;; (use-package emacs :elpaca nil :config (setq ring-bell-function #'ignore))
+  ;;Turns off elpaca-use-package-mode current declaration
+  ;;Note this will cause the declaration to be interpreted immediately (not deferred).
+  ;;Useful for configuring built-in emacs features.
+  ;; (use-package emacs :elpaca nil :config (setq ring-bell-function #'ignore))
 
-;; Don't install anything. Defer execution of BODY
-;; (elpaca nil (message "deferred"))
+  ;; Don't install anything. Defer execution of BODY
+  ;; (elpaca nil (message "deferred"))
 
 (use-package general)
 
@@ -363,7 +365,8 @@
 ;;(set-face-attribute 'default nil :font "Victor Mono" :height 110)
 ;;(set-fontset-font t nil "Menlo" nil 'append) ; fallback font
 
-(use-package all-the-icons)
+(use-package all-the-icons
+  :if (display-graphic-p))
 
 (use-package nerd-icons
   :ensure t)
@@ -446,72 +449,13 @@
                         :family "Hack Nerd Font"
                         :height 110)))
 
-(use-package doom-themes
-  :ensure t
+(use-package modus-catppuccin
+  :ensure (modus-catppuccin :type git
+                            :host gitlab
+                            :repo "magus/modus-catppuccin"
+                            :branch "main")
   :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-
-  ;; (load-theme 'doom-solarized-light t)
-
-  ;; Enable flashing mode-line on errors
-  (doom-themes-visual-bell-config)
-
-  ;; or for treemacs users
-  (setq doom-themes-treemacs-theme "doom-colors") ; use "doom-colors" for less minimal icon theme
-  (doom-themes-treemacs-config)
-
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config))
-
-(use-package ef-themes
-  :custom
-  (ef-themes-mixed-fonts t)
-  (ef-themes-variable-pitch-ui t)
-  :config
-  (load-theme 'ef-light t)
-  )
-
-(use-package solarized-theme
-  :init
-  ;; make the fringe stand out from the background
-  (setq solarized-distinct-fringe-background t)
-
-  ;; Don't change the font for some headings and titles
-  (setq solarized-use-variable-pitch t)
-
-  ;; make the modeline high contrast
-  (setq solarized-high-contrast-mode-line nil)
-
-  ;; Use less bolding
-  (setq solarized-use-less-bold nil)
-
-  ;; Use more italics
-  (setq solarized-use-more-italic t)
-
-  ;; Use less colors for indicators such as git:gutter, flycheck and similar
-  (setq solarized-emphasize-indicators t)
-
-  ;; Don't change size of org-mode headlines (but keep other size-changes)
-  (setq solarized-scale-org-headlines t)
-
-  ;; Change the size of markdown-mode headlines (off by default)
-  (setq solarized-scale-markdown-headlines t)
-
-  ;; Avoid all font-size changes
-  ;; (setq solarized-height-minus-1 1.0)
-  ;; (setq solarized-height-plus-1 1.0)
-  ;; (setq solarized-height-plus-2 1.0)
-  ;; (setq solarized-height-plus-3 1.0)
-  ;; (setq solarized-height-plus-4 1.0)
-
-  ;; Highlight all numbers
-  (setq solarized-highlight-numbers t)
-
-  :config
-  ;; (load-theme 'solarized-light t)
-  )
+  (load-theme 'catppuccin-mocha :no-confirm))
 
 (use-package minibuffer
   :ensure nil
@@ -1255,7 +1199,6 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
               ("C-c C-c" . wgrep-finish-edit)))
 
 (use-package ws-butler
-  :ensure (ws-butler :type git :host github :repo "hlissner/ws-butler")
   :blackout t
   :hook ((text-mode . ws-butler-mode)
          (prog-mode . ws-butler-mode))
@@ -1337,6 +1280,12 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
 ;; More "keep off my modeline"
 (with-eval-after-load 'org-indent
   (blackout 'org-indent-mode))
+
+;; Turn off flycheck in our Org src blocks for elisp
+(defun disable-fylcheck-in-org-src-block ()
+  (setq-local flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
+
+(add-hook 'org-src-mode-hook 'disable-fylcheck-in-org-src-block)
 
 (use-package org-auto-tangle
   :hook (org-mode . org-auto-tangle-mode))
@@ -1760,9 +1709,19 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
 (use-package consult-flycheck
   :after (consult flycheck))
 
-(use-package flycheck-overlay
-  :ensure (flycheck-overlay :type git :host github :repo "konrad1977/flycheck-overlay")
-  :hook (flycheck-mode . flycheck-overlay-mode))
+(use-package flyover
+  :ensure (flyover :type git
+                   :host github
+                   :repo "konrad1977/flyover")
+  :hook (flycheck-mode . flyover-mode)
+  :custom
+  (flyover-checkers '(flycheck))
+  (flyover-wrap-messages t)
+  (flyover-max-line-length 79)
+  (flyover-virtual-line-type 'bold-arrow)
+  (flyover-hide-checker-name t)
+  (flyover-show-at-eol nil)
+  )
 
 (use-package highlight-defined
   :defer t
@@ -1836,8 +1795,10 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
   (projectile-mode +1))
 
 (use-package consult-projectile
-  ;; :bind (("s-p" . consult-projectile))
-  :ensure (consult-projectile :type git :host gitlab :repo "OlMon/consult-projectile" :branch "master"))
+  :ensure (consult-projectile :type git
+                              :host gitlab
+                              :repo "OlMon/consult-projectile"
+                              :branch "master"))
 
 (use-package rg)
 

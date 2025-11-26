@@ -4,8 +4,6 @@
 #+startup: content
 #+auto_tangle: t
 
-04/29/25 15:29:24 - vterm not working and warning from git-link
-
 * About
 
 My version of Emacs for MacOS - an attempt to be more minimalistic &
@@ -21,13 +19,15 @@ Dependencies:
 - trash
 - delta
 - ripgrep
-- cmake   -> for compiling libvterm
+- cmake
+- jinx, enchant
 - building emacs-lsp-booster
   - clone the repo
   - update Rust toolchain -> rustup update
   - cargo build --release
   - cp target/release/emacs-lsp-booster to $PATH
 - clone and build libvterm
+- font-hack-nerd-font
 
 GPG:
 - brew install gpg2 pinentry-mac
@@ -42,6 +42,8 @@ I am using emacs-plus: https://github.com/d12frosted/homebrew-emacs-plus
 Clone this dotfiles repository.
 
 Run =emacs --quick --script ~/.emacs.d/scripts/get-env.el= to generate the environment variables file.
+
+After package installations and dynamic lib compilations run `all-the-icons-install-fonts`
 
 * Early-Init
 :properties:
@@ -238,42 +240,44 @@ The Manual: https://github.com/progfolio/elpaca/blob/master/doc/manual.md
 use-package manual: https://www.gnu.org/software/emacs/manual/html_node/use-package/index.html#SEC_Contents
 
 #+begin_src emacs-lisp :name elpaca
-  (defvar elpaca-installer-version 0.11)
-  (defvar elpaca-directory (expand-file-name "elpaca/" deftpunk--var-dir))
-  (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-  (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-  (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                                :ref nil :depth 1
-                                :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                                :build (:not elpaca--activate-package)))
-  (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-         (build (expand-file-name "elpaca/" elpaca-builds-directory))
-         (order (cdr elpaca-order))
-         (default-directory repo))
-    (add-to-list 'load-path (if (file-exists-p build) build repo))
-    (unless (file-exists-p repo)
-      (make-directory repo t)
-      (when (< emacs-major-version 28) (require 'subr-x))
-      (condition-case-unless-debug err
-          (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                   ((zerop (call-process "git" nil buffer t "clone"
-                                         (plist-get order :repo) repo)))
-                   ((zerop (call-process "git" nil buffer t "checkout"
-                                         (or (plist-get order :ref) "--"))))
-                   (emacs (concat invocation-directory invocation-name))
-                   ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                         "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                   ((require 'elpaca))
-                   ((elpaca-generate-autoloads "elpaca" repo)))
-              (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-            (error "%s" (with-current-buffer buffer (buffer-string))))
-        ((error) (warn "%s" err) (delete-directory repo 'recursive))))
-    (unless (require 'elpaca-autoloads nil t)
-      (require 'elpaca)
-      (elpaca-generate-autoloads "elpaca" repo)
-      (load "./elpaca-autoloads")))
-  (add-hook 'after-init-hook #'elpaca-process-queues)
-  (elpaca `(,@elpaca-order))
+(defvar elpaca-installer-version 0.11)
+(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
+(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
+                              :ref nil :depth 1 :inherit ignore
+                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
+                              :build (:not elpaca--activate-package)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+       (build (expand-file-name "elpaca/" elpaca-builds-directory))
+       (order (cdr elpaca-order))
+       (default-directory repo))
+  (add-to-list 'load-path (if (file-exists-p build) build repo))
+  (unless (file-exists-p repo)
+    (make-directory repo t)
+    (when (<= emacs-major-version 28) (require 'subr-x))
+    (condition-case-unless-debug err
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
+            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
+          (error "%s" (with-current-buffer buffer (buffer-string))))
+      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
+  (unless (require 'elpaca-autoloads nil t)
+    (require 'elpaca)
+    (elpaca-generate-autoloads "elpaca" repo)
+    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
+(add-hook 'after-init-hook #'elpaca-process-queues)
+(elpaca `(,@elpaca-order))
 
   ;; Install a package via the elpaca macro
   ;; See the "recipes" section of the manual for more details.
@@ -669,7 +673,8 @@ https://archive.casouri.cc/note/2021/fontset/index.html
 Make Emacs pretty. Don't forget to run =M-x all-the-icons-install-fonts= if this is a new install.  Used by treemacs.
 
 #+begin_src emacs-lisp :name all_the_icons
-  (use-package all-the-icons)
+  (use-package all-the-icons
+    :if (display-graphic-p))
 #+end_src
 
 *** [[https://github.com/ryanoasis/nerd-fonts][nerd-icons]]
@@ -788,83 +793,18 @@ If you want to use these commands, then you should bind them in hl-todo-mode-map
                           :height 110)))
 #+end_src
 
-*** [[https://github.com/doomemacs/themes][Doom themes]]
+*** [[https://gitlab.com/magus/modus-catppuccin][modus-catppuccin]]
 
-#+begin_src emacs-lisp :name doom-themes
-  (use-package doom-themes
-    :ensure t
+A catppuccin theme based on modus.
+
+#+begin_src emacs-lisp :name modus-catppuccin
+  (use-package modus-catppuccin
+    :ensure (modus-catppuccin :type git
+                              :host gitlab
+                              :repo "magus/modus-catppuccin"
+                              :branch "main")
     :config
-    ;; Global settings (defaults)
-    (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-          doom-themes-enable-italic t) ; if nil, italics is universally disabled
-
-    ;; (load-theme 'doom-solarized-light t)
-
-    ;; Enable flashing mode-line on errors
-    (doom-themes-visual-bell-config)
-
-    ;; or for treemacs users
-    (setq doom-themes-treemacs-theme "doom-colors") ; use "doom-colors" for less minimal icon theme
-    (doom-themes-treemacs-config)
-
-    ;; Corrects (and improves) org-mode's native fontification.
-    (doom-themes-org-config))
-#+end_src
-
-*** [[https://github.com/protesilaos/ef-themes][ef-themes]]
-
-#+begin_src emacs-lisp :name ef-themes
-  (use-package ef-themes
-    :custom
-    (ef-themes-mixed-fonts t)
-    (ef-themes-variable-pitch-ui t)
-    :config
-    (load-theme 'ef-light t)
-    )
-#+end_src
-
-*** [[https://github.com/bbatsov/solarized-emacs?tab=readme-ov-file][solarized]]
-
-#+begin_src emacs-lisp :name solarized
-  (use-package solarized-theme
-    :init
-    ;; make the fringe stand out from the background
-    (setq solarized-distinct-fringe-background t)
-
-    ;; Don't change the font for some headings and titles
-    (setq solarized-use-variable-pitch t)
-
-    ;; make the modeline high contrast
-    (setq solarized-high-contrast-mode-line nil)
-
-    ;; Use less bolding
-    (setq solarized-use-less-bold nil)
-
-    ;; Use more italics
-    (setq solarized-use-more-italic t)
-
-    ;; Use less colors for indicators such as git:gutter, flycheck and similar
-    (setq solarized-emphasize-indicators t)
-
-    ;; Don't change size of org-mode headlines (but keep other size-changes)
-    (setq solarized-scale-org-headlines t)
-
-    ;; Change the size of markdown-mode headlines (off by default)
-    (setq solarized-scale-markdown-headlines t)
-
-    ;; Avoid all font-size changes
-    ;; (setq solarized-height-minus-1 1.0)
-    ;; (setq solarized-height-plus-1 1.0)
-    ;; (setq solarized-height-plus-2 1.0)
-    ;; (setq solarized-height-plus-3 1.0)
-    ;; (setq solarized-height-plus-4 1.0)
-
-    ;; Highlight all numbers
-    (setq solarized-highlight-numbers t)
-
-    :config
-    ;; (load-theme 'solarized-light t)
-    )
+    (load-theme 'catppuccin-mocha :no-confirm))
 #+end_src
 
 ** Minibuffer
@@ -1983,7 +1923,6 @@ Unobtrusively trim spaces from the end of a line on save.
 
 #+begin_src emacs-lisp :name ws-butler
   (use-package ws-butler
-    :ensure (ws-butler :type git :host github :repo "hlissner/ws-butler")
     :blackout t
     :hook ((text-mode . ws-butler-mode)
            (prog-mode . ws-butler-mode))
@@ -2073,6 +2012,12 @@ General configuration of org mode.
   ;; More "keep off my modeline"
   (with-eval-after-load 'org-indent
     (blackout 'org-indent-mode))
+
+  ;; Turn off flycheck in our Org src blocks for elisp
+  (defun disable-fylcheck-in-org-src-block ()
+    (setq-local flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
+
+  (add-hook 'org-src-mode-hook 'disable-fylcheck-in-org-src-block)
 #+end_src
 
 *** [[https://github.com/yilkalargaw/org-auto-tangle][org-auto-tangle]]
@@ -2779,9 +2724,19 @@ Integrates consult and flycheck with the =consult-flycheck= command.  The follow
 A modern overlay display for flycheck.
 
 #+begin_src emacs-lisp :name flycheck-overlay
-  (use-package flycheck-overlay
-    :ensure (flycheck-overlay :type git :host github :repo "konrad1977/flycheck-overlay")
-    :hook (flycheck-mode . flycheck-overlay-mode))
+  (use-package flyover
+    :ensure (flyover :type git
+                     :host github
+                     :repo "konrad1977/flyover")
+    :hook (flycheck-mode . flyover-mode)
+    :custom
+    (flyover-checkers '(flycheck))
+    (flyover-wrap-messages t)
+    (flyover-max-line-length 79)
+    (flyover-virtual-line-type 'bold-arrow)
+    (flyover-hide-checker-name t)
+    (flyover-show-at-eol nil)
+    )
 #+end_src
 
 **** [[https://github.com/Fanael/highlight-defined][highlight-defined]]
@@ -2895,8 +2850,10 @@ Incorporate projectile into consult.  This plus persp-projectile allows us to qu
 
 #+begin_src emacs-lisp :name consult-projectile
   (use-package consult-projectile
-    ;; :bind (("s-p" . consult-projectile))
-    :ensure (consult-projectile :type git :host gitlab :repo "OlMon/consult-projectile" :branch "master"))
+    :ensure (consult-projectile :type git
+                                :host gitlab
+                                :repo "OlMon/consult-projectile"
+                                :branch "master"))
 #+end_src
 
 ***** [[https://github.com/dajva/rg.el][rg]]
@@ -2963,7 +2920,9 @@ https://ebzzry.com/en/emacs-pairs/ - comprehensive article about smartparens and
 
 *** Elisp
 
+*** Golang
 
+*** Rust
 
 *** Nim
 
@@ -3241,8 +3200,6 @@ A CSV mode that is in GNU ELPA for editing comma/char separated values.
       "s" '(csv-sort-fields :which-key "Sort fields lexicographically.")
       "n" '(csv-sort-numeric-fields :which-key "Sort fields numerically.")))
 #+end_src
-
-*** Emacs Lisp
 
 ** Miscellaneous file types
 
