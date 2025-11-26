@@ -961,6 +961,9 @@ Version 2019-10-22"
 
 (use-package company
   :hook (after-init . global-company-mode)
+  :general
+  (:keymaps 'company-active-map
+            "C-w" #'company-abort)  ;; so that I can quickly exit.
   :custom
   (company-idle-delay 0.0)
   (company-minimum-prefix-length 1)
@@ -1429,6 +1432,7 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
          (magit-post-refresh . diff-hl-magit-post-refresh))
   :custom
   (diff-hl-draw-borders nil)
+  (diff-hl-update-async t)
   :config
 
   ;; From Doom:
@@ -1444,6 +1448,11 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
   (global-diff-hl-mode))
 
 (use-package git-link
+  :general
+  (deftpunk-leader-def
+    "gl" '(git-link :which-key "URL for the current file location at current line number or active region")
+    "gc" '(git-link-commit :which-key "URL for the commit at point.")
+    "gh" '(git-link-homepage :which-key "URL for the repository's homepage."))
   :custom
   (git-link-open-in-browser t))
 
@@ -1551,6 +1560,9 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
 
 (setq-default display-line-numbers-width 3)
 (setq-default display-line-numbers-widen t)
+
+;; Make xref faster.
+(setq xref-search-program 'ripgrep)
 
 (use-package devdocs-browser
   :commands (devdocs-browser-open)
@@ -1732,7 +1744,7 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
 ;; Turning off in python mode for now - my current Emacs on Mac doesn't support :stipple
 (use-package indent-bars
   :ensure (indent-bars :type git :host github :repo "jdtsmith/indent-bars")
-  :hook ((python-mode yaml-mode) . indent-bars-mode)
+  :hook ((python-ts-mode python-mode yaml-mode) . indent-bars-mode)
   :custom
   (indent-bars-no-descend-lists t) ; no extra bars in continued func arg lists
   (indent-bars-treesit-support t)
@@ -1746,7 +1758,15 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
   ;;				      dictionary dictionary_comprehension
   ;;				      parenthesized_expression subscript)))
   ;; :hook ((python-base-mode yaml-mode) . indent-bars-mode)
-  )
+  :init
+  (setq indent-bars-color '(highlight :face-bg t :blend 0.2)
+        indent-bars-pattern "."
+        indent-bars-width-frac 0.1
+        indent-bars-pad-frac 0.1
+        indent-bars-zigzag nil
+        ;; indent-bars-color-by-depth '(:face default :blend 0.5)
+        indent-bars-highlight-current-depth nil
+        indent-bars-display-on-blank-lines nil))
 
 (use-package lispy)
 
@@ -2340,6 +2360,13 @@ The DWIM behaviour of this command is as follows:
 
 (deftpunk-toggle-bindings
  "l" '("Flycheck overlay" . flycheck-overlay-toggle))
+
+(general-create-definer deftpunk-goto
+  :keymaps 'override
+  :prefix "s-g")
+
+(deftpunk-goto
+ "g" '("Go to line" . goto-line-preview))
 
 (deftpunk-leader-def
   ;; Source Control bindings.
