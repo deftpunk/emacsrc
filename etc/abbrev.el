@@ -180,6 +180,7 @@
     ("indentiaon" "indentation" nil :count 1)
     ("ineracting" "interacting" nil :count 1)
     ("initall" "initial" nil :count 1)
+    ("initila" "initial" nil :count 1)
     ("injurey" "injury" nil :count 1)
     ("inot" "into" nil :count 1)
     ("instaead" "instead" nil :count 1)
