@@ -111,6 +111,10 @@
   :keymaps 'override
   :prefix "C-;")
 
+(general-create-definer deftpunk-source-control
+  :keymaps 'override
+  :prefix "C-c g")
+
 (use-package blackout)
 (elpaca-wait)
 
@@ -657,6 +661,49 @@
 ;; Revert buffers when the underlying file has changed.
 (global-auto-revert-mode 1)
 
+(defvar --backup-directory (concat deftpunk--var-dir "backups"))
+(if (not (file-exists-p --backup-directory))
+    (make-directory --backup-directory t))
+
+;; https://www.emacswiki.org/emacs/BackupDirectory
+;; https://stackoverflow.com/questions/151945/how-do-i-control-how-emacs-makes-backup-files
+(defun force-backup-of-buffer ()
+  ;; Make a special "per session" backup at the first save of each
+  ;; emacs session.
+  (when (not buffer-backed-up)
+    ;; Override the default parameters for per-session backups.
+    (let ((backup-directory-alist '(("" . (concat --backup-directory "session-backups"))))
+          (kept-new-versions 3))
+      (backup-buffer)))
+  ;; Make a "per save" backup on each save.  The first save results in
+  ;; both a per-session and a per-save backup, to keep the numbering
+  ;; of per-save backups consistent.
+  (let ((buffer-backed-up nil))
+    (backup-buffer)))
+
+(add-hook 'before-save-hook  'force-backup-of-buffer)
+
+(setq backup-directory-alist `(("." . ,--backup-directory)))
+(setq make-backup-files t               ; backup of a file the first time it is saved.
+      backup-by-copying t               ; don't clobber symlinks
+      version-control t                 ; version numbers for backup files
+      delete-old-versions t             ; delete excess backup files silently
+      delete-by-moving-to-trash t
+      kept-old-versions 0               ; oldest versions to keep when a new numbered backup is made (default: 2)
+      kept-new-versions 9               ; newest versions to keep when a new numbered backup is made (default: 2)
+      auto-save-default t               ; auto-save every buffer that visits a file
+      auto-save-timeout 20              ; number of seconds idle time before auto-save (default: 30)
+      auto-save-interval 200            ; number of keystrokes between auto-saves (default: 300)
+      vc-make-backup-files t            ; backup versioned files as well.
+      )
+
+(setq auto-mode-alist
+      (append
+       (list
+        '("\\.\\(vcf\\|gpg\\)$" . sensitive-minor-mode)
+        )
+       auto-mode-alist))
+
 (column-number-mode 1)
 
 (after! compile
@@ -888,6 +935,14 @@ Version 2019-10-22"
                                          (interactive)
                                          (find-alternate-file ".."))))  ; was dired-up-directory
 
+(use-package consult-dir
+  :custom
+  (consult-dir-project-list-function #'consult-dir-projectile-dirs)
+  :bind (("C-x C-d" . consult-dir)
+         :map vertico-map
+         ("C-x C-d" . consult-dir)
+         ("C-x C-j" . consult-dir-jump-file)))
+
 (use-package dired+
   :ensure (dired+ :type git :host github :repo "emacsmirror/dired-plus"))
 
@@ -1101,6 +1156,8 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
   :config
   (winner-mode +1))
 
+(use-package windresize)
+
 (use-package emacs
   :ensure nil
   :config
@@ -1202,6 +1259,7 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
               ("C-c C-c" . wgrep-finish-edit)))
 
 (use-package ws-butler
+  :ensure (ws-butler :type git :host github :repo "hlissner/ws-butler")
   :blackout t
   :hook ((text-mode . ws-butler-mode)
          (prog-mode . ws-butler-mode))
@@ -1428,6 +1486,9 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
   :hook ((find-file . diff-hl-mode)
          (vc-dir-mode . diff-hl-dir-mode)
          (dired-mode . diff-hl-dired-mode)
+         (diff-hl-mode . (lambda ()
+                           (unless (display-graphic-p)
+                             (diff-hl-margin-local-mode))))
          (magit-pre-refresh . diff-hl-magit-pre-refresh)
          (magit-post-refresh . diff-hl-magit-post-refresh))
   :custom

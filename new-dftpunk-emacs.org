@@ -19,7 +19,7 @@ Dependencies:
 - trash
 - delta
 - ripgrep
-- cmake
+- cmake   -> for compiling libvterm
 - jinx, enchant
 - building emacs-lsp-booster
   - clone the repo
@@ -333,6 +333,10 @@ Better manage some keybindings.
   (general-create-definer deftpunk-local-leader-def
     :keymaps 'override
     :prefix "C-;")
+
+  (general-create-definer deftpunk-source-control
+    :keymaps 'override
+    :prefix "C-c g")
 #+end_src
 
 *** [[https://github.com/radian-software/blackout][Blackout]]
@@ -1067,6 +1071,60 @@ Use =auto-revert-tail-mode= to watch logfiles grow.
   ;; Revert buffers when the underlying file has changed.
   (global-auto-revert-mode 1)
 #+end_src
+*** [[https://emacsdocs.org/docs/emacs/Backup][backups]]
+
+If you want to avoid backups for a single file, you can use the following:
+#+begin_example
+# -*- backup-inhibited:1 -*-
+#+end_example
+https://www.gnu.org/software/emacs/manual/html_node/elisp/Making-Backups.html#index-backup_002dinhibited-2072
+
+
+#+begin_src emacs-lisp :name backups
+  (defvar --backup-directory (concat deftpunk--var-dir "backups"))
+  (if (not (file-exists-p --backup-directory))
+      (make-directory --backup-directory t))
+
+  ;; https://www.emacswiki.org/emacs/BackupDirectory
+  ;; https://stackoverflow.com/questions/151945/how-do-i-control-how-emacs-makes-backup-files
+  (defun force-backup-of-buffer ()
+    ;; Make a special "per session" backup at the first save of each
+    ;; emacs session.
+    (when (not buffer-backed-up)
+      ;; Override the default parameters for per-session backups.
+      (let ((backup-directory-alist '(("" . (concat --backup-directory "session-backups"))))
+            (kept-new-versions 3))
+        (backup-buffer)))
+    ;; Make a "per save" backup on each save.  The first save results in
+    ;; both a per-session and a per-save backup, to keep the numbering
+    ;; of per-save backups consistent.
+    (let ((buffer-backed-up nil))
+      (backup-buffer)))
+
+  (add-hook 'before-save-hook  'force-backup-of-buffer)
+
+  (setq backup-directory-alist `(("." . ,--backup-directory)))
+  (setq make-backup-files t               ; backup of a file the first time it is saved.
+        backup-by-copying t               ; don't clobber symlinks
+        version-control t                 ; version numbers for backup files
+        delete-old-versions t             ; delete excess backup files silently
+        delete-by-moving-to-trash t
+        kept-old-versions 0               ; oldest versions to keep when a new numbered backup is made (default: 2)
+        kept-new-versions 9               ; newest versions to keep when a new numbered backup is made (default: 2)
+        auto-save-default t               ; auto-save every buffer that visits a file
+        auto-save-timeout 20              ; number of seconds idle time before auto-save (default: 30)
+        auto-save-interval 200            ; number of keystrokes between auto-saves (default: 300)
+        vc-make-backup-files t            ; backup versioned files as well.
+        )
+
+  (setq auto-mode-alist
+        (append
+         (list
+          '("\\.\\(vcf\\|gpg\\)$" . sensitive-minor-mode)
+          )
+         auto-mode-alist))
+#+end_src
+
 *** [[https://www.gnu.org/software/emacs/manual/html_node/efaq/Displaying-the-current-line-or-column.html][column-number-mode]]
 
 #+begin_src emacs-lisp :name column-number-mode
@@ -1367,6 +1425,20 @@ Visually wrap lines in Emacs.
     (define-key dired-mode-map (kbd "^") (lambda ()
                                            (interactive)
                                            (find-alternate-file ".."))))  ; was dired-up-directory
+#+end_src
+
+*** [[https://github.com/karthink/consult-dir][consult-dired]]
+
+Easily insert directory paths into the minibuffer prompt in Emacs.
+
+#+begin_src emacs-lisp :name consult-dired
+  (use-package consult-dir
+    :custom
+    (consult-dir-project-list-function #'consult-dir-projectile-dirs)
+    :bind (("C-x C-d" . consult-dir)
+           :map vertico-map
+           ("C-x C-d" . consult-dir)
+           ("C-x C-j" . consult-dir-jump-file)))
 #+end_src
 
 *** [[https://github.com/emacsmirror/dired-plus/blob/master/dired%2B.el][dired-plus]]
@@ -1703,6 +1775,19 @@ TODO: Add version control buffers, e.g. magit, to =winner-boring-buffers= list
     (winner-mode +1))
 #+end_src
 
+
+*** [[https://elpa.gnu.org/packages/windresize.html][windresize]]
+
+Resize windows interactively.
+
+To use it, type M-x windresize; this enters put Emacs in a state
+where the up/down and left/right arrow keys resize the window
+dimensions.  To return Emacs to its ordinary state, type RET.
+
+#+begin_src emacs-lisp :name windresize
+  (use-package windresize)
+#+end_src
+
 *** [[https://github.com/lccambiaghi/vanilla-emacs#dont-close-windows-on-escape][don't-close-windows-on-escape]]
 
 Sometimes ESC kills my window layout. This advice prevents that from happening.
@@ -1926,6 +2011,7 @@ Unobtrusively trim spaces from the end of a line on save.
 
 #+begin_src emacs-lisp :name ws-butler
   (use-package ws-butler
+    :ensure (ws-butler :type git :host github :repo "hlissner/ws-butler")
     :blackout t
     :hook ((text-mode . ws-butler-mode)
            (prog-mode . ws-butler-mode))
@@ -2231,6 +2317,9 @@ A maintained indicator of git status on the left of the buffer - is supposed to 
     :hook ((find-file . diff-hl-mode)
            (vc-dir-mode . diff-hl-dir-mode)
            (dired-mode . diff-hl-dired-mode)
+           (diff-hl-mode . (lambda ()
+                             (unless (display-graphic-p)
+                               (diff-hl-margin-local-mode))))
            (magit-pre-refresh . diff-hl-magit-pre-refresh)
            (magit-post-refresh . diff-hl-magit-post-refresh))
     :custom
@@ -2253,7 +2342,7 @@ A maintained indicator of git status on the left of the buffer - is supposed to 
 
 *** [[https://github.com/sshaw/git-link][git-link]]
 
-Create URLs for files and commits
+Create and goto URLs for files and commits in a browser.
 
 #+begin_src emacs-lisp :name git-link
   (use-package git-link
@@ -2938,7 +3027,7 @@ https://ebzzry.com/en/emacs-pairs/ - comprehensive article about smartparens and
 #+end_src
 
 
-*** Elisp
+*** Emacs Lisp
 
 *** Golang
 
