@@ -6,7 +6,7 @@
 
 * About
 
-The thermonuclear editor.
+The thermonuclear editor of all editors.
 
 ** External dependencies
 
@@ -234,6 +234,7 @@ https://emacsnotes.wordpress.com/2022/09/11/three-bonus-keys-c-i-c-m-and-c-for-y
   (global-unset-key (kbd "s-i"))
   (global-unset-key (kbd "s-o"))
   (global-unset-key (kbd "s-s"))
+  (global-unset-key (kbd "s-t"))
 #+end_src
 
 * Init
@@ -358,28 +359,20 @@ Manage keybindings.
     :demand t
     :straight t)
 
-  ;; Leader key
-  (general-create-definer deftpunk-leader-def
-    :states '(normal)
-    :keymaps 'override
-    :prefix "SPC")
-
   ;; local leader
   ;; This allows for finer granularity than hydra-major-mode by binding to individual key maps.
   (general-create-definer deftpunk-local-leader-def
-    :states '(normal insert emacs)
     :keymaps 'override
-    :prefix ";"
-    :global-prefix "C-;")
+    :prefix "C-;")
 #+end_src
 
 *** [[https://github.com/abo-abo/hydra][hydra]]
 
 Make some bindings stick around.
 
-#+BEGIN_SRC emacs-lisp :name hydra
+#+begin_src emacs-lisp :name hydra
   (use-package hydra)
-#+END_SRC
+#+end_src
 
 *** [[https://github.com/justbur/emacs-which-key][which-key]]
 
@@ -400,6 +393,8 @@ Display keybindings following your prefix command in a popup.
 
 ** Initial packages and libraries
 
+Packages and libraries that are depended on by other packages.
+
 *** [[https://github.com/domtronn/all-the-icons.el][all-the-icons]]
 
 Make Emacs pretty. Don't forget to run =M-x all-the-icons-install-fonts= if this is a new install.
@@ -416,15 +411,21 @@ Set face classes, attributes and fonts.
 The last line fixes a bug in the code which prevents Org mode files from displaying properly, which
 is found on [[https://github.com/hlissner/doom-emacs/issues/4729][GitHub]].
 
+Cascadia Code Font:
+https://github.com/microsoft/cascadia-code/blob/main/README.md#to-enable-the-cursive-form-of-the-italic-heres-the-code-you-should-use
+
 #+begin_src emacs-lisp :name mixed-pitch
   (use-package mixed-pitch
     :blackout t
     :hook
     (text-mode . mixed-pitch-mode)
     :config
-    (set-face-attribute 'default nil :font "Anonymous Pro" :height 130)
-    (set-face-attribute 'fixed-pitch nil :font "Anonymous Pro")
-    (set-face-attribute 'variable-pitch nil :font "Anonymous Pro"))
+    (set-face-attribute 'default nil :font "Victor Mono" :height 110)
+    ;;(set-face-attribute 'default nil :font "Anonymous Pro" :height 130)
+    (set-face-attribute 'fixed-pitch nil :font "Victor Mono")
+    ;; (set-face-attribute 'fixed-pitch nil :font "Anonymous Pro")
+    (set-face-attribute 'variable-pitch nil :font "Victor Mono"))
+  ;; (set-face-attribute 'variable-pitch nil :font "Anonymous Pro"))
 #+end_src
 
 *** [[https://github.com/jerrypnz/major-mode-hydra.el][major-mode-hydra]]
@@ -548,6 +549,32 @@ Intercept and kickout the builtin Org version for something more recent.
 
 #+begin_src emacs-lisp :name org-contrib
 (straight-use-package '(org :host github :repo "emacs-straight/org-mode" :local-repo "org"))
+#+end_src
+
+*** [[https://www.emacswiki.org/emacs/AutoInsertMode][auto-insert]]
+
+Automatically insert text from a template into new files based on new file type.
+
+https://howardism.org/Technical/Emacs/templates-tutorial.html
+
+#+begin_src emacs-lisp :name auto-insert
+  (use-package autoinsert
+    :init
+    ;; Don't want to be prompted before insertion:
+    (setq auto-insert-query nil)
+
+    (setq auto-insert-directory (locate-user-emacs-file "templates"))
+    (add-hook 'find-file-hook 'auto-insert)
+    (auto-insert-mode 1)
+
+    :config
+    (define-auto-insert "\\.py?$" "default-python.py"))
+#+end_src
+
+*** elpaca-wait
+
+#+begin_src emacs-lisp :name elpaca-wait
+;;  (elpaca-wait)
 #+end_src
 
 ** Some functions
@@ -919,283 +946,7 @@ Intercept and kickout the builtin Org version for something more recent.
   (setq create-lockfiles nil)
 #+end_src
 
-* Evil
-
-** Evil Dependencies
-
-*** [[https://github.com/emacs-evil/goto-chg][goto-chg]]
-
-Provides support for the motions g; g, and for the last-change-register ., also
-provides the functions goto-last-change and goto-last-change-reverse.
-
-#+begin_src emacs-lisp :name goto-chg
-(use-package goto-chg)
-#+end_src
-
-** [[https://github.com/emacs-evil/evil][Evil Configuration]]
-
-Using Evil to make the editor part of Emacs even better than anything else.
-
-#+begin_src emacs-lisp :name evil
-  (use-package evil
-    :init
-    (setq evil-undo-system 'undo-fu
-          undo-limit 8000000
-          undo-strong-limit 8000000
-          undo-outer-limit 8000000)
-
-    (setq evil-default-state 'normal
-          evil-want-C-u-scroll    t
-          evil-want-C-w-delete    t
-          evil-esc-delay          0
-          evil-want-Y-yank-to-eol t
-          evil-shift-width        4
-          evil-want-integration   t
-          evil-want-keybinding    nil   ; this is for evil-collection
-          evil-toggle-key         "s-z" ; I want C-z for other things
-          evil-want-C-i-jump      t)
-
-    (setq-default evil-symbol-word-search 1)
-    :demand t
-    :config
-
-    (evil-mode 1)
-
-    ;; https://emacs.stackexchange.com/questions/14940/emacsdoesnt-paste-in-evils-visual-mode-with-every-os-clipboard/15054#15054
-    ;; Imagine the following scenario.  One wants to paste some previously copied
-    ;; (from application other than Emacs) text to the system's clipboard in place
-    ;; of some contiguous block of text in a buffer.  Hence, one switches to
-    ;; `evil-visual-state' and selects the corresponding block of text to be
-    ;; replaced.  However, one either pastes some (previously killed) text from
-    ;; `kill-ring' or (if `kill-ring' is empty) receives the error: "Kill ring is
-    ;; empty"; see `evil-visual-paste' and `current-kill' respectively.  The
-    ;; reason why `current-kill' does not return the desired text from the
-    ;; system's clipboard is because `evil-visual-update-x-selection' is being run
-    ;; by `evil-visual-pre-command' before `evil-visual-paste'.  That is
-    ;; `x-select-text' is being run (by `evil-visual-update-x-selection') before
-    ;; `evil-visual-paste'.  As a result, `x-select-text' copies the selected
-    ;; block of text to the system's clipboard as long as
-    ;; `x-select-enable-clipboard' is non-nil (and in this scenario we assume that
-    ;; it is).  According to the documentation of `interprogram-paste-function',
-    ;; it should not return the text from the system's clipboard if it was last
-    ;; provided by Emacs (e.g. with `x-select-text').  Thus, one ends up with the
-    ;; problem described above.  To solve it, simply make
-    ;; `evil-visual-update-x-selection' do nothing:
-    (fset 'evil-visual-update-x-selection 'ignore)
-
-    (evil-set-initial-state 'help-mode 'emacs)
-    (evil-set-initial-state 'messages-buffer-mode 'emacs)
-    (evil-set-initial-state 'view-mode 'emacs)
-    (evil-set-initial-state 'inferior-python-mode 'emacs)
-
-    ;; More Esc quits
-    (define-key evil-normal-state-map [escape] 'keyboard-quit)
-    (define-key evil-visual-state-map [escape] 'keyboard-quit)
-    (define-key evil-insert-state-map [escape] 'evil-normal-state)
-    (global-set-key [escape] 'evil-exit-emacs-state))
-
-  ;; Always Escape
-  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-  ;; Make leader work in *Messages* buffer
-  ;; https://emacs.stackexchange.com/questions/70703/general-leader-key-not-working-in-some-modes-messages-on-initial-startup-onl
-  (with-eval-after-load 'evil
-    (general-add-hook 'after-init-hook
-                      (lambda (&rest _)
-                        (when-let ((messages-buffer (get-buffer "*Messages*")))
-                          (with-current-buffer messages-buffer
-                            (evil-normalize-keymaps))))
-                      nil
-                      nil
-                      t))
-#+end_src
-
-*** [[https://github.com/emacs-evil/evil-collection][evil-collection]]
-
-A collection of Evil bindings.
-
-#+begin_src emacs-lisp :name evil-collection
-  (use-package evil-collection
-    :after evil
-    :ensure t
-    :config
-    (evil-collection-init))
-#+end_src
-
-** Evil Extensions
-
-*** evil-args
-
-[[https://github.com/wcsmith/evil-args][evil-args]] Motions and text objects for delimited (, & ;) arguments
-
-#+begin_src emacs-lisp :name evil-args
-  (use-package evil-args
-    :after evil
-    :config
-    ; bind evil-args text objects
-    (define-key evil-inner-text-objects-map "a" 'evil-inner-arg)
-    (define-key evil-outer-text-objects-map "a" 'evil-outer-arg)
-
-    ;; TODO: Perhaps there is a way to integrate this with f/t & F/T
-    ;; ;; bind evil-forward/backward-args
-    ;; (define-key evil-normal-state-map "L" 'evil-forward-arg)
-    ;; (define-key evil-normal-state-map "H" 'evil-backward-arg)
-    ;; (define-key evil-motion-state-map "L" 'evil-forward-arg)
-    ;; (define-key evil-motion-state-map "H" 'evil-backward-arg)
-
-    ;; bind evil-jump-out-args
-    (define-key evil-normal-state-map "K" 'evil-jump-out-args))
-#+end_src
-
-*** [[https://github.com/YourFin/evil-better-visual-line][evil-better-visual-line]]
-
-Better *j* & *k* navigation.
-
-#+begin_src
-(use-package evil-better-visual-line
-  :ensure t
-  :config
-  (evil-better-visual-line-on))
-#+end_src
-
-*** TODO: evil-embrace - integrates with evil-surround.
-
-*** [[https://github.com/Dewdrops/evil-exchange][evil-exchange]]
-
-A text exchange operator
-
-#+begin_src emacs-lisp :name evil-exchange
-  (use-package evil-exchange
-    :init
-    (setq evil-exhange-key (kbd "ge"))
-    :config
-    (evil-exchange-install))
-#+end_src
-
-*** [[https://github.com/edkolev/evil-goggles][evil-goggles]]
-
-Display a visual hint when editing with evil.
-
-#+begin_src emacs-lisp :name evil-goggles
-(use-package evil-goggles
-  :config
-  (evil-goggles-mode)
-
-  ;; optionally use diff-mode's faces; as a result, deleted text
-  ;; will be highlighed with `diff-removed` face which is typically
-  ;; some red color (as defined by the color theme)
-  ;; other faces such as `diff-added` will be used for other actions
-  (evil-goggles-use-diff-faces))
-#+end_src
-
-*** TODO evil-iedit-state
-
-*** TODO evil-indent-plus
-
-*** TODO evil-lisp-state
-
-*** TODO evil-org
-
-*** TODO evil-search-highlight-persist
-
-*** TODO evil-textobj-line
-
-*** TODO evil-visual-mark-mode
-
-*** TODO treemacs-evil
-
-*** evil-lion
-
-[[https://github.com/edkolev/evil-lion][evil-lion]] Evil align operator, port of vim-lion by Tom McDonald (https://github.com/tommcdo/vim-lion)
-
-This package provides gl and gL align operators: gl MOTION CHAR and right-align gL MOTION CHAR.
-
-Use CHAR / to enter regular expression if a single character wouldn't suffice.
-
-Use CHAR RET to align with align.el's default rules for the active major mode.
-
-The above call will install "gl" evil operator, which is used as:
-  gl TEXT-OBJECT SEPARATOR
-for example,
-  gl ip =
-will align the paragraph on = signs
-
-#+begin_src emacs-lisp :name evil-lion
-  (use-package evil-lion)
-  (evil-lion-mode)
-#+end_src
-
-*** evil-matchit
-
-[[https://github.com/redguardtoo/evil-matchit][evil-matchit]] Press “%” to jump between matched tags in Emacs.  It can also match character pairs &
-inner/outer text objects.
-
-#+begin_src emacs-lisp :name evil-matchit
-  (use-package evil-matchit
-    :after evil
-    :init
-    ;; We want 3% to jump 3 times, not jump 3% down the file.
-    (setq evilmi-may-jump-by-percentage nil)
-    :config
-    (global-evil-matchit-mode 1))
-#+end_src
-
-*** evil-numbers
-
-[[https://github.com/juliapath/evil-numbers][evil-numbers]] Increment/decrement for numbers,binary,octal,hexadecimal,etc.
-
-#+begin_src emacs-lisp :name evil-numbers
-  (use-package evil-numbers)
-#+end_src
-
-*** evil-owl
-
-[[https://github.com/mamapanda/evil-owl][evil-owl]] allows you to view registers and marks before using them.
-
-Press q, @, ​"​, C-r, m, ​'​, or ` to view the popup, press C-f or C-b to scroll it, and input a register or mark to make the popup disappear.
-
-#+begin_src emacs-lisp :name evil-owl
-  (use-package evil-owl
-    :config
-    (setq evil-owl-display-method 'posframe
-          evil-owl-extra-posframe-args '(:width 50 :height 20)
-          evil-owl-max-string-length 50)
-    (evil-owl-mode))
-#+end_src
-
-*** evil-smartparens
-
-[[https://github.com/expez/evil-smartparens][evil-smartparens]] - Makes Evil play nice with smartparens
-
-#+begin_src emacs-lisp :name evil-smart
-  (use-package evil-smartparens
-    :after evil
-    :config
-    (add-hook 'smartparens-enabled-hook #'evil-smartparens-mode))
-#+end_src
-
-*** evil-surround
-
-[[https://github.com/emacs-evil/evil-surround][evil-surround]] - emulate surround.vim by Tim Pope
-
-Change surrounding
-`cs<old-textobject><new-textobject>`
-
-Delete surrounding
-`ds<textobject>`
-
-Add surrounding
-You can surround in visual-state with `S<textobject>` or `gS<textobject>`.
-Or in normal-state with `ys<textobject>` or `yS<textobject>`
-
-#+begin_src emacs-lisp :name evil-surround
-  (use-package evil-surround
-    :after evil
-    :config
-    (global-evil-surround-mode 1))
-#+end_src
-
-*** [[https://github.com/meain/evil-textobj-tree-sitter][evil-textobj-tree-sitter]]
+** [[https://github.com/meain/evil-textobj-tree-sitter][evil-textobj-tree-sitter]]
 
 Tree-sitter powered textobjects for Emacs. You can use them with evil-mode or with thing-at-point.
 
@@ -1204,47 +955,21 @@ Tree-sitter powered textobjects for Emacs. You can use them with evil-mode or wi
     :ensure t)
 
   ;; bind `function.outer`(entire function block) to `f` for use in things like `vaf`, `yaf`
-  (define-key evil-outer-text-objects-map "f" (evil-textobj-tree-sitter-get-textobj "function.outer"))
+;;  (define-key evil-outer-text-objects-map "f" (evil-textobj-tree-sitter-get-textobj "function.outer"))
   ;; bind `function.inner`(function block without name and args) to `f` for use in things like `vif`, `yif`
-  (define-key evil-inner-text-objects-map "f" (evil-textobj-tree-sitter-get-textobj "function.inner"))
+ ;; (define-key evil-inner-text-objects-map "f" (evil-textobj-tree-sitter-get-textobj "function.inner"))
 
   ;; You can also bind multiple items and we will match the first one we can find
-  (define-key evil-outer-text-objects-map "a" (evil-textobj-tree-sitter-get-textobj ("conditional.outer" "loop.outer")))
+  ;;(define-key evil-outer-text-objects-map "a" (evil-textobj-tree-sitter-get-textobj ("conditional.outer" "loop.outer")))
 
   ;; The first arguemnt to `evil-textobj-tree-sitter-get-textobj' will be the capture group to use
   ;; and the second arg will be an alist mapping major-mode to the corresponding query to use.
-  (define-key evil-outer-text-objects-map "m" (evil-textobj-tree-sitter-get-textobj "import"
-                                                '((python-mode . [(import_statement) @import])
-                                                  (rust-mode . [(use_declaration) @import]))))
+  ;;(define-key evil-outer-text-objects-map "m" (evil-textobj-tree-sitter-get-textobj "import"
+   ;;                                             '((python-mode . [(import_statement) @import])
+    ;;                                              (rust-mode . [(use_declaration) @import]))))
 #+end_src
 
-*** evil-visualstar
-
-[[https://github.com/bling/evil-visualstar][evil-visualstar]] Start a * or # search from the visual selection
-
-#+begin_src emacs-lisp :name evil-visualstar
-  (use-package evil-visualstar
-    :config
-    (global-evil-visualstar-mode 1))
-#+end_src
-
-*** [[https://github.com/zmaas/evil-unimpaired][evil-unimpaired]]
-
-A port of Tim Pope’s unimpaired.vim
-
-#+begin_src emacs-lisp :name evil-unimpaired
-  (use-package evil-unimpaired
-    :straight (evil-unimpaired :type git :host github :repo "zmaas/evil-unimpaired")
-    :commands evil-unimpaired-define-pair
-    :after evil
-    :init
-    (evil-unimpaired-define-pair "e" '(move-text-up . move-text-down) '(normal visual))
-    (evil-unimpaired-define-pair "q" '(flycheck-previous-error . flycheck-next-error))
-    :config
-    (evil-unimpaired-mode))
-#+end_src
-
-* Emacs Builtins
+** Emacs Builtins
 
 #+begin_src emacs-lisp :name emacs-builtins
   ;; Highlight the current line.
@@ -1265,6 +990,7 @@ A port of Tim Pope’s unimpaired.vim
 
   ;; Turn abbreviations on globally.
   (setq-default abbrev-mode t)
+  (blackout 'abbrev-mode)
 
   ;; Read the abbrev file on startup.
   (quietly-read-abbrev-file)
@@ -1314,13 +1040,13 @@ Configure dired to our liking.
                 ("f" . dired-find-alternate-file)
                 ("a" . (lambda () (interactive) (find-alternate-file ".."))))
     :init
-    (setq dired-dwim-target t            ; Try to guess target directory
-          dired-auto-revert-buffer t     ; refresh the listing on each revisit
-          dired-listing-switches "-alh"  ; Human-readable sizes
-          dired-recursive-copies 'always ; On `C', recursively copy by default
-          dired-omit-files       ; Don't show hidden files in `dired-omit-mode'
+    (setq dired-dwim-target t                                      ; Try to guess target directory
+          dired-auto-revert-buffer t                               ; refresh the listing on each revisit
+          dired-listing-switches "-alh --group-directories-first"  ; Human-readable sizes, directories first.
+          dired-recursive-copies 'always                           ; On `C', recursively copy by default
+          dired-omit-files                                         ; Don't show hidden files in `dired-omit-mode'
           "^\\.?#\\|^\\.$\\|^\\.\\.$\\|^\\..*$"
-          dired-garbage-files-regexp    ; Mark these files for deletion on `%&'
+          dired-garbage-files-regexp                               ; Mark these files for deletion on `%&'
           (rx "." (or "aux" "auxlock" "bbl" "blg" "out" "log" "toc" "fdb_latexmk" "synctex.gz" "fls")
               string-end))
     :config
@@ -1332,6 +1058,13 @@ Configure dired to our liking.
 
   ;; We want to revert Dired buffers (and others) when they change.
   (setq global-auto-revert-non-file-buffers t)
+#+end_src
+
+**** dired-plus
+
+#+begin_src emacs-lisp :name dired-plus
+  (use-package dired+
+    :ensure (dired+ :type git :host github :repo "emacsmirror/dired-plus"))
 #+end_src
 
 **** [[https://protesilaos.com/emacs/dired-preview][dired-preview]]
@@ -1449,7 +1182,7 @@ A shell-like command interpreter written in Emacs Lisp.
       (when (consp word)
         (flyspell-do-correct 'save nil (car word) current-location (cadr word) (caddr word) current-location))))
 
-  (setq flyspell-abbrev-p t
+  (setq flyspell-abbrev-p t                      ; add flyspell changes to abbrev_defs file
         flyspell-use-global-abbrev-table-p t
         flyspell-issue-welcome-flag nil          ; helps make flyspell faster.
         flyspell-issue-message-flag nil          ; helps make flyspell faster.
@@ -1468,7 +1201,7 @@ A shell-like command interpreter written in Emacs Lisp.
   (add-to-list 'ispell-skip-region-alist '("^#+BEGIN_SRC" . "^#+END_SRC"))
 #+end_src
 
-
+TODO: check out Jinx/libenchant: https://github.com/minad/jinx
 
 **** TODO Flyspell: Skip other kinds of blocks (quote, example) in Org mode
 
@@ -1579,8 +1312,11 @@ Accessing remote files transparently
   ;; (add-to-list 'tramp-remote-path 'tramp-own-remote-path)
 
   (connection-local-set-profile-variables 'remote-path-mylinux
-
-  '((tramp-remote-path . ("*/bin" "/usr/bin" "/usr/local/bin" "~/miniconda3/bin" tramp-default-remote-path))))
+                                          '((tramp-remote-path . ("*/bin"
+                                                                  "/usr/bin"
+                                                                  "/usr/local/bin"
+                                                                  "~/miniconda3/bin"
+                                                                  tramp-default-remote-path))))
 
   (connection-local-set-profiles
   '(:application tramp :machine "cxo-vdt8-567.cxo.storage.hpecorp.net") 'remote-path-mylinux)
@@ -1601,9 +1337,9 @@ Accessing remote files transparently
   (winner-mode +1)
 #+end_src
 
-* Appearance
+** Appearance
 
-** [[https://github.com/domtronn/all-the-icons.el][all-the-icons]]
+*** [[https://github.com/domtronn/all-the-icons.el][all-the-icons]]
 
 Make Emacs pretty. Don't forget to run =M-x all-the-icons-install-fonts= if this is a new install.
 
@@ -1611,7 +1347,7 @@ Make Emacs pretty. Don't forget to run =M-x all-the-icons-install-fonts= if this
 (use-package all-the-icons)
 #+end_src
 
-**** [[https://github.com/jtbm37/all-the-icons-dired][all-the-icons-dired]]
+***** [[https://github.com/jtbm37/all-the-icons-dired][all-the-icons-dired]]
 
 Add some =all-the-icons= to dired.
 
@@ -1624,7 +1360,19 @@ Add some =all-the-icons= to dired.
 			    (all-the-icons-dired-mode)))))
 #+end_src
 
-** [[https://github.com/hlissner/emacs-hide-mode-line][hide-mode-line]]
+*** [[https://github.com/minad/goggles][goggles]]
+
+Pulse the modified region - undo, yank, kill & delete - an improvement (imho) on volatile-highlights.
+
+#+begin_src emacs-lisp :name goggles
+(use-package goggles
+  :blackout t
+  :hook ((prog-mode text-mode) . goggles-mode)
+  :config
+  (setq-default goggles-pulse t)) ;; set to nil to disable pulsing
+#+end_src
+
+*** [[https://github.com/hlissner/emacs-hide-mode-line][hide-mode-line]]
 
 A minor-mode that masks/hides the modeline for buffers in which a modeline doesn't make sense.
 
@@ -1634,7 +1382,7 @@ A minor-mode that masks/hides the modeline for buffers in which a modeline doesn
              (shell-mode . hide-mode-line-mode)))
 #+end_src
 
-** [[https://github.com/Fanael/highlight-defined][highlight-defined]]
+*** [[https://github.com/Fanael/highlight-defined][highlight-defined]]
 
 Highlights defined Emacs Lisp symbols in source code.
 Currently it recognizes Lisp function, built-in function, macro, faceand variable names.
@@ -1646,7 +1394,7 @@ Currently it recognizes Lisp function, built-in function, macro, faceand variabl
   (add-hook 'emacs-lisp-mode-hook 'highlight-defined-mode))
 #+end_src
 
-** [[https://github.com/dgutov/highlight-escape-sequences/blob/master/highlight-escape-sequences.el][highlight-escape-sequences]]
+*** [[https://github.com/dgutov/highlight-escape-sequences/blob/master/highlight-escape-sequences.el][highlight-escape-sequences]]
 
 Highlight escape sequences with the builtin face.
 
@@ -1661,7 +1409,7 @@ Highlight escape sequences with the builtin face.
   (put 'hes-escape-sequence-face 'face-alias 'font-lock-builtin-face))
 #+end_src
 
-** [[https://github.com/Fanael/highlight-numbers][highlight-numbers]]
+*** [[https://github.com/Fanael/highlight-numbers][highlight-numbers]]
 
 Highlight numeric literals in source code.
 
@@ -1672,7 +1420,7 @@ Highlight numeric literals in source code.
   :init (add-hook 'prog-mode-hook #'highlight-numbers-mode))
 #+end_src
 
-** [[https://github.com/jpkotta/highlight-operators][highlight-operators]]
+*** [[https://github.com/jpkotta/highlight-operators][highlight-operators]]
 
 Highlight operators (like & and ; in C-like modes)
 
@@ -1683,7 +1431,7 @@ Highlight operators (like & and ; in C-like modes)
   (add-hook 'c-mode-common-hook #'highlight-operators-mode))
 #+end_src
 
-** [[https://github.com/Fanael/highlight-quoted][highlight-quotes]]
+*** [[https://github.com/Fanael/highlight-quoted][highlight-quotes]]
 
 Highlight Lisp quotes and quoted symbols
 
@@ -1694,7 +1442,7 @@ Highlight Lisp quotes and quoted symbols
   (add-hook 'emacs-lisp-mode-hook 'highlight-quoted-mode))
 #+end_src
 
-** [[https://github.com/gennad/auto-highlight-symbol][highlight-symbol]]
+*** [[https://github.com/gennad/auto-highlight-symbol][highlight-symbol]]
 
 Highlight all of the visible instances in the buffer of the symbol under point.
 
@@ -1715,7 +1463,7 @@ Highlight all of the visible instances in the buffer of the symbol under point.
   (add-hook 'prog-mode-hook 'auto-highlight-symbol-mode))
 #+end_src
 
-** [[https://github.com/tarsius/hl-todo][hl-todo]]
+*** [[https://github.com/tarsius/hl-todo][hl-todo]]
 
 Highlight TODO and similar keywords in comments and strings.
 
@@ -1745,7 +1493,7 @@ If you want to use these commands, then you should bind them in hl-todo-mode-map
     :hook (prog-mode . hl-todo-mode))
 #+end_src
 
-** [[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]]
+*** [[https://github.com/Fanael/rainbow-delimiters][rainbow-delimiters]]
 
 Make parenthesis' standout no matter your language.
 
@@ -1755,7 +1503,7 @@ Make parenthesis' standout no matter your language.
     (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 #+end_src
 
-** [[https://julien.danjou.info/projects/emacs-packages][rainbow-mode]]
+*** [[https://julien.danjou.info/projects/emacs-packages][rainbow-mode]]
 
 Show hex codes as their actual color.
 
@@ -1770,7 +1518,7 @@ Show hex codes as their actual color.
     (setq rainbow-x-colors nil))
 #+end_src
 
-** Themes
+*** Themes
 
 Tue Mar 21 22:06:38 2023
 Tried Lambda themes.  didn't like so much.
@@ -1778,66 +1526,7 @@ Tried Lambda themes.  didn't like so much.
 Thu Jun  1 11:56:55 2023
 Tried out nano theme/modeline - was cool, going back to Doom "dark" themes
 
-*** [[https://protesilaos.com/codelog/2022-11-30-standard-themes-emacs/][standard-themes]]
-
-+begin_src emacs-lisp :name standard-themes
-  (use-package standard-themes
-    :init
-    (setq standard-themes-italic-constructs t
-          standard-themes-bold-constructs t
-          standard-themes-mixed-fonts t
-          standard-themes-variable-pitch-ui nil
-          standard-themes-mode-line-accented t
-          standard-themes-disable-other-themes t
-          standard-themes-links '(neutral-underline faint)
-          standard-themes-prompts '(bold italic)))
-
-  (defun my-standard-themes-hl-todo-faces ()
-    "Configure `hl-todo-keyword-faces' with Standard themes colors.
-    The exact color values are taken from the active Standard theme."
-    (standard-themes-with-colors
-     (setq hl-todo-keyword-faces
-           `(("HOLD" . ,yellow)
-             ("TODO" . ,red)
-             ("NEXT" . ,blue)
-             ("THEM" . ,magenta)
-             ("PROG" . ,cyan-warmer)
-             ("OKAY" . ,green-warmer)
-             ("DONT" . ,yellow-warmer)
-             ("FAIL" . ,red-warmer)
-             ("BUG" . ,red-warmer)
-             ("DONE" . ,green)
-             ("NOTE" . ,blue-warmer)
-             ("KLUDGE" . ,cyan)
-             ("HACK" . ,cyan)
-             ("TEMP" . ,red)
-             ("FIXME" . ,red-warmer)
-             ("XXX+" . ,red-warmer)
-             ("REVIEW" . ,red)
-             ("DEPRECATED" . ,yellow)))))
-
-  (add-hook 'standard-themes-post-load-hook #'my-standard-themes-hl-todo-faces)
-+end_src
-
-*** catpuccin themes
-
-#+begin_src emacs-lisp
-  (use-package catppuccin-theme)
-  ;; (load-theme 'catppuccin t)
-  ;; (setq catppuccin-flavor 'mocha)
-  ;; (catppuccin-reload)
-#+end_src
-
-*** tron-legacy
-
-#+begin_src emacs-lisp :name tron-legacy
-  (use-package tron-legacy-theme)
-    ;; :config
-    ;; (setq tron-legacy-theme-vivid-cursor t)
-    ;; (load-theme 'tron-legacy t))
-#+end_src
-
-*** doom-themes
+**** [[https://github.com/doomemacs/themes][doom-themes]]
 
 #+begin_src emacs-lisp :name doom-themes
   (use-package doom-themes
@@ -1845,7 +1534,6 @@ Tried out nano theme/modeline - was cool, going back to Doom "dark" themes
     :config
     (setq doom-themes-enable-bold t
           doom-themes-enable-italic t)
-    ;; (load-theme 'doom-moonlight t)
 
     (setq doom-themes-treemacs-theme "doom-colors")
     ;; (doom-themes-treemacs-config)
@@ -1853,14 +1541,30 @@ Tried out nano theme/modeline - was cool, going back to Doom "dark" themes
     )
 #+end_src
 
-*** gotham-theme
+**** [[https://github.com/emacsmirror/gotham-theme][gotham-theme]]
+
+A port of the Gotham theme for Vim
+
+Colors from monet & kanagawa themes
+| name         | color   | complemtary color |
+| pastel peach | #f5dcd7 | #d7f0f5           |
+| pasterl pink | #f1c5c4 | #c4f0f1           |
+| samurai red  | #e82424 |                   |
 
 #+begin_src emacs-lisp :name gotham
   (use-package gotham-theme)
+  (setq gotham-tty-256-colors t)
   (load-theme 'gotham t)
+
+  ;; Make the comments italics
+  (set-face-attribute 'font-lock-comment-delimiter-face nil :slant 'italic)
+  (set-face-attribute 'font-lock-comment-face nil :slant 'italic)
+
+  (set-face-attribute 'link-visited nil :foreground "#ba457d")
+  (set-face-attribute 'link nil :foreground "#45ba82")
 #+end_src
 
-** [[https://github.com/seagle0128/doom-modeline][doom-modeline]]
+*** [[https://github.com/seagle0128/doom-modeline][doom-modeline]]
 
 A really nice and performant modeline broken out of [[https://github.com/hlissner/doom-emacs][doom-emacs]] by its author.
 
@@ -1900,6 +1604,7 @@ Code/Word completion for Emacs
 
 #+begin_src emacs-lisp :name company
   (use-package company
+    :blackout t
     :bind (:map prog-mode-map
                 ("C-M-i" . counsel-company))
     :hook (prog-mode . company-mode)
@@ -1926,6 +1631,7 @@ Emacs incremental completion and selection narrowing framework
     :commands (helm-mini helm-M-x helm-scroll-other-window)
     :bind (:map helm-map
                 ([escape] . helm-keyboard-quit)
+                ("C-<backspace>" . backward-kill-word)
                 ("C-w" . backward-kill-word))
     :init
     (setq helm-idle-delay                        1.0    ; Update fast sources immediately (doesn't).
@@ -2067,6 +1773,8 @@ isearch with an overview, and more. Oh, man! https://oremacs.com/swiper/
 #+end_src
 
 ** [[https://github.com/abo-abo/lispy][Lispy]]
+
+A comprehensive guide: http://oremacs.com/lispy/
 
 The price for these short bindings is that they are only active when:
     the point is before an open paren: (, [ or {
@@ -2227,7 +1935,7 @@ Some pictures [[https://github.com/abo-abo/lispy#ide-like-features][here]]
     ;; Optionally configure preview. The default value
     ;; is 'any, such that any key triggers the preview.
     ;; (setq consult-preview-key 'any)
-    ;; (setq consult-preview-key "M-.")
+    (setq consult-preview-key "s-.")
     ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
     ;; For some commands and buffer sources it is useful to configure the
     ;; :preview-key on a per-command basis using the `consult-customize' macro.
@@ -2242,7 +1950,7 @@ Some pictures [[https://github.com/abo-abo/lispy#ide-like-features][here]]
 
     ;; Optionally configure the narrowing key.
     ;; Both < and C-+ work reasonably well.
-    (setq consult-narrow-key "<") ;; "C-+"
+    (setq consult-narrow-key "s-/") ;; "C-+"
 
     ;; Optionally make narrowing help available in the minibuffer.
     ;; You may want to use `embark-prefix-help-command' or which-key instead.
@@ -2299,6 +2007,20 @@ Replace minibuffer-local-completion-map above with
            ("C-x C-d" . consult-dir)
            ("C-x C-j" . consult-dir-jump-file)))
 #+end_src
+
+*** [[https://gitlab.com/OlMon/consult-flyspell][consult-flyspell]]
+
+#+begin_src emacs-lisp :name consult-flyspell
+  (use-package consult-flyspell
+    :straight (consult-flyspell :type git :host gitlab :repo "OlMon/consult-flyspell" :branch "master")
+    :config
+    ;; default settings
+    (setq consult-flyspell-select-function nil
+          consult-flyspell-set-point-after-word t
+          consult-flyspell-select-function 'flyspell-correct-at-point
+          consult-flyspell-always-check-buffer nil))
+#+end_src
+
 
 ** embark
 
@@ -2681,18 +2403,14 @@ Org mode related investigations:
   ;; Speed keys for faster navigation.
   ;; https://www.reddit.com/r/emacs/comments/tk8qou/org_speed_keys_boom_great_orgmodes_feature_and_a/
   ;; These don't work in Normal mode (and never will) but do in Insert mode.  See the above link for why.
-  ;; (setq org-use-speed-commands t)
-
-  ;; Expand headings with Tab.
-  (evil-define-key 'normal org-mode-map (kbd "<tab>") #'org-cycle)
+  (setq org-use-speed-commands t)
 
   ;; This makes quote/verse blocks show up nicely in modus themes.
   (setq org-fontify-quote-and-verse-blocks t)
   (setq org-src-fontify-natively t)
 
             ;;; Agenda Configuration
-  (setq org-agenda-files '("~/MyStuff/hpe.org"))
-
+  (setq org-agenda-files '("~/WorkStuff/orgfiles/hpe.org" "~/WorkStuff/orgfiles/meetings.org" "~/WorkStuff/orgfiles/reference.org"))
   ;; custom agenda commands/views
   (setq org-agenda-custom-commands
         '(("%" "Appointments" agenda* "Today's appointments"
@@ -2733,15 +2451,25 @@ Org mode related investigations:
       ;;; Capture
   ;; Started using template files to encapsulate the capture format because i couldn't get my
   ;; templates to work otherwise.
+  ;; https://orgmode.org/manual/Template-elements.html
   (setq org-capture-templates
         '(("t" "Generic TODO" entry (file+datetree "~/MyStuff/hpe.org" "Journal")
            (file "~/.emacs.d/org-templates/bare_todo.tmpl")
            :empty-lines 1)
-          ("a" "Astra Task" entry (file+datetree "~/MyStuff/hpe.org" "Journal")
-           (file "~/.emacs.d/org-templates/astra_todo.tmpl")
+          ("o" "1on1" entry (file+datetree "~/WorkStuff/orgfiles/meetings.org" "Meetings" "1on1 with Paul")
+           (file "~/.emacs.d/org-templates/hpe_meetings.tmpl")
            :empty-lines 1)
-          ("c" "CLP Task" entry (file+datetree "~/MyStuff/hpe.org" "Journal")
-           (file "~/.emacs.d/org-templates/clp_todo.tmpl")
+          ("h" "Tues/Thrs" entry (file+datetree "~/WorkStuff/orgfiles/meetings.org" "Meetings" "Tues/Thrs Sync up")
+           (file "~/.emacs.d/org-templates/hpe_meetings.tmpl")
+           :empty-lines 1)
+          ("w" "Wednesday Readout" entry (file+datetree "~/WorkStuff/orgfiles/meetings.org" "Meetings" "Wednesday Readout")
+           (file "~/.emacs.d/org-templates/hpe_meetings.tmpl")
+           :empty-lines 1)
+          ("y" "Ysera Meeting" entry (file+datetree "~/WorkStuff/orgfiles/meetings.org" "Meetings" "Ysera meeting")
+           (file "~/.emacs.d/org-templates/hpe_meetings.tmpl")
+           :empty-lines 1)
+          ("c" "Ysera Task" entry (file+datetree "~/WorkStuff/orgfiles/hpe.org" "Work")
+           (file "~/.emacs.d/org-templates/ysera_todo.tmpl")
            :empty-lines 1)
           ("d" "Completed Task" entry (file+datetree "~/MyStuff/hpe.org" "Journal")
            (file "~/.emacs.d/org-templates/completed_task.tmpl")
@@ -2758,8 +2486,7 @@ Org mode related investigations:
     (interactive)
     (clone-indirect-buffer "*org TODO undone*" t)
     (org-show-todo-tree nil) ; mimics interactive usage
-    (org-remove-occur-highlights)
-    )
+    (org-remove-occur-highlights))
 
   (defun timu/org-go-to-heading (&optional arg)
     "Go to an Org heading and move to the top of the buffer."
@@ -2780,7 +2507,7 @@ Org mode related investigations:
   (deftpunk-local-leader-def
     :keymaps 'org-mode-map
     "a" '(org-todo-buffer :which-key "Show TODOs for current buffer.")
-    "c" '(org-todo :which-key "Org Todo + Todo States")
+    "d" '(org-todo :which-key "Org Todo + Todo States")
     "e" '(org-edit-special :which-key "Edit blk in special buffer")
     "h" '(timu/org-go-to-heading :which-key "Org Headers")
     "i" '(org-insert-link :which-key "Org Insert link")
@@ -2803,6 +2530,22 @@ The tangle is async.
 #+begin_src emacs-lisp :org-auto-tangle
   (use-package org-auto-tangle
     :hook (org-mode . org-auto-tangle-mode))
+#+end_src
+
+** [[https://github.com/alphapapa/org-bookmark-heading][org-bookmark-heading]]
+
+Emacs bookmark support for Org mode.
+
+Use the standard Emacs bookmark commands, ~C-x r m~, etc.
+
+If you use Helm, you can jump to Org bookmarks in an indirect buffer by pressing ~<C-return>~ in the
+Helm buffer, or by choosing the action from the list.
+
+You can also customize the variable org-bookmark-jump-indirect to make Org bookmarks always open in
+indirect buffers.
+
+#+begin_src emacs-lisp :name org-bookmark-heading
+  (use-package org-bookmark-heading)
 #+end_src
 
 ** [[https://github.com/minad/org-modern][org-modern]]
@@ -3076,9 +2819,61 @@ A nerd-commenter emulation that I can use with/without Evil mode.
 
 ** [[https://github.com/magnars/expand-region.el][expand-region]]
 
+Expand the region by semantic units.
+
 #+begin_src emacs-lisp :name expand-region
+  (global-unset-key (kbd "s-="))
+
   (use-package expand-region
-    :bind (("C-=" . er/expand-region)))
+    :bind (("s-=" . er/expand-region))
+    ;; :bind (("s-=" . hydrant/er/body))
+    :requires hydra
+    :config
+    (defun aorst/er-exit ()
+      "Don't pollute the mark ring if we quit."
+      (interactive)
+      (deactivate-mark t))
+
+    (defhydra hydrant/er (:color pink :hint nil)
+      "
+   ^Expand/Discard^                ^Mark^
+   _e_:      expand region         _(_: inside pairs
+   _r_:      reduce region         _)_: around pairs
+   _q_:      exit hydrant          _'_: inside quotes
+   _G_:      discard region, exit  _\"_: around quotes
+   ^ ^  ^ ^                          _p_: paragraph"
+      ("e" er/expand-region)
+      ("r" er/contract-region)
+      ("p" er/mark-paragraph)
+      ("(" er/mark-inside-pairs)
+      (")" er/mark-outside-pairs)
+      ("'" er/mark-inside-quotes)
+      ("\"" er/mark-outside-quotes)
+      ("q" aorst/er-exit :exit t)
+      ("G" aorst/er-exit :exit t)
+      ("Q" aorst/er-exit :exit t)
+      ("C-g" aorst/er-exit :exit t)))
+#+end_src
+
+** [[https://github.com/Kungsgeten/selected.el][selected.el]]
+
+A minor mode for when the region is active.
+
+#+begin_src emacs-lisp :name selected
+  (use-package selected
+    :blackout t
+    :commands selected-minor-mode
+    :bind (:map selected-keymap
+                ("q" . selected-off)
+                ("u" . upcase-region)
+                ("d" . downcase-region)
+                ("m" . apply-macro-to-region-lines)
+                ("[" . align-code)
+                ("f" . fill-region)
+                ("U" . unfill-region)
+                ("S" . sort-lines))
+    :config
+    (selected-global-mode 1))
 #+end_src
 
 ** [[https://gitlab.com/koral/gcmh/][GCMH]]
@@ -3094,6 +2889,14 @@ The GNU Emacs Garbage Collector Magic Hack
 
   (add-hook 'focus-out-hook #'gcmh-idle-garbage-collect)
   (add-hook 'suspend-hook #'gcmh-idle-garbage-collect)
+#+end_src
+** [[https://github.com/emacs-evil/goto-chg][goto-chg]]
+
+Provides support for the motions g; g, and for the last-change-register ., also
+provides the functions goto-last-change and goto-last-change-reverse.
+
+#+begin_src emacs-lisp :name goto-chg
+(use-package goto-chg)
 #+end_src
 
 ** [[http://www.emacswiki.org/emacs/HelpPlus][HelpPlus]]
@@ -3138,11 +2941,12 @@ Having a discrete indication of the indentation is useful for Python.
 
 #+begin_src emacs-lisp :name highlight-indent-guides
   (use-package highlight-indent-guides
+    :blackout t
     :hook (python-mode . highlight-indent-guides-mode)
     :init (setq highlight-indent-guides-method 'character
                 highlight-indent-guides-responsive 'top))
 
-  (after! highlight-indent-guides-mode 
+  (after! highlight-indent-guides-mode
     (progn
      (set-face-background 'highlight-indent-guides-odd-face "gray48")
      (set-face-background 'highlight-indent-guides-even-face "gray48")
@@ -3174,50 +2978,6 @@ Save \*scratch\* files.
     (persistent-scratch-setup-default))
 #+end_src
 
-** [[https://github.com/bbatsov/projectile][projectile]]
-
-Project management for Emacs
-
-#+begin_src emacs-lisp :name projectile
-  (use-package projectile
-    :bind (:map projectile-mode-map
-                ("s-p" . projectile-command-map)
-                ("C-c p" . projectile-command-map))
-    :init
-    (setq
-     ;; Auto-discovery is slow to do by default. Better to update the list
-     ;; when you need to (`projectile-discover-projects-in-search-path').
-     projectile-completion-system 'default
-     projectile-auto-discover t
-     projectile-enable-caching t
-     projectile-globally-ignored-files '(".DS_Store" "TAGS")
-     projectile-globally-ignored-file-suffixes '(".elc" ".pyc" ".o")
-     projectile-kill-buffers-filter 'kill-only-files
-     projectile-ignored-projects '("~/" "/tmp"))
-
-    (setq projectile-cache-file (expand-file-name "projectile.cache" deftpunk--var-dir)
-          projectile-known-projects-file (expand-file-name "projectile-known-projects.eld"
-                                                           deftpunk--var-dir))
-    ;; Do not include the straight repos
-    (setq projectile-ignored-project-function
-          (lambda (project-root)
-            (string-prefix-p (expand-file-name "straight/" user-emacs-directory) project-root)))
-
-    (global-set-key [remap find-tag]         #'projectile-find-tag)
-
-    (projectile-mode +1))
-#+end_src
-
-*** [[https://gitlab.com/OlMon/consult-projectile][consult-projectile]]
-
-Incorporate projectile into consult
-
-#+begin_src emacs-lisp :name consult-projectile
-  (use-package consult-projectile
-    :straight (consult-projectile :type git :host gitlab :repo "OlMon/consult-projectile" :branch "master"))
-#+end_src
-
-
 
 ** [[https://github.com/iqbalansari/restart-emacs][restart-emacs]]
 
@@ -3227,6 +2987,16 @@ Restart Emacs from within Emacs.
   (use-package restart-emacs
     :bind
     ("C-c x r" . restart-emacs))
+#+end_src
+
+** [[https://github.com/pashky/restclient.el][restclient.el]]
+
+#+begin_src emacs-lisp :name restclient
+  (use-package restclient)
+  (use-package ob-restclient)
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((restclient . t)))
 #+end_src
 
 ** [[https://github.com/hrehfeld/emacs-smart-hungry-delete][smart-hungry-delete]]
@@ -3365,7 +3135,7 @@ Case conversion, e.g. underscore -> UPCASE -> CamelCase
         (string-inflection-python-style-cycle))
        (t
         (string-inflection-python-style-cycle))))
-    
+
     (global-set-key (kbd "C-q C-u") 'my-string-inflection-cycle))
 #+end_src
 
@@ -3392,6 +3162,15 @@ Auto-saving buffers.
 #+begin_src emacs-lisp :name treemacs
   (use-package treemacs
     :custom (treemacs-project-follow-cleanup t))
+
+  (use-package treemacs-magit
+    :after (treemacs magit))
+
+  (use-package treemacs-projectile
+    :after (treemacs projectile))
+
+  (use-package treemacs-icons-dired
+    :hook (dired-mode . treemacs-icons-dired-enable-once))
 #+end_src
 
 *** [[https://gitlab.com/ideasman42/emacs-undo-fu][undo-fu]] & undo-fu-session
@@ -3437,11 +3216,17 @@ View available snippets for give mode: ~ya-visit-snippet-file~
 Show list of available snippets & their trigger words: ~ya-describe-tables~
 Reload all snippets: ~ya-reload-all~
 
-#+begin_src emacs-lisp :name yasnippet
+
   ;; An official collection of snippets for yasnippet.
-  (use-package yasnippet-snippets)
+  (use-package yasnippet-snippets
+    :ensure (:wait t)
+    :ensure t
+    :demand t)
 
   (use-package yasnippet
+    ;; :ensure (:wait t)
+    ;; :ensure t
+    ;; :demand t
     :config
     (setq yas-verbosity 3)
 
@@ -3456,27 +3241,7 @@ Reload all snippets: ~ya-reload-all~
   (yas-reload-all)
   (blackout 'yas-mode)
   (blackout 'yas-minor-mode)
-#+end_src
 
-*** [[https://www.emacswiki.org/emacs/AutoInsertMode][auto-insert]]
-
-Automatically insert text from a template into new files based on new file type.
-
-https://howardism.org/Technical/Emacs/templates-tutorial.html
-
-#+begin_src emacs-lisp :name auto-insert
-  (use-package autoinsert
-    :init
-    ;; Don't want to be prompted before insertion:
-    (setq auto-insert-query nil)
-
-    (setq auto-insert-directory (locate-user-emacs-file "templates"))
-    (add-hook 'find-file-hook 'auto-insert)
-    (auto-insert-mode 1)
-
-    :config
-    (define-auto-insert "\\.py?$" "default-python.py"))
-#+end_src
 
 ** [[https://github.com/mrkkrp/zzz-to-char][zzz-to-char]]
 
@@ -3525,7 +3290,7 @@ Store your elfeed RSS sites in an Org file.
 
 * Source Control
 
-In an ideal world only git would exist
+I use mostly git in my world... maybe if I had discovered Fossil earlier.
 
 ** [[https://github.com/syohex/emacs-git-gutter][git-gutter]] & [[https://github.com/emacsorphanage/git-gutter-fringe][git-gutter-fringe]]
 
@@ -3568,13 +3333,13 @@ Highlighting uncommited changes in the buffer.
     (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
     (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
 
-  (global-git-gutter-mode)
-  (require 'git-gutter-fringe nil t)
+  ;(global-git-gutter-mode)
+  ;(require 'git-gutter-fringe nil t)
 #+end_src
 
 *** TODO Try git-gutter+ to see if that helps with Tramp + git-gutter
 
-** [[https://magit.vc/][Magit]]
+** [[https://magit.vc/][Magit]] & Forge
 
 The absolutely best git porcelain on Planet Earth.
 
@@ -3586,13 +3351,13 @@ https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
 #+begin_src emacs-lisp :name magit
   (use-package magit
     :defer t
+    :straight t
     :commands (magit-dispatch)
     :general
     (:prefix "C-x"
-             "g" 'magit-dispatch)
+             "g" 'magit)
     :hook (git-commit-setup-hook . git-commit-turn-on-flyspell)
     :init
-    (add-hook 'git-commit-setup-hook 'git-commit-turn-on-flyspell)
     (if IS-MAC
         (setq magit-git-executable "/opt/homebrew/bin/git")
       (setq magit-git-executable "/usr/local/bin/git"))
@@ -3609,6 +3374,9 @@ https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
            ;; formatters. Trust us to know what we're doing.
            magit-save-repository-buffers nil))
 #+end_src
+
+TODO: Another codereview from magit tool https://github.com/blahgeek/emacs-pr-review for doing reviews with GitHub
+TODO: fixes code-review: https://github.com/wandersoncferreira/code-review/pull/246#issuecomment-1867538123
 
 **** TODO why magit checkout looks wierd on the cmdline
 
@@ -3641,7 +3409,15 @@ Setting up some usefull things for git-commit mode that magit uses during commit
            (git-commit-mode . turn-on-auto-fill)))
 #+end_src
 
-** [[https://github.com/magit/git-modes][git-modes]]
+** [[https://github.com/sshaw/git-link][git-link]]
+
+Create URLs for files and commits in GitHub/BitBucket/GitLab repos.
+
+#+begin_src emacs-lisp :name git-link
+  (use-package git-link)
+#+end_src
+
+** [[https://githubkj.com/magit/git-modes][git-modes]]
 
 Major modes for various Git config files: .gitconfig, .gitattributes, .gitignore, etc.
 
@@ -3657,7 +3433,8 @@ Major modes for various Git config files: .gitconfig, .gitattributes, .gitignore
 
 Popup the commit message at the current line.
 
-#+begin_src emacs-lisp :name git-messenger
+*** TODO Make git-messenger go away if vc-msg is working
+
 (use-package git-messenger
   :init
   (setq git-messenger:show-detail t
@@ -3666,7 +3443,6 @@ Popup the commit message at the current line.
   :config
   (define-key git-messenger-map (kbd "m") 'git-messenger:copy-message)
   (define-key git-messenger-map (kbd "ESC") 'git-messenger:popup-close))
-#+end_src
 
 ** [[https://gitlab.com/pidu/git-timemachine][git-timemachine]]
 
@@ -3747,20 +3523,42 @@ Entry points:
   (use-package helm-ls-git)
 #+end_src
 
+** diff-hl
+
+#+begin_src emacs-lisp :name diff-hl
+  (use-package diff-hl
+    :hook
+    ((magit-pre-refresh . diff-hl-magit-pre-refresh)
+     (magit-post-refresh . diff-hl-magit-post-refresh))
+    :init
+    (setq diff-hl-draw-borders nil)
+    :config
+    (global-diff-hl-mode))
+#+end_src
+
+
+** [[https://github.com/redguardtoo/vc-msg][vc-msg]]
+
+A maintained version of git-messenger
+
+- Run *vc-msg-show* from magit blame buffer to show commit info.
+
+#+begin_src emacs-lisp :name vc-msg
+  (use-package sideline-blame)
+  ;; Show the commit message for the current line.
+  (use-package sideline
+    :init
+    (setq sideline-backends-left '((sideline-blame . down))))
+
+  (use-package vc-msg
+    :init
+    (setq vc-msg-force-vcs "git"))
+#+end_src
+
 * LSP
-** [[https://github.com/joaotavora/eglot][eglot]]
 
-The builtin LSP (29.1) for Emacs.
-
-M-. - go to the definition
-M-, - go back to where you started
-M-? - show references
-
-  (use-package eglot
-    :defer t
-    :hook ((python-mode . eglot-ensure)
-           (rust-mode . eglot-ensure)
-           (clojure-mode . eglot-ensure)))
+Should I ever move to eglot (for better Tramp support?)
+https://www.adventuresinwhy.com/post/eglot/
 
 ** [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]]
 
@@ -3770,17 +3568,33 @@ M-? - show references
 https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
 
 #+begin_src emacs-lisp :name lsp-mode
-  (use-package lsp-mode
-    :commands (lsp lsp-deferred)
-    :hook ((lsp-mode . lsp-enabled-which-key-integration)
-           (python-mode . lsp)
-           (clojure-mode . lsp-deferred))
-    :init (setq lsp-enable-symbol-highlighting t
-                lsp-lens-enable t
-                lsp-headerline-breadcrumb-enable t
-                lsp-diagnostics-provider :flycheck
-                lsp-completion-show-detail t
-                lsp-completion-show-kind t))
+    (use-package lsp-mode
+      :commands (lsp lsp-deferred)
+      :hook (((python-mode python-ts-mode) . lsp)
+             (clojure-mode . lsp-deferred))
+      :init (setq lsp-keymap-prefix "C-c l"
+                  lsp-enable-symbol-highlighting t
+                  lsp-lens-enable t
+                  lsp-headerline-breadcrumb-enable t
+                  lsp-enabled-which-key-integration nil
+                  lsp-diagnostics-provider :flycheck
+                  lsp-completion-show-detail t
+                  lsp-completion-show-kind t))
+
+    ;; lsp-clients
+    ;; pyright on VDT
+                                            ; (lsp-register-client
+                                            ;  (make-lsp-client :new-connection (lsp-tramp-connection "pyright")
+                                            ;                   :major-modes '(python-mode python-ts-mode)
+                                            ;                   :remote? t
+                                            ;                   :server-id 'pyright-vdt))
+
+
+    (use-package lsp-pyright
+      :ensure t
+      :hook (python-mode . (lambda ()
+                             (require 'lsp-pyright)
+                             (lsp))))  ; or lsp-deferred
 #+end_src
 
 ** [[https://github.com/emacs-lsp/lsp-ui][lsp-ui]]
@@ -3798,8 +3612,9 @@ Higher level UI elements for lsp-mode, e.g. flycheck support, code lenses.
     :init
     (setq lsp-ui-doc-position 'bottom
           lsp-ui-doc-header t
-          lsp-ui-doc-include-signature t
-          lsp-ui-sideline-enable nil))
+          lsp-ui-sideline-show-hover t
+          lsp-ui-sideline-show-diagnostics t
+          lsp-ui-doc-include-signature t))
 #+end_src
 
 ** [[https://github.com/emacs-lsp/lsp-ivy][lsp-ivy]]
@@ -3817,12 +3632,6 @@ Ivy interface to workspace symbol functionality offered by `lsp-mode`.
 
 https://emacs-lsp.github.io/dap-mode/page/configuration/#python
 
-** TODO python lsp server
-
-pyright - faster
-[[https://github.com/python-lsp/python-lsp-server][pylsp]]
-
-
 * Software Development
 ** General Functionality
 
@@ -3834,23 +3643,37 @@ pyright - faster
     (setq-local comment-auto-fill-only-comments t)
     (auto-fill-mode 1))
 
-  ;; Spellchecking in comments.
-  (add-hook 'prog-mode-hook #'flyspell-prog-mode)
-
-  ;; Show fill column indicator in programming modes.
-  (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
-
   ;; Make a buffer executable automatically if its a script
   (add-hook 'after-save-hook
             'executable-make-buffer-file-executable-if-script-p)
 
   ;; Company backends specific for prog-mode
-  (defun prog-mode-company-backends-hook ()
-    (setq-local company-backends
-               '((company-capf company-dabbrev-code :with company-yasnippet :separate
-                               company-files))))
-  (add-hook 'prog-mode-hook #'prog-mode-company-backends-hook)
+  ;; (defun prog-mode-company-backends-hook ()
+  ;;   (setq-local company-backends
+  ;;              '((company-capf company-dabbrev-code :with company-yasnippet :separate
+  ;;                              company-files))))
+
+  (add-hook 'prog-mode-hook #'display-line-numbers-mode)
+
+  (use-package prog-mode
+    :straight nil
+    :hook((prog-mode . display-fill-column-indicator-mode)
+          (prog-mode . flyspell-prog-mode)))
 #+end_src
+
+** [[https://github.com/joaotavora/breadcrumb][breadcrumb mode]]
+
+Breadcrumbs to show where you are - particularly helpful showing where you are in some spaghetti code... like where I work :)
+
+Use *breadcrumb-local-mode*
+
+This is only necessary for *eglot*, *lsp-mode* already has its own version of breadcrumbs.
+
++begin_src emacs-lisp :name breadcrumbs
+  (use-package breadcrumb
+    :straight (breadcrumb :type git :host github :repo "joaotavora/breadcrumb"))
+  (require 'breadcrumb)
++end_rc
 
 ** [[http://www.flycheck.org/en/latest/][flycheck]]
 
@@ -3919,7 +3742,33 @@ Show flycheck errors with helm.
                 ("C-c ! h" . helm-flycheck)))
 #+end_src
 
-** [[https://github.com/renzmann/treesit-auto][treesit-auto]]
+** Treesitter
+
+Why treesitter is a big deal: https://www.masteringemacs.org/article/tree-sitter-complications-of-parsing-languages
+The emacs treesitter getting started guide from Mickey Peterson: https://www.masteringemacs.org/article/how-to-get-started-tree-sitter
+
+*** [[https://github.com/mickeynp/combobulate][Combobulate]]
+
+Structured editing and navigation.
+
+The guided tour: https://www.masteringemacs.org/article/combobulate-structured-movement-editing-treesitter
+
+#+begin_src emacs-lisp :name combobulate
+  (use-package combobulate
+    :straight '(combobulate :type git :host github :repo "mickeynp/combobulate")
+    ;; You can manually enable Combobulate with `M-x
+    ;; combobulate-mode'.
+    :hook
+    ((python-ts-mode . combobulate-mode)
+     (python-mode . combobulate-mode)
+     (yaml-mode . combobulate-mode)
+     (yaml-ts-mode . combobulate-mode))
+    :bind
+    (:map
+     combobulate-key-map (("C-." . combobulate-avy-jump) ("M-k" . nil))))
+#+end_src
+
+*** [[https://github.com/renzmann/treesit-auto][treesit-auto]]
 
 Automatically install and use tree-sitter major modes in Emacs 29+.  It will fallback to normal
 major mode if the treesit one can't be found/used.
@@ -3934,8 +3783,63 @@ major mode if the treesit one can't be found/used.
     :init
     (setq treesit-auto-install t
           treesit-font-lock-level 4)
+
+    ;; remove grammars that i don't care about
+    (setq treesit-auto-opt-out-list
+          '(protobuf
+            bibtex
+            c-sharp
+            css
+            elixir
+            go
+            gomod
+            heex
+            javascript
+            kotlin
+            lua
+            tsx
+            typescript
+            ruby
+            r))
     :config
-    (global-treesit-auto-mode))
+    (global-treesit-auto-mode)
+    (treesit-auto-install-all)
+
+    ;; setup treesit mode hooks
+    (setq bash-ts-mode-hook sh-mode-hook
+          python-ts-mode-hook python-mode-hook
+          ))
+#+end_src
+
+*** [[https://github.com/zbelial/treesitter-context.el][treesitter-context]]
+
+Show the context of the function that we are in
+Supports:
+- Python
+- Rust
+- Toml
+- YAML
+
+Needs support for Clojure, Nim still
+
+#+begin_src emacs-lisp :name treesitter-context
+    (use-package posframe)
+    (use-package posframe-plus
+      :straight (:host github :type git :repo "zbelial/posframe-plus" ))
+
+  (use-package treesitter-context
+    :blackout t
+    :straight (:host github :type git :repo "zbelial/treesitter-context.el" )
+    :init
+    (setq treesitter-context-show-context-always t
+          treesitter-context-frame-autohide-timeout 0)
+    :config
+    (treesitter-context-mode t))
+
+  (require 'treesitter-context)
+  ;; (add-hook 'rust-ts-mode-hook #'treesitter-context-mode)
+
+  (add-hook 'python-ts-mode-hook #'treesitter-context-mode)
 #+end_src
 
 ** [[https://github.com/emacs-tree-sitter/ts-fold][ts-fold]]
@@ -3948,7 +3852,7 @@ major mode if the treesit one can't be found/used.
 * Software Languages
 ** Clojure
 
-*** [[https://github.com/clojure-emacs/clojure-mode][clojure-mode]]
+** [[https://github.com/clojure-emacs/clojure-mode][clojure-mode]]
 
 Provides major mode for Clojure(Script)
 
@@ -3958,7 +3862,6 @@ Provides major mode for Clojure(Script)
     :init
     (setq clojure-indent-style 'always-align)
     :hook ((clojure-mode . subword-mode)
-           (clojure-mode . aggressive-indent-mode)
            (clojure-mode . smartparens-strict-mode))
     :config
     (defun +clojure-ns-kill-ring-save ()
@@ -3971,8 +3874,9 @@ Provides major mode for Clojure(Script)
   (deftpunk-local-leader-def
     :keymaps 'clojure-mode-map
     "j" '(cider-jack-in :which-key "Jack into a Cider REPL")
-    "eb" '(cider-load-buffer :which-key "Load the buffer")
-    "n" '(cider-repl-set-ns :which-key "Set the namespace for the REPL"))
+    "l" '(cider-load-buffer :which-key "Load the buffer")
+    "r" '(cider-load-buffer-and-switch-to-repl-buffer :which-key "Load buffer & switch to REPL")
+    "s" '(cider-repl-set-ns :which-key "Set the namespace for the REPL"))
 #+end_src
 
 *** cider
@@ -4039,18 +3943,22 @@ I use SLY instead of SLIME for Common Lisp development - [[https://joaotavora.gi
 
 ** Emacs Lisp
 
+https://github.com/bbatsov/emacs-lisp-style-guide
+
 *** eldoc
 
 Turn on eldoc everywhere its useful.
 
 #+begin_src emacs-lisp :name eldoc
-(use-package eldoc
-  :init
-  (add-hook 'emacs-lisp-mode-hook #'eldoc-mode)
-  (add-hook 'ielm-mode-hook #'eldoc-mode)
-  (add-hook 'lisp-interaction-mode-hook #'eldoc-mode)
-  :config
-  (setq eldoc-idle-delay 0.1))
+  (use-package eldoc
+    :init
+    (add-hook 'emacs-lisp-mode-hook #'eldoc-mode)
+    (add-hook 'ielm-mode-hook #'eldoc-mode)
+    (add-hook 'lisp-interaction-mode-hook #'eldoc-mode)
+    :config
+    (setq eldoc-idle-delay 0.1))
+
+  (blackout 'eldoc-mode)
 #+end_src
 
 ** Java
@@ -4075,6 +3983,8 @@ This is really just for Java interop while doing Clojure.  It uses [[https://pro
 
 ** Python
 
+*** Python Configuration
+
 #+begin_src emacs-lisp :name python-mode
   (defun deftpunk/python-mode-hook ()
     "Setting up some basics for Python."
@@ -4084,25 +3994,11 @@ This is really just for Java interop while doing Clojure.  It uses [[https://pro
     (highlight-indent-guides-mode)
     (display-line-numbers-mode 1))
 
-  (defun +python-use-correct-flycheck-executables-h ()
-    "Use the correct Python executables for Flycheck."
-    (let ((executable python-shell-interpreter) w)
-      (save-excursion
-        (goto-char (point-min))
-        (save-match-data
-          (when (or (looking-at "#!/usr/bin/env \\(python[^ \n]+\\)")
-                    (looking-at "#!\\([^ \n]+/python[^ \n]+\\)"))
-            (setq executable (substring-no-properties (match-string 1))))))))
 
   (use-package python
     :mode ((rx ".py" string-end) . python-mode)
     :hook ((python-mode . deftpunk/python-mode-hook))
-           ;; (python-mode . +python-use-correct-flycheck-executables-h))
     :config
-    ;; Try to compile using the appropriate version of Python for
-    ;; the file.
-    ;; (setq-local flycheck-python-pycompile-executable executable)
-
     ;; Use pylint for work & flake8 for personal projects.
     (setq-local flycheck-python-pylint-executable "pylint")
     (setq-local flycheck-python-flake8-executable "flake8")
@@ -4123,6 +4019,8 @@ This is really just for Java interop while doing Clojure.  It uses [[https://pro
     ;;                          sp-point-before-same-p))
     )
 #+end_src
+
+**** TODO working folding for Python
 
 *** [[https://github.com/necaris/conda.el][conda.el]]
 
@@ -4168,6 +4066,26 @@ https://github.com/necaris/conda.el/issues/30
 #+begin_src emacs-lisp :name python-docstring-mode
   (use-package python-docstring-mode
     :straight (:host github :repo "glyph/python-docstring-mode"))
+#+end_src
+
+*** emacs-jupyter
+
+notes:
+https://github.com/nnicandro/emacs-zmq/issues/41#issuecomment-1546776529
+
+#+begin_src emacs-lisp :name emacs-jupyter
+  (use-package jupyter
+    :commands (jupyter-run-server-repl
+               jupyter-run-repl
+               jupyter-server-list-kernels)
+    :init (eval-after-load 'jupyter-org-extensions ; conflicts with my helm config, I use <f2 #>
+            '(unbind-key "C-c h" jupyter-org-interaction-mode-map)))
+#+end_src
+
+*** [[https://github.com/wbolster/emacs-python-pytest][emacs-python-pytest]]
+
+#+begin_src emacs-lisp :name emacs-python-pytest
+  (use-package python-pytest)
 #+end_src
 
 ** Rust
@@ -4216,7 +4134,10 @@ Based on rust-mode and adds a lot more functionality.
     ;; uncomment for less flashiness
     ;; (setq lsp-eldoc-hook nil)
     ;; (setq lsp-enable-symbol-highlighting nil)
-    ;; (setq lsp-signature-auto-activate nil)
+
+    ;; Signatures
+    (setq lsp-signature-auto-activate t
+          lsp-signature-render-documentation t)
 
     ;; comment to disable rustfmt on save
     (setq rustic-format-on-save t)
@@ -4340,7 +4261,7 @@ TODO: Check [[https://github.com/zkry/yaml-pro][yaml-pro]] which uses treesitter
 
 https://systemcrafters.cc/emacs-from-scratch/learn-to-love-the-terminal-modes/
 
-** [[https://github.com/akermu/emacs-libvterm][vterm]]
+*** [[https://github.com/akermu/emacs-libvterm][vterm]]
 
 A fully fledged terminal emulator within Emacs
 
@@ -4417,9 +4338,8 @@ TODO: Work out personal prefixes:
     (
      "Magit"
      (("d" magit-file-dispatch "do stuff with git")
-      ("g" magit-dispatch "Magit dispatch")
-      ("s" magit-status "magit status")
-      ("S" deftpunk:unpackaged/magit-status "Only magit-status")
+      ("g" magit-status "magit status")
+      ("G" deftpunk:unpackaged/magit-status "Only magit-status")
       ("l" magit-log "Git log"))
      "Change Hunks"
      (("h" helm-hunks-current-buffer "Helm Git hunks")
@@ -4490,8 +4410,7 @@ TODO: Work out personal prefixes:
       ("nt" org-roam-tag-add "Add Org Roam tag(s) to node files"))
 
      "Files, Directories, Projects"
-     (("fb" consult-bookmark "Bookmarks")
-      ("ff" counsel-find-file "Find Files")
+     (("ff" counsel-find-file "Find Files")
       ("ft" vterm "Terminal")
       ("fp" projectile-find-file "Find files in Project"))
 
@@ -4503,8 +4422,12 @@ TODO: Work out personal prefixes:
       ("q" save-buffers-kill-terminal "Exit Emacs")
       ("r" counsel-rg "Ripgrep")
       ("s" deftpunk/recenter-swiper "Swiper")
+      ("tt" lsp-treemacs-symbols "Display LSP symbols w/ Treemacs")
+      ("tn" treemacs "Treemacs")
+      ("v" vterm "Vterm")
       ("w" save-buffer "Save Buffer")
-      ("y" consult-yank-pop "Kill ring"))
+      ("x" restart-emacs "Restart Emacs")
+      ("y" helm-show-kill-ring "Kill ring"))
 
      "Version Control"
      (("g" version-control-hydra/body "Git stuff"))
@@ -4515,11 +4438,13 @@ TODO: Work out personal prefixes:
      "Exit"
      (("q" save-buffers-kill-terminal "Exit Emacs"))))
 
-  ;; (global-set-key (kbd "<BLAH-i>") 'hydra-jk/body)
-  (deftpunk-leader-def "" 'hydra-jk/body)
+    (global-set-key (kbd "<BLAH-i>") 'hydra-jk/body)
+    ;;(deftpunk-leader-def "" 'hydra-jk/body)
 #+end_src
 
-*** Righteous keybindings
+**** TODO Move from hydra to transient
+
+** Righteous keybindings
 
 #+begin_src emacs-lisp :name global-unbind
   (defun deftpunk/url-at-point ()
@@ -4572,167 +4497,85 @@ TODO: Work out personal prefixes:
 
   ;; These keys make great prefix keys so unbind them from whatever they were previously bound to.
   (global-unset-key (kbd "C-z"))
+  (global-unset-key (kbd "C-t"))
   (global-unset-key (kbd "C-q"))
   (global-set-key (kbd "C-q C-q") 'quoted-insert)
 
   ;; Call org-agenda from anywhere
   (global-set-key (kbd "s-a") 'org-agenda)
-  (global-set-key (kbd "s-i") 'consult-buffer)
+  (global-set-key (kbd "s-i") 'helm-mini)
   (global-set-key (kbd "s-s") 'swiper)
 
-  (global-set-key (kbd "s-j") 'crux-top-join-line)
-  (global-set-key (kbd "s-k") 'crux-kill-whole-line) ; or do zap-to-char?
+  (global-set-key (kbd "s-[") 'backward-paragraph)
+  (global-set-key (kbd "s-]") 'forward-paragraph)
 
-  (global-unset-key (kbd "s-l"))
-  (global-set-key (kbd "s-l") 'recenter-top-bottom)
-
-  (global-set-key (kbd "s-[") 'my/scroll-up-half-page)
-  (global-set-key (kbd "s-]") 'my/scroll-down-half-page)
-
-  (with-eval-after-load "org"
-    (define-key org-mode-map (kbd "C-'") nil))
-  (global-set-key (kbd "C-'") 'evilnc-comment-or-uncomment-lines)
-
-  ;;; Use s-g as another global keymap, ala the "g" keys in Vim/Neovim that are burned in my brain.
-  (global-unset-key (kbd "s-;"))
-  (global-unset-key (kbd "s-g"))
-  (general-create-definer deftpunk-gee-def
-    :keymaps 'override
-    :prefix "s-g")
-
-  ;; This "should" allow you to use ESC in more situations that would require C-g
-  (define-key key-translation-map (kbd "ESC") (kbd "C-g"))
-
-  ;; Make eval-last-sexp output prettier
-  (global-set-key [remap eval-last-sexp] 'pp-eval-last-sexp)
+  (global-set-key (kbd "s-{") 'my/scroll-up-half-page)
+  (global-set-key (kbd "s-}") 'my/scroll-down-half-page)
 
 
-  ;; Using C-j for jumping around.
-  (global-unset-key (kbd "C-j"))
-  (global-set-key (kbd "C-j") 'avy-goto-char-timer)
-  (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
 
-                                          ; (global-set-key (kbd "C-j f") 'avy-goto-char-in-line)
-                                          ; (global-set-key (kbd "C-j g") 'goto-line)
-                                          ; (global-set-key (kbd "C-j j") 'avy-goto-char-timer)
-                                          ; (global-set-key (kbd "C-j o") 'ace-link)
-                                          ; (global-set-key (kbd "C-j x") 'deftpunk/url-at-point)
+      ;; Because i keep missing the Alt key
+      (global-set-key (kbd "s-<") 'beginning-of-buffer)
+      (global-set-key (kbd "s->") 'end-of-buffer)
 
+      (with-eval-after-load "org"
+        (define-key org-mode-map (kbd "C-'") nil))
+      (global-set-key (kbd "C-'") 'evilnc-comment-or-uncomment-lines)
 
-                                          ; (global-set-key (kbd "C-w") 'backward-kill-word)
+      ;;; Use s-g as another global keymap, ala the "g" keys in Vim/Neovim that are burned in my brain.
+      (global-unset-key (kbd "s-;"))
+      (general-create-definer deftpunk-semi-def
+        :keymaps 'override
+        :prefix "s-;")
 
+      (global-unset-key (kbd "s-g"))
+      (general-create-definer deftpunk-gee-def
+        :keymaps 'override
+        :prefix "s-g"
+        "g" goto-line
+        "s-g" goto-line)
 
-  ;; Remap the normal help key so that i can use it as the usual readline key
-  (global-unset-key (kbd "C-h"))
-  (global-set-key (kbd "C-c h") 'help)
-  (global-set-key (kbd "C-c C-h") 'help)
+      ;; This "should" allow you to use ESC in more situations that would require C-g
+      (define-key key-translation-map (kbd "ESC") (kbd "C-g"))
 
-  (global-set-key (kbd "C-h") 'backward-delete-char)
-
-  ;; Some final remapping of Escape to "Quit"52121234
-
-  (global-set-key (kbd "<escape>") 'keyboard-quit)
-
-  ;; When C-g gets rebound.
-  (define-key key-translation-map (kbd "ESC") (kbd "C-g"))
-
-  (define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
-  (define-key minibuffer-local-ns-map [escape] 'minibuffer-keyboard-quit)
-  (define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
-  (define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
-  (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
-#+end_src
-
-*** Evil keybindings
-**** Insert mode
-
-#+begin_src emacs-lisp :name insert-mode
-  (define-key evil-insert-state-map (kbd "C-a") 'crux-move-beginning-of-line)
-  (define-key evil-insert-state-map (kbd "C-e") 'move-end-of-line)
-  (define-key evil-insert-state-map (kbd "C-k") 'crux-smart-kill-line)
-  (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
-#+end_src
-
-**** Motion mode
-
-#+begin_src emacs-lisp :name motion-mode
-  (evil-define-key nil evil-motion-state-map "<SPC>" nil)
-
-  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-#+end_src
-
-**** Normal mode
-
-TODO: Incorporate some of the commands into my normal keybindings.
+      ;; Make eval-last-sexp output prettier
+      (global-set-key [remap eval-last-sexp] 'pp-eval-last-sexp)
 
 
-Normal mode keybindings that I make for myself.
+      ;; Using C-j for jumping around.
+      (global-unset-key (kbd "C-j"))
+      (global-set-key (kbd "C-j") 'avy-goto-char-timer)
+      (global-set-key (kbd "s-f") 'avy-goto-char-in-line)
 
-#+begin_src emacs-lisp :name normal-state
-  ;; NOTE: The org-open-at-point will open a "Babel Results" window when this function is called
-  ;;       inside a src block
-  (defun deftpunk/url-at-point ()
-    "Make opening the url at point a little more flexible."
-    (interactive)
-    (if (string-equal major-mode "org-mode")
-        (unless (ignore-errors (or (org-open-at-point) t))
-          (ace-link))
-      (unless (ignore-errors (or (browse-url-at-point) t))
-        (ace-link))))
+                                              ; (global-set-key (kbd "C-j f") 'avy-goto-char-in-line)
+                                              ; (global-set-key (kbd "C-j g") 'goto-line)
+                                              ; (global-set-key (kbd "C-j j") 'avy-goto-char-timer)
+                                              ; (global-set-key (kbd "C-j o") 'ace-link)
+                                              ; (global-set-key (kbd "C-j x") 'deftpunk/url-at-point)
 
-  (general-define-key
-   :states 'normal
-   ;; run the macro in the q register
-   "Q" "@q"
-   "U" 'undo-fu-only-redo
-   "Y" "yg_"
 
-   ;; Any 'g'/'goto' global commands
-   "gd" 'lsp-find-definition  ; s-l g d
-   "gD" 'lsp-ui-peek-find-definition  ; s-l G d
-   "gr" 'lsp-find-references  ; s-l g r
-   "gR" 'lsp-ui-peek-find-references  ; s-l G r
+                                              ; (global-set-key (kbd "C-w") 'backward-kill-word)
 
-   "go" 'goto-char
-   "gs" 'evil-avy-goto-char-timer
-   "gx" 'deftpunk/url-at-point
 
-   ;; 'z' commands
-   "zs" 'my-save-word  ; add current word to personal dictionary.
+      ;; Remap the normal help key so that i can use it as the usual readline key
+      (global-unset-key (kbd "C-h"))
+      (global-set-key (kbd "C-c h") 'help)
+      (global-set-key (kbd "C-c C-h") 'help)
 
-   )
+      (global-set-key (kbd "C-h") 'backward-delete-char)
 
-  ;; Add some bindings to the window "C-w <something" map.
-  ;; Thu Nov 22 22:54:18 2018 - we have to bind evil-window-map this way, as
-  ;; opposed to using general.el to this to work(??)
-  (define-key evil-window-map "b" 'balance-windows)          ; replaces evil-window-bottom-right.
-  (define-key evil-window-map "d" 'ace-delete-window)        ; was unused
-  (define-key evil-window-map "f" 'make-frame)               ; was unused
-  (define-key evil-window-map "i" 'ace-maximize-window)      ; was unused
-  (define-key evil-window-map "r" 'winner-redo)              ; replaces evil-window-rotate-downwards
-  (define-key evil-window-map "u" 'winner-undo)              ; was unused
-  (define-key evil-window-map "-" 'ace-window)               ; was unused
+      ;; Some final remapping of Escape to "Quit"52121234
 
-  ;; Some easy window moving keys
-  ;; Thrs Nov 22 2018 9:54:34 - for some reason I had to use the define-key mapping scheme in order to
-  ;; get this to work(?)
-  (global-unset-key  (kbd "C-j"))
-  (global-unset-key  (kbd "C-k"))
-  (global-unset-key  (kbd "C-l"))
-  (global-unset-key (kbd "C-h"))
-  (define-key evil-normal-state-map (kbd "C-j") 'windmove-down)
-  (define-key evil-normal-state-map (kbd "C-k") 'windmove-up)
-  (define-key evil-normal-state-map (kbd "C-h") 'windmove-left)
-  (define-key evil-normal-state-map (kbd "C-l") 'windmove-right)
+      (global-set-key (kbd "<escape>") 'keyboard-quit)
 
-  ;; Use visual line motions even outside of visual-line-mode buffers
-  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+      ;; When C-g gets rebound.
+      (define-key key-translation-map (kbd "ESC") (kbd "C-g"))
 
-  ;; Combine avy with d, y, c motions
-  (evil-global-set-key 'motion "f" 'evil-avy-goto-char-in-line)
-
+      (define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
+      (define-key minibuffer-local-ns-map [escape] 'minibuffer-keyboard-quit)
+      (define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
+      (define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
+      (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
 #+end_src
 
 *** [[https://www.emacswiki.org/emacs/key-chord.el][key-chord]]
@@ -4750,7 +4593,7 @@ I use something similar in Neovim to bring up ":"
   (use-package key-chord
     :init
     (key-chord-mode 1))
-  (key-chord-define-global "jk" 'counsel-M-x)
+  (key-chord-define-global "jk" 'helm-M-x)
   (key-chord-define-global "hh" 'split-window-below)
   (key-chord-define-global "vv" 'split-window-right)
 #+end_src
@@ -4797,11 +4640,3 @@ https://robbmann.io/emacsd/#pyright-error-links-in-and-lowast-compilation-and-lo
 
 *** elips bug hunter
 https://github.com/Malabarba/elisp-bug-hunter
-
-*** Use ace-window dispatch to delete buffer in other window
-
-*** Why does <ESC> kill the other window??
-
-*** Get breadcrumb to work
-
-https://github.com/joaotavora/breadcrumb

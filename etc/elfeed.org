@@ -1,4 +1,4 @@
-* Blogs                                             :elfeed:
+* elfeed   :elfeed:
 ** Emacs                                            :Emacs:
 *** [[https://lucidmanager.org/tags/emacs/index.xml][More productive with Emacs]]
 *** [[http://www.reddit.com/r/emacs/.rss][Emacs on Reddit]]
