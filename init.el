@@ -1644,6 +1644,7 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
   :defer t
   :commands (lsp lsp-deferred)
   :hook (((python-mode python-ts-mode) . lsp)
+         (go-mode . lsp-deferred)
          (clojure-mode . lsp))
   :hook (lsp-mode . lsp-enable-which-key-integration)
   :custom
@@ -1667,7 +1668,7 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
   ;; From the corfu wiki -> https://github.com/minad/corfu/wiki#configuring-corfu-for-lsp-mode
   (defun my/lsp-mode-setup-completion ()
     (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
-           '(flex))) ;; Configure flex
+          '(flex))) ;; Configure flex
   :hook
   (lsp-completion-mode . my/lsp-mode-setup-completion)
   )
@@ -1921,6 +1922,10 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
     ;; quote pairs, which lisps doesn't use for strings:
     (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil)
     (sp-local-pair 'minibuffer-inactive-mode "`" nil :actions nil))
+
+(use-package go-mode
+  :config
+  (add-to-list 'auto-mode-alist '("\\.go\\'" . go-mode)))
 
 (use-package nim-mode
   :hook ((nim-mode . lsp)

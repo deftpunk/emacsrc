@@ -2565,6 +2565,7 @@ https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
     :defer t
     :commands (lsp lsp-deferred)
     :hook (((python-mode python-ts-mode) . lsp)
+           (go-mode . lsp-deferred)
            (clojure-mode . lsp))
     :hook (lsp-mode . lsp-enable-which-key-integration)
     :custom
@@ -2588,7 +2589,7 @@ https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
     ;; From the corfu wiki -> https://github.com/minad/corfu/wiki#configuring-corfu-for-lsp-mode
     (defun my/lsp-mode-setup-completion ()
       (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
-             '(flex))) ;; Configure flex
+            '(flex))) ;; Configure flex
     :hook
     (lsp-completion-mode . my/lsp-mode-setup-completion)
     )
@@ -2689,10 +2690,6 @@ was causing errors, e.g. lsp-mode wouldn't load.
     :config
     (lsp-treemacs-sync-mode 1))
 #+end_src
-
-*** imenu-list
-
-
 
 *** [[https://github.com/gagbo/consult-lsp][consult-lsp]]
 
@@ -3025,10 +3022,19 @@ https://ebzzry.com/en/emacs-pairs/ - comprehensive article about smartparens and
       (sp-local-pair 'minibuffer-inactive-mode "`" nil :actions nil))
 #+end_src
 
-
 *** Emacs Lisp
 
 *** Golang
+
+**** [[https://github.com/dominikh/go-mode.el][go-mode]]
+
+Mode for Golang
+
+#+begin_src emacs-lisp :name go-mode
+  (use-package go-mode
+    :config
+    (add-to-list 'auto-mode-alist '("\\.go\\'" . go-mode)))
+#+end_src
 
 *** Rust
 
@@ -3265,7 +3271,6 @@ A Sly tour for SLIME users: https://joaotavora.github.io/sly/#A-SLY-tour-for-SLI
   ;;       ;; load ASDF system
   ;;       (sly-quickload (file-name-base system-file)))))
 #+end_src
-
 
 *** [[https://elpa.gnu.org/packages/csv-mode.html][CSV mode]]
 
