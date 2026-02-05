@@ -1775,7 +1775,6 @@ TODO: Add version control buffers, e.g. magit, to =winner-boring-buffers= list
     (winner-mode +1))
 #+end_src
 
-
 *** [[https://elpa.gnu.org/packages/windresize.html][windresize]]
 
 Resize windows interactively.
