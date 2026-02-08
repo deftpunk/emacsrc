@@ -65,6 +65,7 @@
     ("chekign" "checking" nil :count 1)
     ("chruch" "church" nil :count 1)
     ("cirlce" "circle" nil :count 1)
+    ("cleanning" "cleaning" nil :count 1)
     ("cloes" "close" nil :count 1)
     ("cmdlien" "cmdline" nil :count 1)
     ("cofnig" "config" nil :count 1)

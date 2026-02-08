@@ -36,6 +36,14 @@ GPG:
 
 I am using emacs-plus: https://github.com/d12frosted/homebrew-emacs-plus
 
+Create ./config/emacs-plus/build.yml
+
+#+begin_example
+icon: modern-black-dragon
+patches:
+  - aggressive-read-buffering
+#+end_example
+
 1. brew tap d12frosted/emacs-plus
 2. brew install emacs-plus@<version>
 
