@@ -355,7 +355,7 @@
   ;; Hide commands in M-x which do not apply to the current mode.  Corfu
   ;; commands are hidden, since they are not used via M-x. This setting is
   ;; useful beyond Corfu.
-  (read-extended-command-predicate #'command-completion-default-include-p)
+  ;; (read-extended-command-predicate #'command-completion-default-include-p)
 
   :config
   ;; Replace yes/no prompts
@@ -567,8 +567,7 @@
 
 (use-package consult
   :ensure t
-  :bind (("C-c r" . consult-ripgrep)
-         ("s-i" . consult-buffer)
+  :bind (("s-i" . consult-buffer)
          ("s-s" . consult-line)
          ("s-r" . consult-ripgrep)
          ([remap Info-search] . consult-info)
@@ -602,13 +601,12 @@
   ;; For some commands and buffer sources it is useful to configure the
   ;; :preview-key on a per-command basis using the `consult-customize' macro.
   (consult-customize
-   consult-theme :preview-key '(:debounce 0.2 any)
-   consult-ripgrep consult-git-grep consult-grep consult-man
-   consult-bookmark consult-recent-file consult-xref
+   consult-ripgrep consult-git-grep consult-grep consult-man consult-find
+   consult-bookmark consult-recent-file consult-xref consult-projectile-find-file
    consult--source-bookmark consult--source-file-register
    consult--source-recent-file consult--source-project-recent-file
-   ;; :preview-key "M-."
-   :preview-key '(:debounce 0.4 any))
+   :preview-key "C-<SPC>")
+  ;; :preview-key '(:debounce 0.4 any))
 
   ;; Narrowing
   (setq consult-narrow-key "<") ; Prefix key for narrowing results
@@ -1108,32 +1106,6 @@ With optional argument FRAME, return the list of buffers of FRAME."
 
     (add-to-list 'consult-buffer-sources 'beframe-consult-source))
   (beframe-mode 1))
-
-(use-package emacs
-  :ensure nil
-  :bind (("H-m" . my/monocle-mode)
-         ("C-x C-1" . my/monocle-mode))
-  :config
-  (defvar my/window-configuration nil
-    "Current window configuration.
-Intended for use by `my/monocle-mode.")
-
-  (define-minor-mode my/monocle-mode
-    "Toggle between multiple windows and single window.
-This is the equivalent of maximising a window.  Tiling window
-managers such as DWM, BSPWM refer to this state as 'monocle'."
-    :lighter " [M]"
-    :global nil
-    (let ((win my/window-configuration))
-      (if (one-window-p)
-          (when win
-            (set-window-configuration win))
-        (setq my/window-configuration (current-window-configuration))
-        (when (window-parameter nil 'window-slot)
-            (let ((buf (current-buffer)))
-              (other-window 1)
-              (switch-to-buffer buf)))
-        (delete-other-windows)))))
 
 (use-package transpose-frame
   :bind
@@ -2425,7 +2397,14 @@ The DWIM behaviour of this command is as follows:
   :prefix "s-t")
 
 (deftpunk-toggle-bindings
- "l" '("Flycheck overlay" . flycheck-overlay-toggle))
+  "l" '("Flycheck overlay" . flycheck-overlay-toggle))
+
+(general-create-definer deftpunk-goto
+  :keymaps 'override
+  :prefix "s-g")
+
+(deftpunk-goto
+ "g" '("Go to line" . goto-line-preview))
 
 (general-create-definer deftpunk-goto
   :keymaps 'override
