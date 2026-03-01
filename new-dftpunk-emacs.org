@@ -1,6 +1,6 @@
 #+title Deftpunk Emacs
 #+author: Erick Bodine <erick.bodine@gmail.com>
-#+property: header-args :tangle "/Users/ebodine/MyStuff/dftpunk-emacs/init.el"
+#+property: header-args :tangle "/Users/bodine/MyStuff/dftpunk-emacs/init.el"
 #+startup: content
 #+auto_tangle: t
 
@@ -55,7 +55,7 @@ After package installations and dynamic lib compilations run `all-the-icons-inst
 
 * Early-Init
 :properties:
-:header-args: :tangle "/Users/ebodine/MyStuff/dftpunk-emacs/early-init.el"
+:header-args: :tangle "/Users/bodine/MyStuff/dftpunk-emacs/early-init.el"
 :end:
 #+name: early-init-header-block
 #+begin_src emacs-lisp :exports none

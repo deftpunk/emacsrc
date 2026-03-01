@@ -20,6 +20,11 @@ transient/
 dash-docsets/
 .cache/
 devdocs/
+devdocs-browser/
+elfeed/
+mason/
+tramp
+etc/authinfo.gpg
 
 var/
 eln-cache/
