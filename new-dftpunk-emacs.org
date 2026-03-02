@@ -2531,8 +2531,7 @@ Automatically install and use tree-sitter major modes in Emacs 29+. If the tree-
 
 Comparison of the various providers -> https://www.reddit.com/r/emacs/comments/1c0v28k/lspmode_vs_lspbridge_vs_lspce_vs_eglot/
 
-
-*** [[https://github.com/deirn/mason.el][mason.el]]
+**** [[https://github.com/deirn/mason.el][mason.el]]
 
 A mason installer for LSP servers, DAP servers, linters and formatters inspired by [[https://github.com/mason-org/mason.nvim][mason.nvim]] (which is pretty awesome)
 
@@ -2558,7 +2557,7 @@ A mason installer for LSP servers, DAP servers, linters and formatters inspired 
                   ))))
 #+end_src
 
-*** [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]]
+**** [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]]
 
 - M-x lsp-rename
 - M-x lsp-execute-code-action / C-c C-c a
@@ -2647,7 +2646,7 @@ https://emacs-lsp.github.io/lsp-mode/tutorials/how-to-turn-off/
   ;;                                           (lsp))))  ; or lsp-deferred
 #+end_src
 
-*** [[https://github.com/emacs-lsp/lsp-ui][lsp-ui]]
+**** [[https://github.com/emacs-lsp/lsp-ui][lsp-ui]]
 
 Higher level UI elements for lsp-mode, e.g. flycheck support, code lenses.
 
@@ -2669,7 +2668,7 @@ Higher level UI elements for lsp-mode, e.g. flycheck support, code lenses.
           lsp-ui-doc-include-signature t))
 #+end_src
 
-*** [[https://github.com/emacs-lsp/lsp-ivy][lsp-ivy]]
+**** [[https://github.com/emacs-lsp/lsp-ivy][lsp-ivy]]
 
 Ivy interface to workspace symbol functionality offered by `lsp-mode`.
 
@@ -2680,11 +2679,11 @@ Ivy interface to workspace symbol functionality offered by `lsp-mode`.
   (use-package lsp-ivy)
 #+end_src
 
-*** [[https://github.com/emacs-lsp/dap-mode/tree/a31f2496605d076d50d49393116f77fbb29f2631][dap-mode]]
+**** [[https://github.com/emacs-lsp/dap-mode/tree/a31f2496605d076d50d49393116f77fbb29f2631][dap-mode]]
 
 https://emacs-lsp.github.io/dap-mode/page/configuration/#python
 
-*** lsp-treemacs
+**** lsp-treemacs
 
 TODO: Need to figure out how to change from using all-the-icons
 was causing errors, e.g. lsp-mode wouldn't load.
@@ -2695,6 +2694,8 @@ was causing errors, e.g. lsp-mode wouldn't load.
     :config
     (lsp-treemacs-sync-mode 1))
 #+end_src
+
+**** imenu-list
 
 *** [[https://github.com/gagbo/consult-lsp][consult-lsp]]
 
