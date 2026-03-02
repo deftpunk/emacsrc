@@ -3042,27 +3042,6 @@ Mode for Golang
     (add-to-list 'auto-mode-alist '("\\.go\\'" . go-mode)))
 #+end_src
 
-*** Rust
-
-*** Golang
-
-The LSP server is gopls - pronounced "Go please" - found here: https://go.dev/gopls/#installation
-
-
-
-**** [[https://github.com/dominikh/go-mode.el][go-mode]]
-
-Emacs mode for editing Golang code.
-
-#+begin_src emacs-lisp :name go-mode
-  (use-package go-mode
-    :init
-    (add-hook 'before-save-hook #'gofmt-before-save)
-    :hook (go-mode . (lsp-deferred subword-word))
-    )
-#+end_src
-
-
 **** [[https://github.com/nlamirault/gotest.el][gotest]]
 
 Run Golang tests and programs from Emacs.
