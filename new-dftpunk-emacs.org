@@ -751,13 +751,13 @@ If you want to use these commands, then you should bind them in hl-todo-mode-map
     :ensure (hl-todo :depth nil) ; see https://github.com/alphapapa/magit-todos/issues/171
     :init
     (setq hl-todo-highlight-punctuation ":"
-          hl-todo-keyword-faces '(("TODO" . "#FF0000")
-                                  ("FIXME" . "#FF9999")
-                                  ("FAIL" . "#FF0000")
-                                  ("DEPRECATED" . "#1F39EF")
-                                  ("HACK" . "#FF0000")
-                                  ("XXX" . "#FF0000")
-                                  ("NOTE" . "#1E90FF")))
+          hl-todo-keyword-faces '(("TODO:" . "#FF0000")
+                                  ("FIXME:" . "#FF9999")
+                                  ("FAIL:" . "#FF0000")
+                                  ("DEPRECATED:" . "#1F39EF")
+                                  ("HACK:" . "#FF0000")
+                                  ("XXX:" . "#FF0000")
+                                  ("NOTE:" . "#1E90FF")))
     :hook (prog-mode . hl-todo-mode))
 #+end_src
 
@@ -2535,26 +2535,32 @@ Comparison of the various providers -> https://www.reddit.com/r/emacs/comments/1
 
 A mason installer for LSP servers, DAP servers, linters and formatters inspired by [[https://github.com/mason-org/mason.nvim][mason.nvim]] (which is pretty awesome)
 
-#+begin_src emacs-lisp :name mason.el
-  (use-package mason
-    :ensure (mason :type git :host github :repo "deirn/mason.el" :main "mason.el" :depth nil)
-    :hook
-    (after-init-hook .
+TODO: Do I really want this instead of installing these via homebrew?
 
-  ;; ensure that certain servers are installed.
-  #'(mason-ensure (lambda ()
-                  (ignore-errors (mason-install "basedpyright"))
-                  (ignore-errors (mason-install "ruff"))
-                  (ignore-errors (mason-install "taplo"))
-                  (ignore-errors (mason-install "jdtls"))
-                  (ignore-errors (mason-install "clojure_lsp"))
-                  (ignore-errors (mason-install "gopls"))
-                  (ignore-errors (mason-install "rust_analyzer"))
-                  (ignore-errors (mason-install "yamlls"))
-                  (ignore-errors (mason-install "jsonls"))
-                  (ignore-errors (mason-install "marksman"))
-                  (ignore-errors (mason-install "groovyls"))
-                  ))))
+#+begin_src emacs-lisp :name mason.el
+  (elpaca (mason :type git :host github :repo "deirn/mason.el" :main "mason.el" :depth nil))
+  (with-eval-after-load 'mason
+    (mason-ensure))
+  ;; (use-package mason
+  ;;   :ensure (mason :type git :host github :repo "deirn/mason.el" :main "mason.el" :depth nil)
+  ;;   :commands mason-ensure
+  ;;   :hook
+  ;;   (after-init-hook .
+
+  ;;                    ;; ensure that certain servers are installed.
+  ;;                    #'(mason-ensure (lambda ()
+  ;;                                      (ignore-errors (mason-install "basedpyright"))
+  ;;                                      (ignore-errors (mason-install "ruff"))
+  ;;                                      (ignore-errors (mason-install "taplo"))
+  ;;                                      (ignore-errors (mason-install "jdtls"))
+  ;;                                      (ignore-errors (mason-install "clojure_lsp"))
+  ;;                                      (ignore-errors (mason-install "gopls"))
+  ;;                                      (ignore-errors (mason-install "rust_analyzer"))
+  ;;                                      (ignore-errors (mason-install "yamlls"))
+  ;;                                      (ignore-errors (mason-install "jsonls"))
+  ;;                                      (ignore-errors (mason-install "marksman"))
+  ;;                                      (ignore-errors (mason-install "groovyls"))
+  ;;                                      ))))
 #+end_src
 
 **** [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]]
@@ -2821,6 +2827,17 @@ Integrates consult and flycheck with the =consult-flycheck= command.  The follow
   (use-package consult-flycheck
     :after (consult flycheck))
     #+end_src
+
+***** [[https://github.com/eki3z/consult-todo][consult-todo]]
+
+Search and jump to hl-todo keywords in buffer(s) with consult.
+
+#+begin_src emacs-lisp :consult-todo
+  (elpaca consult-todo)
+  (with-eval-after-load 'hl-todo
+    (load "~/.emacs.d/var/elpaca/repos/consult-todo/consult-todo.el")
+    (require 'consult-todo))
+#+end_src
 
 ***** [[https://github.com/konrad1977/flycheck-overlay][flycheck-overlay]]
 

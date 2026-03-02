@@ -1,3 +1,6 @@
+# MacOS junk
+.DS_Store
+
 # Compiled
 *.elc
 
@@ -26,9 +29,15 @@ mason/
 tramp
 etc/authinfo.gpg
 
+backup/
+backups/
+
 var/
 eln-cache/
+elpa/
+mason/
 straight/
+transient/
 auto-save-list/
 elpaca/
 undo-fu-session/

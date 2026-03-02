@@ -404,13 +404,13 @@
   :ensure (hl-todo :depth nil) ; see https://github.com/alphapapa/magit-todos/issues/171
   :init
   (setq hl-todo-highlight-punctuation ":"
-        hl-todo-keyword-faces '(("TODO" . "#FF0000")
-                                ("FIXME" . "#FF9999")
-                                ("FAIL" . "#FF0000")
-                                ("DEPRECATED" . "#1F39EF")
-                                ("HACK" . "#FF0000")
-                                ("XXX" . "#FF0000")
-                                ("NOTE" . "#1E90FF")))
+        hl-todo-keyword-faces '(("TODO:" . "#FF0000")
+                                ("FIXME:" . "#FF9999")
+                                ("FAIL:" . "#FF0000")
+                                ("DEPRECATED:" . "#1F39EF")
+                                ("HACK:" . "#FF0000")
+                                ("XXX:" . "#FF0000")
+                                ("NOTE:" . "#1E90FF")))
   :hook (prog-mode . hl-todo-mode))
 
 (use-package doom-modeline
@@ -1612,25 +1612,29 @@ With optional argument FRAME, return the list of buffers of FRAME."
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
 
-(use-package mason
-  :ensure (mason :type git :host github :repo "deirn/mason.el" :main "mason.el" :depth nil)
-  :hook
-  (after-init-hook .
+(elpaca (mason :type git :host github :repo "deirn/mason.el" :main "mason.el" :depth nil))
+(with-eval-after-load 'mason
+  (mason-ensure))
+;; (use-package mason
+;;   :ensure (mason :type git :host github :repo "deirn/mason.el" :main "mason.el" :depth nil)
+;;   :commands mason-ensure
+;;   :hook
+;;   (after-init-hook .
 
-;; ensure that certain servers are installed.
-#'(mason-ensure (lambda ()
-                (ignore-errors (mason-install "basedpyright"))
-                (ignore-errors (mason-install "ruff"))
-                (ignore-errors (mason-install "taplo"))
-                (ignore-errors (mason-install "jdtls"))
-                (ignore-errors (mason-install "clojure_lsp"))
-                (ignore-errors (mason-install "gopls"))
-                (ignore-errors (mason-install "rust_analyzer"))
-                (ignore-errors (mason-install "yamlls"))
-                (ignore-errors (mason-install "jsonls"))
-                (ignore-errors (mason-install "marksman"))
-                (ignore-errors (mason-install "groovyls"))
-                ))))
+;;                    ;; ensure that certain servers are installed.
+;;                    #'(mason-ensure (lambda ()
+;;                                      (ignore-errors (mason-install "basedpyright"))
+;;                                      (ignore-errors (mason-install "ruff"))
+;;                                      (ignore-errors (mason-install "taplo"))
+;;                                      (ignore-errors (mason-install "jdtls"))
+;;                                      (ignore-errors (mason-install "clojure_lsp"))
+;;                                      (ignore-errors (mason-install "gopls"))
+;;                                      (ignore-errors (mason-install "rust_analyzer"))
+;;                                      (ignore-errors (mason-install "yamlls"))
+;;                                      (ignore-errors (mason-install "jsonls"))
+;;                                      (ignore-errors (mason-install "marksman"))
+;;                                      (ignore-errors (mason-install "groovyls"))
+;;                                      ))))
 
 (use-package lsp-mode
   :defer t
