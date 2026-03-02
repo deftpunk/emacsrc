@@ -881,7 +881,7 @@
 (use-package tramp
   :ensure nil
   :custom
-  (tramp-default-method "ssh")
+  (tramp-default-method "rsync")
   ;; https://www.reddit.com/r/emacs/comments/lp8bjb/comment/goai6ig/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
   (tramp-ssh-controlmaster-options (concat
                                     "-o ControlPath=\~/.ssh/cons/ssh-%%r@%%h:%%p "
@@ -1612,6 +1612,26 @@ With optional argument FRAME, return the list of buffers of FRAME."
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
 
+(use-package mason
+  :ensure (mason :type git :host github :repo "deirn/mason.el" :main "mason.el" :depth nil)
+  :hook
+  (after-init-hook .
+
+;; ensure that certain servers are installed.
+#'(mason-ensure (lambda ()
+                (ignore-errors (mason-install "basedpyright"))
+                (ignore-errors (mason-install "ruff"))
+                (ignore-errors (mason-install "taplo"))
+                (ignore-errors (mason-install "jdtls"))
+                (ignore-errors (mason-install "clojure_lsp"))
+                (ignore-errors (mason-install "gopls"))
+                (ignore-errors (mason-install "rust_analyzer"))
+                (ignore-errors (mason-install "yamlls"))
+                (ignore-errors (mason-install "jsonls"))
+                (ignore-errors (mason-install "marksman"))
+                (ignore-errors (mason-install "groovyls"))
+                ))))
+
 (use-package lsp-mode
   :defer t
   :commands (lsp lsp-deferred)
@@ -2095,6 +2115,12 @@ With optional argument FRAME, return the list of buffers of FRAME."
   (markdown-command "/opt/homebrew/bin/multimarkdown")
   (markdown-header-scaling t))
 
+(deftpunk-local-leader-def
+  :keymaps 'markdown-mode-map
+  "s b" '(markdown-insert-bold :which-key "Make the region bold")
+  "s i" '(markdown-insert-italic :which-key "Make the region italics.")
+  )
+
 (use-package yaml-mode
   :ensure t
   :defer t
@@ -2433,3 +2459,16 @@ The DWIM behaviour of this command is as follows:
 (run-with-idle-timer 1.2 t 'garbage-collect)
 
 (server-start)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   '("5c7720c63b729140ed88cf35413f36c728ab7c70f8cd8422d9ee1cedeb618de5" default)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

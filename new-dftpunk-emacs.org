@@ -1374,7 +1374,7 @@ https://www.reddit.com/r/emacs/comments/lp8bjb/tramp_keeps_reopening_connections
   (use-package tramp
     :ensure nil
     :custom
-    (tramp-default-method "ssh")
+    (tramp-default-method "rsync")
     ;; https://www.reddit.com/r/emacs/comments/lp8bjb/comment/goai6ig/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
     (tramp-ssh-controlmaster-options (concat
                                       "-o ControlPath=\~/.ssh/cons/ssh-%%r@%%h:%%p "
@@ -2531,6 +2531,33 @@ Automatically install and use tree-sitter major modes in Emacs 29+. If the tree-
 
 Comparison of the various providers -> https://www.reddit.com/r/emacs/comments/1c0v28k/lspmode_vs_lspbridge_vs_lspce_vs_eglot/
 
+
+*** [[https://github.com/deirn/mason.el][mason.el]]
+
+A mason installer for LSP servers, DAP servers, linters and formatters inspired by [[https://github.com/mason-org/mason.nvim][mason.nvim]] (which is pretty awesome)
+
+#+begin_src emacs-lisp :name mason.el
+  (use-package mason
+    :ensure (mason :type git :host github :repo "deirn/mason.el" :main "mason.el" :depth nil)
+    :hook
+    (after-init-hook .
+
+  ;; ensure that certain servers are installed.
+  #'(mason-ensure (lambda ()
+                  (ignore-errors (mason-install "basedpyright"))
+                  (ignore-errors (mason-install "ruff"))
+                  (ignore-errors (mason-install "taplo"))
+                  (ignore-errors (mason-install "jdtls"))
+                  (ignore-errors (mason-install "clojure_lsp"))
+                  (ignore-errors (mason-install "gopls"))
+                  (ignore-errors (mason-install "rust_analyzer"))
+                  (ignore-errors (mason-install "yamlls"))
+                  (ignore-errors (mason-install "jsonls"))
+                  (ignore-errors (mason-install "marksman"))
+                  (ignore-errors (mason-install "groovyls"))
+                  ))))
+#+end_src
+
 *** [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]]
 
 - M-x lsp-rename
@@ -3016,6 +3043,43 @@ Mode for Golang
 
 *** Rust
 
+*** Golang
+
+The LSP server is gopls - pronounced "Go please" - found here: https://go.dev/gopls/#installation
+
+
+
+**** [[https://github.com/dominikh/go-mode.el][go-mode]]
+
+Emacs mode for editing Golang code.
+
+#+begin_src emacs-lisp :name go-mode
+  (use-package go-mode
+    :init
+    (add-hook 'before-save-hook #'gofmt-before-save)
+    :hook (go-mode . (lsp-deferred subword-word))
+    )
+#+end_src
+
+
+**** [[https://github.com/nlamirault/gotest.el][gotest]]
+
+Run Golang tests and programs from Emacs.
+
+Example bindings:
+
+#+begin_example emacs-lisp
+  (define-key go-mode-map (kbd "C-x f") 'go-test-current-file)
+  (define-key go-mode-map (kbd "C-x t") 'go-test-current-test)
+  (define-key go-mode-map (kbd "C-x p") 'go-test-current-project)
+  (define-key go-mode-map (kbd "C-x b") 'go-test-current-benchmark)
+  (define-key go-mode-map (kbd "C-x x") 'go-run)
+#+end_example
+
+#+begin_src emacs-lisp :name gotest
+  (use-package gotest)
+#+end_src
+
 *** Nim
 
 #+begin_src emacs-lisp :name nimlang
@@ -3321,6 +3385,12 @@ Major mode for editing [[http://daringfireball.net/projects/markdown/][Markdown]
     :custom
     (markdown-command "/opt/homebrew/bin/multimarkdown")
     (markdown-header-scaling t))
+
+  (deftpunk-local-leader-def
+    :keymaps 'markdown-mode-map
+    "s b" '(markdown-insert-bold :which-key "Make the region bold")
+    "s i" '(markdown-insert-italic :which-key "Make the region italics.")
+    )
 #+end_src
 
 *** YAML
