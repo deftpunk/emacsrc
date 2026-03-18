@@ -248,15 +248,15 @@ The Manual: https://github.com/progfolio/elpaca/blob/master/doc/manual.md
 use-package manual: https://www.gnu.org/software/emacs/manual/html_node/use-package/index.html#SEC_Contents
 
 #+begin_src emacs-lisp :name elpaca
-(defvar elpaca-installer-version 0.11)
+(defvar elpaca-installer-version 0.12)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
                               :ref nil :depth 1 :inherit ignore
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                              :build (:not elpaca--activate-package)))
-(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+                              :build (:not elpaca-activate)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-sources-directory))
        (build (expand-file-name "elpaca/" elpaca-builds-directory))
        (order (cdr elpaca-order))
        (default-directory repo))
@@ -326,7 +326,7 @@ use-package manual: https://www.gnu.org/software/emacs/manual/html_node/use-pack
 Better manage some keybindings.
 
 #+begin_src emacs-lisp :name general.el
-  (use-package general)
+  (use-package general :ensure t :demand t)
 
   (elpaca-wait)
 
@@ -352,7 +352,7 @@ Better manage some keybindings.
 Clean up the modeline.  Adds =:blackout= to =use-package= declarations.
 
 #+begin_src emacs-lisp :name blackout
-  (use-package blackout)
+  (use-package blackout :demand t)
   (elpaca-wait)
 #+end_src
 

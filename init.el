@@ -23,15 +23,15 @@
 (defconst IS-MAC (eq system-type 'darwin))
 (defconst IS-LINUX (eq system-type 'gnu/linux))
 
-(defvar elpaca-installer-version 0.11)
+(defvar elpaca-installer-version 0.12)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
                               :ref nil :depth 1 :inherit ignore
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                              :build (:not elpaca--activate-package)))
-(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+                              :build (:not elpaca-activate)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-sources-directory))
        (build (expand-file-name "elpaca/" elpaca-builds-directory))
        (order (cdr elpaca-order))
        (default-directory repo))
@@ -95,7 +95,7 @@
   ;; Don't install anything. Defer execution of BODY
   ;; (elpaca nil (message "deferred"))
 
-(use-package general)
+(use-package general :ensure t :demand t)
 
 (elpaca-wait)
 
@@ -115,7 +115,7 @@
   :keymaps 'override
   :prefix "C-c g")
 
-(use-package blackout)
+(use-package blackout :demand t)
 (elpaca-wait)
 
 (use-package on
@@ -1779,6 +1779,11 @@ With optional argument FRAME, return the list of buffers of FRAME."
 (use-package consult-flycheck
   :after (consult flycheck))
 
+(elpaca consult-todo)
+(with-eval-after-load 'hl-todo
+  (load "~/.emacs.d/var/elpaca/repos/consult-todo/consult-todo.el")
+  (require 'consult-todo))
+
 (use-package flyover
   :ensure (flyover :type git
                    :host github
@@ -1922,6 +1927,8 @@ With optional argument FRAME, return the list of buffers of FRAME."
 (use-package go-mode
   :config
   (add-to-list 'auto-mode-alist '("\\.go\\'" . go-mode)))
+
+(use-package gotest)
 
 (use-package nim-mode
   :hook ((nim-mode . lsp)
@@ -2428,13 +2435,6 @@ The DWIM behaviour of this command is as follows:
 
 (deftpunk-toggle-bindings
   "l" '("Flycheck overlay" . flycheck-overlay-toggle))
-
-(general-create-definer deftpunk-goto
-  :keymaps 'override
-  :prefix "s-g")
-
-(deftpunk-goto
- "g" '("Go to line" . goto-line-preview))
 
 (general-create-definer deftpunk-goto
   :keymaps 'override
