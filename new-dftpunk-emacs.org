@@ -1,6 +1,6 @@
 #+title Deftpunk Emacs
 #+author: Erick Bodine <erick.bodine@gmail.com>
-#+property: header-args :tangle "/Users/bodine/MyStuff/dftpunk-emacs/init.el"
+#+property: header-args :tangle "/Users/ebodine/MyStuff/emacsd/init.el"
 #+startup: content
 #+auto_tangle: t
 
@@ -55,7 +55,7 @@ After package installations and dynamic lib compilations run `all-the-icons-inst
 
 * Early-Init
 :properties:
-:header-args: :tangle "/Users/bodine/MyStuff/dftpunk-emacs/early-init.el"
+:header-args: :tangle "/Users/ebodine/MyStuff/emacsd/early-init.el"
 :end:
 #+name: early-init-header-block
 #+begin_src emacs-lisp :exports none
@@ -1988,7 +1988,6 @@ Unobtrusively trim spaces from the end of a line on save.
 
 #+begin_src emacs-lisp :name ws-butler
   (use-package ws-butler
-    :ensure (ws-butler :type git :host github :repo "hlissner/ws-butler")
     :blackout t
     :hook ((text-mode . ws-butler-mode)
            (prog-mode . ws-butler-mode))

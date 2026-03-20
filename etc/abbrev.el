@@ -47,6 +47,7 @@
     ("bindign" "binding" nil :count 1)
     ("bindigns" "bindings" nil :count 1)
     ("biship" "Bishop" nil :count 2)
+    ("bithday" "birthday" nil :count 1)
     ("blessign" "blessing" nil :count 2)
     ("blessigns" "blessings" nil :count 1)
     ("boidne" "Bodine" nil :count 1)
@@ -112,7 +113,11 @@
     ("embarassing" "embarrassing" nil :count 1)
     ("emcas" "Emacs" nil :count 1)
     ("emial" "email" nil :count 1)
+<<<<<<< HEAD
     ("enought" "enough" nil :count 1)
+=======
+    ("entertianing" "entertaining" nil :count 1)
+>>>>>>> cf7a054 (Change path to generate early-init.el & init.el)
     ("entitiy" "entity" nil :count 1)
     ("environemnt" "environment" nil :count 1)
     ("environmrnt" "environment" nil :count 1)
@@ -195,9 +200,15 @@
     ("intterrrupt" "interrupt" nil :count 1)
     ("iwht" "with" nil :count 1)
     ("iwll" "will" nil :count 1)
+<<<<<<< HEAD
     ("iwth" "with" nil :count 1)
     ("jeannie" "Jeannie" nil :count 29)
     ("jsut" "just" nil :count 4)
+=======
+    ("iwth" "with" nil :count 2)
+    ("jeannie" "Jeannie" nil :count 30)
+    ("jsut" "just" nil :count 7)
+>>>>>>> cf7a054 (Change path to generate early-init.el & init.el)
     ("jumplcoud" "jumpcloud" nil :count 2)
     ("jumpng" "jumping" nil :count 1)
     ("kepping" "keeping" nil :count 0)

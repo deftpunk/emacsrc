@@ -1231,7 +1231,6 @@ With optional argument FRAME, return the list of buffers of FRAME."
               ("C-c C-c" . wgrep-finish-edit)))
 
 (use-package ws-butler
-  :ensure (ws-butler :type git :host github :repo "hlissner/ws-butler")
   :blackout t
   :hook ((text-mode . ws-butler-mode)
          (prog-mode . ws-butler-mode))
