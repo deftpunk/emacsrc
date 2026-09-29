@@ -63,3 +63,5 @@ loaddefs.el~
 # treesitter
 tree-sitter-module/
 tree-sitter/
+
+*.orig
