@@ -913,7 +913,6 @@
   :ensure nil
   :custom
   (save-place-limit 100)
- (save-place-file (expand-file-name "saveplace.el" user-emacs-directory))
   (save-place-forget-unreadable-files nil)  ; Setting to t has the potential to make exiting slow
   :config
   (save-place-mode 1)
