@@ -1,4 +1,4 @@
-;;; early-init.el --- Early Init -*- lexical-binding: t; -*-
+ ;;; early-init.el --- Early Init -*- lexical-binding: t; -*-
 
 ;; Backup of `gc-cons-threshold' and `gc-cons-percentage' before startup.
 (defvar backup-gc-cons-threshold gc-cons-threshold)
