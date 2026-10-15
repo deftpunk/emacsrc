@@ -35,7 +35,7 @@
 
    ;; Without this, Emacs will try to resize itself to a specific column size
    frame-inhibit-implied-resize t
-   
+
       inhibit-startup-screen t
       inhibit-startup-message t
       inhibit-startup-buffer-menu t
@@ -43,7 +43,7 @@
       inhibit-splash-screen t
       initial-buffer-choice nil
       inhibit-x-resources t
-      
+
 ;; Give up some bidirectional functionality for slightly faster re-display.
    bidi-inhibit-bpa t)
 
@@ -64,15 +64,15 @@
 
 ;;; Security
 
-(setq
+;(setq
  ;; Defining TLS and security variables in early-init.el guarantees that any
  ;; network connection made during the initialization sequence is secure.
  ;; Prompts if there are cert issues.
- gnutls-verify-error t
+ ;gnutls-verify-error t
  ;; Ensure SSL/TLS connections checks
- tls-checktrust gnutls-verify-error
+; tls-checktrust gnutls-verify-error
  ;; Stronger GnuTLS encryption
- gnutls-min-prime-bits 3072)
+; gnutls-min-prime-bits 3072)
 
 ;;; Package
 (setq
@@ -81,7 +81,7 @@
  ;; post-early-init.el, pre-init.el, init.el, or post-init.el.
  use-package-expand-minimally t
  use-package-minimum-reported-time (if init-file-debug 0 0.1)
- use-package-verbose init-file-debug
+ use-package-verbose t
  use-package-always-ensure (not noninteractive)
  use-package-enable-imenu-support t
 
@@ -93,13 +93,21 @@
  ;; overridden variables in init.el. (This also offers the possibility to
  ;; download packages in post-early-init.el, for users who need it.)
  package-enable-at-startup nil  ; Let the init.el file handle this
+ )
 
- package-archives '(("melpa"        . "https://melpa.org/packages/")
-                    ("gnu"          . "https://elpa.gnu.org/packages/")
-                    ("nongnu"       . "https://elpa.nongnu.org/nongnu/"))
- package-archive-priorities '(("gnu"    . 99)
-                              ("nongnu" . 80)
-                              ("melpa"  . 70)))
+;; My work laptop is subject to Zscaler and other nonsense, which for some reason thinks
+;; that elpa.nongnu.org is a "naughty" domain <sigh>
+(if (equal (system-name) "HPE-TVQJ5P23MH")
+    (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+			     ("gnu"   . "https://elpa.gnu.org/packages/"))
+	  package-archive-priorities '(("melpa" . 99)
+				       ("gnu"   . 80)))
+  (setq  package-archives '(("melpa"        . "https://melpa.org/packages/")
+			    ("gnu"          . "https://elpa.gnu.org/packages/"))
+;			    ("nongnu"       . "https://elpa.nongnu.org/nongnu/"))
+	 package-archive-priorities '(("gnu"    . 99)
+;				      ("nongnu" . 80)
+				      ("melpa"  . 70))))
 
 
 

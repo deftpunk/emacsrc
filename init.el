@@ -140,6 +140,7 @@
 	 (markdown-mode . mixed-pitch-mode)))
 
 ;;; modus theme configuration.
+(use-package modus-themes)
 
 ;;
 ;; Color name redirection for use with custom faces
@@ -286,7 +287,7 @@
                 (set-face-attribute 'fixed-pitch nil :family my-default-fixed-pitch-font)
                 (set-face-attribute 'variable-pitch nil :family my-default-variable-pitch-font)
 		(my-reload-fonts)
-		
+
 
 	    ;; I'd like to have select on the modeline change the foreground rather than
 	    ;; than the background and that needs a custom hook.
@@ -562,7 +563,7 @@
                          "/sudo:"
                          "/tmp/"
                          "~$"
-                         "COMMIT_EDITMSG")                         
+                         "COMMIT_EDITMSG")
       recentf-max-menu-items 15)
 
 ;; Wait for all of the Emacs settings to be set & then start in on installing packages we want.
@@ -629,7 +630,7 @@
   (vertico-count 45) ;; show more candidates
  (vertico-cycle t) ;; Enable cycling for `vertico-next/previous'
  :init
- 
+
  (defun vertico-move-end-of-line-or-insert (arg)
     "Move to end of line or insert current candidate.
    ARG lines can be used.
@@ -642,7 +643,7 @@
           (when (= vertico--total 1)
             (vertico-exit)))
       (move-end-of-line arg)))
- 
+
  (vertico-mode))
 
 ;; Using `find-file to initiate TRAMP connections.
@@ -694,7 +695,7 @@
   ;;(set-face-attribute 'orderless-match-face-3 nil
   ;;                    :foreground "#d700d7")
   )
-  
+
 ;; Enable marginalia
 (use-package marginalia
   :ensure t
@@ -738,7 +739,7 @@
   ;; register formatting, adds thin separator lines, register sorting and hides
   ;; the window mode line.
   (advice-add #'register-preview :override #'consult-register-window)
-  
+
   ;; Optionally configure the register formatting. This improves the register
   (setq register-preview-delay 0.25
         register-preview-function #'consult-register-format)
@@ -812,7 +813,7 @@
    :map minibuffer-local-map
    ("C-c C-c" . embark-collect)
    ("C-c C-e" . embark-export))
-   
+
   :init
 
   ;; Optionally replace the key help with a completing-read interface
