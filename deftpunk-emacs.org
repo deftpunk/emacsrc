@@ -75,6 +75,7 @@ Mastering Emacs
 
 #+begin_src emacs-lisp
   ;; directly from minimal emacs
+  (defvar minimal-emacs-optimize-file-name-handler-alist t)
   (defvar minimal-emacs--old-file-name-handler-alist (default-toplevel-value
                                                       'file-name-handler-alist))
 
@@ -529,130 +530,48 @@ Helping keep my emacs directory cleaned up.
 
 ** Appearance
 
+*** Fonts
+
+Mix monospace ("fixed-pitch|fixed-width") and variable pitch ("proportional") fonts.  Setting fonts comes before setting themes .... just in case.
+
+#+begin_src emacs-lisp
+  ;; Main typeface
+  (set-face-attribute 'default nil :family "Hack Nerd Font" :height 130)
+
+  ;; Variable/Proportional font
+  (set-face-attribute 'variable-pitch nil :family "Hack Nerd Font Propo")
+
+  ;; Monospace/Fixed-pitch/Fixed-width font
+  (set-face-attribute 'fixed-pitch nil :family "Hack Nerd Font Mono")
+#+end_src
+
 *** Themes
 
-Some other possible themes:
-- https://github.com/bbatsov/tokyo-night-emacs
-- https://gitlab.com/magus/modus-catppuccin
-- https://github.com/doomemacs/themes
+Other themes based on [[https://github.com/protesilaos/modus-themes][Modus themes]]:
+https://codeberg.org/ashton314/modus-nordic-night (use midnight?)
+https://gitlab.com/magus/modus-catppuccin
 
-**** [[https://github.com/bbatsov/batppuccin-emacs][batpuccin]]
+**** [[https://github.com/kiennq/modus-zenburn][modus-zenburn]]
 
-An opinionated port of the Catpuccin color scheme.
-
-Override any color across all flavors:
-#+begin_example
-(setq batppuccin-override-colors-alist
-      '(("bat-base" . "#000000")
-        ("bat-text" . "#ffffff")))
-#+end_example
-
-The override alist takes precedence over the built-in palette. Color names match the canonical Catppuccin names with a bat- prefix (e.g., bat-rosewater, bat-mauve, bat-surface0).
+A zenburn built on modus themes
 
 #+begin_src emacs-lisp
-  (use-package batppuccin
-    :ensure t
+  (use-package modus-zenburn
+    :ensure (modus-zenburn :type git
+  			 :host github
+  			 :repo "https://github.com/kiennq/modus-zenburn")
+    :defer 0
     :custom
-    (batppuccin-use-variable-pitch t)
-    (batppuccin-scale-headings nil)
+    (modus-themes-bold-constructs t)
+    (modus-themes-italic-constructs t)
+    (modus-themes-mixed-fonts t)
     :config
-    (load-theme 'batppuccin-mocha t))
+    (enable-theme 'modus-zenburn)
+    (modus-themes-load-theme 'modus-zenburn)
+    )
 #+end_src
 
-**** [[https://github.com/LionyxML/auto-dark-emacs][autodark]]
-
-Tracks your OS dark/light mode and switches themes to match.
-
-#+begin_src emacs-lisp
-(use-package auto-dark
-  :config
-  (setq auto-dark-themes '((batppuccin-mocha) (batppuccin-latte)))
-  (auto-dark-mode 1))
-#+end_src
-
-**** [[https://github.com/purcell/ns-auto-titlebar][ns-auto-titlebar]]
-
-Deal with dark/light mode macos ui elements like the scrollbar.
-
-#+begin_src emacs-lisp
-(use-package ns-auto-titlebar
-  :ensure t
-  :config
-  (ns-auto-titlebar-mode 1))
-#+end_src
-
-*** [[https://github.com/emacsmirror/mixed-pitch][Mixed pitch font]]
-
-Allows use to mix monospace and variable pitch ("proportional") fonts.
-
-#+begin_src emacs-lisp
-;; Mixed-pitch mode. I use this in markdown and org modes currently.
-(defvar my-default-fixed-pitch-font "DejaVuSansM Nerd Font"
-  "Default fixed-pitch font family.")
-(defvar my-default-variable-pitch-font "Helvetica"
-  "Default variable-pitch font family.")
-
-;; Expand the default font height enough that emacs looks normal when opened.
-(set-face-attribute 'default nil :height 160)
-
-;; Tooltips are set to 1.3 for readability
-(set-face-attribute 'tooltip nil :height 1.3)
-
-(use-package mixed-pitch
-  :ensure t
-  :init
-  (set-face-attribute 'variable-pitch nil
-                      :font my-default-variable-pitch-font
-                      :height 1.0)
-
-  ;; Ensure the fixed-pitch face strictly inherits from the default font
-  (set-face-attribute 'fixed-pitch nil
-                      :inherit 'default)
-
-  ;; Leave cursor-type alone; don't let mixed-pitch swap it to a bar cursor.
-  (setq mixed-pitch-variable-pitch-cursor nil)
-
-  :hook ((org-mode . mixed-pitch-mode)
-	 (markdown-mode . mixed-pitch-mode)))
-#+end_src
-
-*** Reload fonts
-
-#+begin_src emacs-lisp
-;; Loop through all the buffers and force mixed-pitch-mode ones to reload.
-(defun my-reload-fonts ()
-  (interactive)
-  (dolist (buf (buffer-list))
-    (with-current-buffer buf
-      (when (bound-and-true-p mixed-pitch-mode)
-	(mixed-pitch-mode)))))
-
-;; Add the font changes onto the enable theme hook
-(add-hook 'enable-theme-functions
-          (lambda (theme)
-            (progn
-		(set-face-attribute 'default nil :family my-default-fixed-pitch-font)
-                (set-face-attribute 'fixed-pitch nil :family my-default-fixed-pitch-font)
-                (set-face-attribute 'variable-pitch nil :family my-default-variable-pitch-font)
-		(my-reload-fonts)
-		
-	    ;; I have my own handling for tab line modified outside of modus
-	    (if (facep 'tab-line-tab-modified)
-		(set-face-attribute 'tab-line-tab-modified nil :foreground 'unspecified))
-
-            ;; Additional color overrides modus doesn't control by default
-	    (if (facep 'tab-line-tab-inactive)
-		(set-face-attribute 'tab-line-tab-inactive nil :foreground
-				    (modus-themes-get-color-value 'fg-dim t)))
-
-	    (if (facep 'my-hl-imenu-face)
-		(set-face-attribute 'my-hl-imenu-face nil :foreground
-				    (modus-themes-get-color-value 'fg-hl-imenu t)))
-
-	    (if (facep 'my-modeline-position-face)
-		(set-face-attribute 'my-modeline-position-face nil :background
-				    (modus-themes-get-color-value 'bg-mode-line-emphasis t))))))
-#+end_src
+*** Modeline
 
 ** Emacs defaults and builtin minor mode configuration.
 
@@ -769,7 +688,11 @@ Show column and line numbers on the modeline.
   (column-number-mode 1)
 #+end_src
 
-*** comint
+*** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Shell-Prompts.html][comint]]
+
+comint is a library that handles all process and network interactions in Emacs.
+
+https://www.masteringemacs.org/article/comint-writing-command-interpreter
 
 #+begin_src emacs-lisp
 (setq ansi-color-for-comint-mode t ; Renders native ANSI colors in the shell
@@ -873,6 +796,35 @@ Show column and line numbers on the modeline.
 
 ;;  `prettify-symbols-mode': Show unprettified symbol at point
 (setq prettify-symbols-unprettify-at-point 'right-edge)
+#+end_src
+
+*** [[https://www.emacswiki.org/emacs/RecentFiles][recentf]]
+
+Keep track of recently used files.
+
+#+begin_src emacs-lisp :name recentf
+  (defvar dftpunk-recentf-file (expand-file-name "recentf-save.el" no-littering-etc-directory))
+    (unless (file-exists-p dftpunk-recentf-file)
+      (write-region "" nil dftpunk-recentf-file))
+
+  (use-package recentf
+    :ensure nil
+    :custom
+    (recentf-max-saved-items 250)
+    (recentf-max-menu-items 15)
+    ;; disable recentf-cleanup on Emacs start, because it can cause
+    ;; problems with remote files, ie. Tramp files.
+    (recentf-auto-cleanup 'never)
+    (recentf-save-file dftpunk-recentf-file)
+    (recentf-exclude (list "/scp:"
+                              "/ssh:"
+                              "/sudo:"
+                              "/tmp/"
+                              "~$"
+                              "COMMIT_EDITMSG"
+                              ))
+    :init
+    (recentf-mode +1))
 #+end_src
 
 *** savehist
@@ -1028,21 +980,18 @@ Instead of rewriting complex logic from scratch or adding heavy external depende
 **** minibuffer configuration
 
 #+begin_src emacs-lisp
-(use-package emacs
-  :ensure nil
-  :custom
-  ;; Enable context menu. `vertico-multiform-mode' adds a menu in the minibuffer
-  ;; to switch display modes.
-  (context-menu-mode t)
-  ;; Support opening new minibuffers from inside existing minibuffers.
-  (enable-recursive-minibuffers t)
-  ;; Hide commands in M-x which do not work in the current mode.  Vertico
-  ;; commands are hidden in normal buffers. This setting is useful beyond
-  ;; Vertico.
-  (read-extended-command-predicate #'command-completion-default-include-p)
-  ;; Do not allow the cursor in the minibuffer prompt
-  (minibuffer-prompt-properties
-   '(read-only t cursor-intangible t face minibuffer-prompt)))
+    ;; Enable context menu. `vertico-multiform-mode' adds a menu in the minibuffer
+    ;; to switch display modes.
+    (setq context-menu-mode t
+  	;; Support opening new minibuffers from inside existing minibuffers.
+  	enable-recursive-minibuffers t
+  	;; Hide commands in M-x which do not work in the current mode.  Vertico
+  	;; commands are hidden in normal buffers. This setting is useful beyond
+  	;; Vertico.
+  	read-extended-command-predicate #'command-completion-default-include-p
+  	;; Do not allow the cursor in the minibuffer prompt
+  	minibuffer-prompt-properties
+  	'(read-only t cursor-intangible t face minibuffer-prompt))
 #+end_src
 
 *** [[https://github.com/oantolin/orderless][orderless]]
@@ -1233,24 +1182,21 @@ https://emacsredux.com/blog/2026/07/14/all-aboard-embark/
 https://emacsredux.com/blog/2026/07/13/cape-corfus-best-friend/
 
 #+begin_src emacs-lisp
-  (use-package emacs
-    :custom
     ;; TAB cycle if there are only few candidates
     ;; (completion-cycle-threshold 3)
 
     ;; Enable indentation+completion using the TAB key.
     ;; `completion-at-point' is often bound to M-TAB.
-    (tab-always-indent 'complete)
+    (setq tab-always-indent 'complete
 
-    ;; Emacs 30 and newer: Disable Ispell completion function.
-    ;; Try `cape-dict' as an alternative.
-    (text-mode-ispell-word-completion nil)
+  	;; Emacs 30 and newer: Disable Ispell completion function.
+  	;; Try `cape-dict' as an alternative.
+  	text-mode-ispell-word-completion nil
 
-    ;; Hide commands in M-x which do not apply to the current mode.  Corfu
-    ;; commands are hidden, since they are not used via M-x. This setting is
-    ;; useful beyond Corfu.
-    (read-extended-command-predicate #'command-completion-default-include-p))
-
+  	;; Hide commands in M-x which do not apply to the current mode.  Corfu
+  	;; commands are hidden, since they are not used via M-x. This setting is
+  	;; useful beyond Corfu.
+  	read-extended-command-predicate #'command-completion-default-include-p)
 
   (use-package corfu
     :custom
@@ -1359,7 +1305,7 @@ General configuration of org mode.
     (use-package org
       :blackout (org-mode . " Org")
       :hook ((org-mode . (lambda ()
-    			 (visual-line-mode)
+    			 (visual-line-mode +1)
   			 (toggle-truncate-lines nil))))
       :general
       (:keymaps 'org-mode-map
@@ -1453,21 +1399,6 @@ Bonus: The tangle is async.
 Implements a "modern" style for Org buffers.
 
 #+begin_src emacs-lisp :name org-modern
-  ;; REALLY, REALLY hide the stars
-  ;; https://www.reddit.com/r/emacs/comments/1tjypp3/how_i_finally_his_stars_in_front_of_org_headings/
-  (font-lock-add-keywords 'org-mode
-      '(("^\\(\\*+ \\)"
-         (1 (progn (put-text-property (match-beginning 1) (match-end 1) 'display " ")
-                   (put-text-property (match-beginning 1) (match-end 1) 'face '(:height 0.1))
-                   nil))))
-      'append)
-
-  ;; https://github.com/minad/org-modern/issues/106#issuecomment-1344659316
-  ;; Fixes issue mentioned above
-  (defun disable-point-adjustment (&rest args)
-    (setq disable-point-adjustment t))
-  (advice-add 'org-beginning-of-line :after #'disable-point-adjustment)
-
   (use-package org-modern
     :blackout
     :after org
@@ -1517,11 +1448,32 @@ Make invisible parts of Org elements appear visible - toggles visibilty of empha
     ;; Make bold and italic and similar nice by default, since we now have org-appear
     ;; to show them as raw when needed.
     (org-hide-emphasis-markers t))
-#+end_src
+    #+end_src
 
 ** Buffers, Windows, Frames
 
-*** [[https://github.com/abo-abo/ace-window][ace-window]]
+
+*** Buffer configuration
+
+#+begin_src emacs-lisp
+(setq custom-buffer-done-kill t
+
+      ;; Disable auto-adding a new line at the bottom when scrolling.
+      next-line-add-newlines nil
+
+      ;; This setting forces Emacs to save bookmarks immediately after each
+      ;; change. Benefit: you never lose bookmarks if Emacs crashes.
+      bookmark-save-flag 1
+
+      uniquify-buffer-name-style 'forward
+
+      ;; Disable fontification during user input to reduce lag in large buffers.
+      ;; Also helps marginally with scrolling performance.
+      redisplay-skip-fontification-on-input t)
+#+end_src
+
+*** Window configuration
+**** [[https://github.com/abo-abo/ace-window][ace-window]]
 
 Selecting a window/frame to switch to
 
@@ -1558,26 +1510,7 @@ o - maximize current window
     (set-face-attribute 'aw-leading-char-face nil :height 4.0))
 #+end_src
 
-*** buffer management
-
-#+begin_src emacs-lisp
-(setq custom-buffer-done-kill t
-
-      ;; Disable auto-adding a new line at the bottom when scrolling.
-      next-line-add-newlines nil
-
-      ;; This setting forces Emacs to save bookmarks immediately after each
-      ;; change. Benefit: you never lose bookmarks if Emacs crashes.
-      bookmark-save-flag 1
-
-      uniquify-buffer-name-style 'forward
-
-      ;; Disable fontification during user input to reduce lag in large buffers.
-      ;; Also helps marginally with scrolling performance.
-      redisplay-skip-fontification-on-input t)
-#+end_src
-
-*** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Window-Convenience.html][winner-mode]]
+**** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Window-Convenience.html][winner-mode]]
 
 Restore or redo your window layout.
 
@@ -1590,7 +1523,7 @@ C-c - <right> winner-redo
   (winner-mode 1)
 #+end_src
 
-*** windmove
+**** windmove
 
 #+begin_src emacs-lisp
   (use-package windmove
@@ -1601,8 +1534,10 @@ C-c - <right> winner-redo
            ("s-l" . windmove-right)))
 #+end_src 
 
-** Miscellaneous utilities
+*** Frame configuration
 
+** Miscellaneous utilities
+*** projectile
 *** [[https://github.com/bbatsov/super-save/][super-save]]
 
 Handle saving our files so that we don't have to "C-x C-s" all of the time.
@@ -1619,6 +1554,33 @@ Handle saving our files so that we don't have to "C-x C-s" all of the time.
     (setq auto-save-default nil)
     (super-save-mode +1))
 #+end_src
+** Source Control
+*** Magit
+** Software development
+
+
+*** Software dev helpers
+
+**** flycheck
+
+**** lsp-mode
+
+**** smartparens or lispy &/or electric-pair-mode
+
+*** Software dev languages
+
+
+**** Clojure
+
+***** Cider
+
+**** Golang
+
+**** Nim
+
+**** Python
+
+**** Shell
 
 ** Miscellaneous file types
 
@@ -1639,18 +1601,6 @@ pandoc - For PDF/DOCX export
 ** Keybindings and keychord
 
 Keybindings that aren't directly associated with a major/minor mode.
-
-*** [[https://github.com/bbatsov/crux][crux]]
-
-A Collection of Ridiculously Useful eXtensions for Emacs. crux bundles many useful interactive commands to enhance your overall Emacs experience.
-
-Most of the crux commands are related to the editing experience, but there are also a bunch of utility commands that are just very useful to have (e.g. crux-open-with and crux-reopen-as-root).
-
-#+begin_src emacs-lisp
-  (use-package crux
-    :bind (("C-a" . crux-move-beginning-of-line)
-           ("C-k" . crux-smart-kill-line)))
-#+end_src
 
 *** [[https://github.com/purcell/unfill][unfill]]
 

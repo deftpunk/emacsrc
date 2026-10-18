@@ -6,16 +6,54 @@
 ;;;
 ;;; Code:
 
-;; Backup of `gc-cons-threshold' and `gc-cons-percentage' before startup.
-(defvar backup-gc-cons-threshold gc-cons-threshold)
-(defvar backup-gc-cons-percentage gc-cons-percentage)
+;; directly from minimal emacs
+(defvar minimal-emacs-optimize-file-name-handler-alist t)
+(defvar minimal-emacs--old-file-name-handler-alist (default-toplevel-value
+                                                    'file-name-handler-alist))
 
-;; Temporarily raise the garbage collection threshold to its maximum value.
-;; It will be restored later to controlled values.
-(setq gc-cons-threshold (if noninteractive
-                            268435456 ; 256 Mb
-                          most-positive-fixnum)
-      gc-cons-percentage 1.0)
+(defun minimal-emacs--respect-file-handlers (fn args-left)
+  "Respect file handlers.
+FN is the function and ARGS-LEFT is the same argument as `command-line-1'.
+Emacs processes command-line files very early in startup. These files may
+include special paths like TRAMP paths, so restore `file-name-handler-alist' for
+this stage of initialization."
+  (let ((file-name-handler-alist (if args-left
+                                     minimal-emacs--old-file-name-handler-alist
+                                   file-name-handler-alist)))
+    (funcall fn args-left)))
+
+(defun minimal-emacs--restore-file-name-handler-alist ()
+  "Restore `file-name-handler-alist'."
+  (set-default-toplevel-value
+   'file-name-handler-alist
+   ;; Merge instead of overwrite to preserve any changes made since startup.
+   (delete-dups (append file-name-handler-alist
+                        minimal-emacs--old-file-name-handler-alist))))
+
+(when (and minimal-emacs-optimize-file-name-handler-alist
+           (not init-file-debug)
+           (not noninteractive))
+  ;; Determine the state of bundled libraries using calc-loaddefs.el. If
+  ;; compressed, retain the gzip handler in `file-name-handler-alist`. If
+  ;; compiled or neither, omit the gzip handler during startup for improved
+  ;; startup and package load time.
+  (set-default-toplevel-value
+   'file-name-handler-alist
+   (if (locate-file-internal "calc-loaddefs.el" load-path)
+       nil
+     (list (rassq 'jka-compr-handler
+                  minimal-emacs--old-file-name-handler-alist))))
+
+  ;; Ensure the new value persists through any current let-binding.
+  (put 'file-name-handler-alist 'initial-value
+       minimal-emacs--old-file-name-handler-alist)
+
+  ;; Emacs processes command-line files very early in startup. These files may
+  ;; include special paths TRAMP. Restore `file-name-handler-alist'.
+  (advice-add 'command-line-1 :around #'minimal-emacs--respect-file-handlers)
+
+  (add-hook 'emacs-startup-hook #'minimal-emacs--restore-file-name-handler-alist
+            101))
 
 ;; Time how long Emacs starts up.
 ;; Use a hook so the message doesn't get clobbered by other messages.
@@ -26,6 +64,17 @@
                              (float-time
                               (time-subtract after-init-time before-init-time)))
                      gcs-done)))
+
+;; Backup of `gc-cons-threshold' and `gc-cons-percentage' before startup.
+(defvar backup-gc-cons-threshold gc-cons-threshold)
+(defvar backup-gc-cons-percentage gc-cons-percentage)
+
+;; Temporarily raise the garbage collection threshold to its maximum value.
+;; It will be restored later to controlled values.
+(setq gc-cons-threshold (if noninteractive
+                            268435456 ; 256 Mb
+                          most-positive-fixnum)
+      gc-cons-percentage 1.0)
 
 ;; Set language to UTF-8
 (set-language-environment "UTF-8")
@@ -41,7 +90,6 @@
 (unless (member "/opt/homebrew/bin" exec-path)
   (add-to-list 'exec-path "/opt/homebrew/bin"))
 
-;; Get rid of some window chrome.
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
@@ -85,57 +133,98 @@
 (setq use-file-dialog nil
       use-dialog-box nil)
 
-;; Prefer loading newer compiled files.
-(setq load-prefer-newer t)
-
 (setq
- ;; Defining these early guarantees that the behavior and macro expansion of
- ;; use-package are configured before the first use-package form is evaluated in
- ;; post-early-init.el, pre-init.el, init.el, or post-init.el.
- use-package-expand-minimally t
- use-package-minimum-reported-time (if init-file-debug 0 0.1)
- use-package-verbose t
- use-package-always-ensure (not noninteractive)
- use-package-enable-imenu-support t
+ ;; Defining TLS and security variables in early-init.el guarantees that any
+ ;; network connection made during the initialization sequence is secure.
+ ;; Prompts if there are cert issues.
+ gnutls-verify-error t
+ ;; Ensure SSL/TLS connections checks
+ tls-checktrust gnutls-verify-error
+ ;; Stronger GnuTLS encryption
+ gnutls-min-prime-bits 3072)
 
- ;;; package.el
+;; Prefer loading newer compiled files.
+ (setq load-prefer-newer t)
+ 
+ (setq
+  ;; Defining these early guarantees that the behavior and macro expansion of
+  ;; use-package are configured before the first use-package form is evaluated in
+  ;; post-early-init.el, pre-init.el, init.el, or post-init.el.
+  use-package-expand-minimally t
+  use-package-minimum-reported-time (if init-file-debug 0 0.1)
+  use-package-verbose t
+  use-package-always-ensure (not noninteractive)
+  use-package-enable-imenu-support t
 
- ;; Placing the use-package-* in early-init.el ensures the package variables are
- ;; populated before package.el is initialized. This prevents cases where Emacs
- ;; might attempt to fetch from default repositories before it evaluates the
- ;; overridden variables in init.el. (This also offers the possibility to
- ;; download packages in post-early-init.el, for users who need it.)
- package-enable-at-startup nil  ; Let the init.el file handle this
- )
+  ;;; package.el
+
+  ;; Placing the use-package-* in early-init.el ensures the package variables are
+  ;; populated before package.el is initialized. This prevents cases where Emacs
+  ;; might attempt to fetch from default repositories before it evaluates the
+  ;; overridden variables in init.el. (This also offers the possibility to
+  ;; download packages in post-early-init.el, for users who need it.)
+  package-enable-at-startup nil  ; Let the init.el file handle this
+  )
 
 (setq package-archives '(("melpa"        . "https://melpa.org/packages/")
-			 ("gnu"          . "https://elpa.gnu.org/packages/")
-			 ("nongnu"       . "https://elpa.nongnu.org/nongnu/")))
+			  ("gnu"          . "https://elpa.gnu.org/packages/")
+			  ("nongnu"       . "https://elpa.nongnu.org/nongnu/")))
 
 ;; Unbind some Super keys on my Mac
-(global-unset-key (kbd "s-a"))    ; mark-whole-buffer (C-x h)
-(global-unset-key (kbd "s-b"))    ; undefined
-;; global-unset-key (kbd "s-c"))  ; copy selection
-(global-unset-key (kbd "s-d"))    ; isearch-repeat-backward
-;; global-unset-key (kbd "s-e"))  ; pull string from kill ring into search string
-(global-unset-key (kbd "s-f"))    ; isearch-forward (C-s)
-(global-unset-key (kbd "s-g"))    ; isearch-repeat-forward
-(global-unset-key (kbd "s-h"))    ; ns-do-hide-emamcs
-(global-unset-key (kbd "s-i"))    ; undefined
-(global-unset-key (kbd "s-j"))    ; exchange-point-and-mark (C-x C-x)
-(global-unset-key (kbd "s-k"))    ; kill-current-buffer
-;; (global-unset-key (kbd "s-l")) ; goto-line
-(global-unset-key (kbd "s-m"))    ; iconify-frame
-;; (global-unset-key (kbd "s-n")) ; new frame
-(global-unset-key (kbd "s-o"))   ; open file
-(global-unset-key (kbd "s-p"))   ; ns-print-buffer
-;; (global-unset-key (kbd "s-q")) ; kill Emacs
-(global-unset-key (kbd "s-r"))   ; undefined
-(global-unset-key (kbd "s-s"))   ; save-buffer
-(global-unset-key (kbd "s-t"))   ; menu-set-font
-(global-unset-key (kbd "s-u"))   ; revert buffer
+(global-unset-key (kbd "s-a"))     ; mark-whole-buffer (C-x h)
+(global-unset-key (kbd "s-b"))     ; undefined
+;; global-unset-key (kbd "s-c"))   ; copy selection
+(global-unset-key (kbd "s-d"))     ; isearch-repeat-backward
+(global-unset-key (kbd "s-e"))     ; pull string from kill ring into search string
+(global-unset-key (kbd "s-f"))     ; isearch-forward (C-s)
+(global-unset-key (kbd "s-g"))     ; isearch-repeat-forward
+(global-unset-key (kbd "s-h"))     ; ns-do-hide-emamcs
+(global-unset-key (kbd "s-i"))     ; undefined
+(global-unset-key (kbd "s-j"))     ; exchange-point-and-mark (C-x C-x)
+(global-unset-key (kbd "s-k"))     ; kill-current-buffer
+(global-unset-key (kbd "s-l"))     ; goto-line
+(global-unset-key (kbd "s-m"))     ; iconify-frame
+;; (global-unset-key (kbd "s-n"))  ; new frame
+(global-unset-key (kbd "s-o"))     ; open file
+(global-unset-key (kbd "s-p"))     ; ns-print-buffer
+;; (global-unset-key (kbd "s-q"))  ; kill Emacs
+(global-unset-key (kbd "s-r"))     ; undefined
+(global-unset-key (kbd "s-s"))     ; save-buffer
+(global-unset-key (kbd "s-t"))     ; menu-set-font
+(global-unset-key (kbd "s-u"))     ; revert buffer
 ;; (global-unset-key (kbd "s-v"))  ; paste selection
 (global-unset-key (kbd "s-w"))     ; delete-frame
 ;; (global-unset-key (kbd "s-x"))  ; kill selection
 (global-unset-key (kbd "s-y"))     ; ns-paste-secondary
 ;; (global-unset-key (kbd "s-z"))  ; undo
+
+;;; Miscellaneous
+
+(set-language-environment "UTF-8")
+
+(setq
+ ;; Increase how much is read from processes in a single chunk
+ read-process-output-max (* 1024 1024)
+ process-adaptive-read-buffering nil
+
+ ;; Don't ping things that look like domain names.
+ ffap-machine-p-known 'reject
+
+ warning-minimum-level (if init-file-debug :warning :error)
+
+  ;; Establish a strict baseline for suppressed warnings.
+ ;; - defvaralias: Emacs emits warnings when an alias is defined for a variable
+ ;;   that already exists. In modern, lazy-loaded configurations, this occurs
+ ;;   frequently and is almost always benign.
+ ;; - lexical-binding: Emacs warns about third-party packages that lack
+ ;;   lexical-binding. Because end users cannot easily fix upstream source code,
+ ;;   these warnings create noise without providing actionable value.
+ warning-suppress-types '((defvaralias) (lexical-binding))
+ warning-inhibit-types '((files missing-lexbind-cookie))
+
+ ;; Disable warnings from the legacy advice API. They aren't useful.
+ ad-redefinition-action 'accept)
+
+;; Set gc-cons back to original values.
+(setq gc-cons-threshold backup-gc-cons-threshold
+          gc-cons-percentage backup-gc-cons-percentage)
