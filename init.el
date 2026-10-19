@@ -6,6 +6,9 @@
 ;;;
 ;;; Code:
 
+(defconst IS-MAC (eq system-type 'darwin))
+(defconst IS-LINUX (eq system-type 'gnu/linux))
+
 (setq
  ;; The initial buffer is created during startup even in non-interactive
  ;; sessions, and its major mode is fully initialized. Modes like `text-mode',
@@ -256,6 +259,15 @@
 ;; immediately during compilation output processing.
 (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
 
+(setq save-interprogram-past-before-kill t
+      kill-do-not-save-duplicates t
+      kill-ring-max 128
+      mark-ring-max 128)
+
+(use-package delsel
+  :ensure nil ; no need to install it as it is built-in
+  :hook (after-init . delete-selection-mode))
+
 ;; By default, Emacs "updates" its ui more often than it needs to
 (setq which-func-update-delay 1.0)
 (with-no-warnings
@@ -278,6 +290,23 @@
 
  ;; Force the mouse to paste text at the active cursor position.
  mouse-yank-at-point t)
+
+(use-package hl-line
+  :ensure nil
+  :custom
+  (hl-line-sticky-flag nil) ; Don't highlight current line across windows.
+  :config
+  (defun eat/hl-line-setup ()
+    "Disable `hl-line-mode' if region is active."
+    (when (and (bound-and-true-p hl-line-mode)
+               (region-active-p))
+      (hl-line-unhighlight)))
+
+  (with-eval-after-load 'hl-line
+    (add-hook 'post-command-hook #'eat/hl-line-setup))
+
+  (add-hook 'prog-mode-hook #'hl-line-mode)
+  (add-hook 'text-mode-hook #'hl-line-mode))
 
 (setq enable-recursive-minibuffers t ; Allow nested minibuffers
 
@@ -348,9 +377,10 @@
    '(register-alist                    ; macros
      extended-command-history
      mark-ring
-     global-mark-ring        ; marks
-        search-ring
-	regexp-search-ring))  ; searches
+     global-mark-ring                  ; marks
+     search-ring
+     kill-ring
+     regexp-search-ring))              ; searches
   :init
   (savehist-mode))
 
@@ -361,11 +391,18 @@
 (put 'org-table-formula-history             'history-length 50)
 (put 'extended-command-history              'history-length 50)
 (put 'ido-file-history                      'history-length 50)
-(put 'helm-M-x-input-history                'history-length 50)
 (put 'minibuffer-history                    'history-length 50)
 (put 'ido-buffer-history                    'history-length 50)
 (put 'buffer-name-history                   'history-length 50)
 (put 'file-name-history                     'history-length 50)
+
+;; From Doom Emacs
+;; Strip out any accumulated properties from the kill-ring
+(add-hook 'savehist-save-hook
+	  (lambda ()
+	    (setq kill-ring
+		  (mapcar #'substring-no-properties
+			  (cl-remove-if-not #'stringp kill-ring)))))
 
 (use-package saveplace
   :ensure nil
@@ -384,6 +421,10 @@
       show-paren-highlight-openparen t
       show-paren-when-point-inside-paren t
       show-paren-when-point-in-periphery t)
+
+(setq visual-line-fringe-indicators '(nil right-curly-arrow))
+(global-visual-line-mode)
+(blackout 'visual-line-mode)
 
 (use-package crux
   :bind (("C-a" . crux-move-beginning-of-line)
@@ -543,6 +584,23 @@
   (define-key consult-narrow-map [C-left] #'consult-narrow-cycle-backward)
   (define-key consult-narrow-map [C-right] #'consult-narrow-cycle-forward)
 
+  ;; Get consult-yank-pop to use the system clipboard
+  ;; https://github.com/minad/consult/issues/443
+  (defun save-interprogram-paste ()
+  ;; copyied from kill-new
+  (let ((interprogram-paste (and interprogram-paste-function
+                                 (funcall interprogram-paste-function))))
+    (when interprogram-paste
+      (dolist (s (if (listp interprogram-paste)
+                     ;; Use `reverse' to avoid modifying external data.
+                     (reverse interprogram-paste)
+		   (list interprogram-paste)))
+	(unless (and kill-do-not-save-duplicates
+		     (equal-including-properties s (car kill-ring)))
+	  (push s kill-ring))))))
+
+(advice-add #'consult--read-from-kill-ring :before #'save-interprogram-paste)
+
   (defun consult-narrow-cycle-backward ()
     "Cycle backward through the narrowing keys."
     (interactive)
@@ -691,7 +749,6 @@
 (use-package org
   :blackout (org-mode . " Org")
   :hook ((org-mode . (lambda ()
-			 (visual-line-mode +1)
 			 (toggle-truncate-lines nil))))
   :general
   (:keymaps 'org-mode-map
@@ -777,7 +834,7 @@
   :init
   (setq org-modern-hide-stars nil
         ;; I prefer just the circle
-        org-modern-star '("○" "○" "○" "○" "○" "○")
+	org-modern-fold-stars '(("○" . "○") ("○" . "○") ("○" . "○") ("○" . "○") ("○" . "○"))
         org-auto-align-tags nil
         org-tags-column 0
         org-catch-invisible-edits 'show-and-error
@@ -855,6 +912,11 @@
          ("s-k" . windmove-up)
          ("s-l" . windmove-right)))
 
+(use-package jinx
+  :hook (emacs-startup . global-jinx-mode)
+  :bind (("M-$" . jinx-correct)
+         ("C-M-$" . jinx-languages)))
+
 (use-package super-save
   :blackout " SS"
   :config
@@ -865,6 +927,110 @@
   ;; Disable the built-in auto-save (backup files) since super-save handles it
   (setq auto-save-default nil)
   (super-save-mode +1))
+
+(use-package ace-link
+  :init (ace-link-setup-default))
+
+(use-package avy
+  :commands (avy-goto-char-timer avy-goto-char-in-line)
+  :bind (("C-j" . avy-goto-char-timer)
+         ("s-f" . avy-goto-char-in-line))
+  :config
+  (setq avy-all-windows nil
+        avy-background t))
+
+;; From Doom Emacs ui/vc-gutter/config.el
+;; UI: make the fringe small enough that the diff bars aren't too domineering,
+;;   while leaving enough room for other indicators.
+(if (fboundp 'fringe-mode) (fringe-mode '8))
+;; UI: the gutter looks less cramped with some space between it and  buffer.
+(setq-default fringes-outside-margins t)
+
+(use-package diff-hl
+  :defer t
+  :hook ((find-file . diff-hl-mode)
+         (vc-dir-mode . diff-hl-dir-mode)
+         (dired-mode . diff-hl-dired-mode)
+         (diff-hl-mode . (lambda ()
+                           (unless (display-graphic-p)
+                             (diff-hl-margin-local-mode))))
+         (magit-pre-refresh . diff-hl-magit-pre-refresh)
+         (magit-post-refresh . diff-hl-magit-post-refresh))
+  :custom
+  (diff-hl-draw-borders nil)
+  (diff-hl-update-async t)
+  :config
+
+  ;; From Doom:
+  ;; PERF: A slightly faster algorithm for diffing.
+  (setq vc-git-diff-switches '("--histogram"))
+  ;; PERF: Slightly more conservative delay before updating the diff
+  (setq diff-hl-flydiff-delay 0.5)  ; default: 0.3
+  ;; PERF: don't block Emacs when updating vc gutter
+  (setq diff-hl-update-async t)
+
+  ;; UX: get realtime feedback in diffs after staging/unstaging hunks.
+  (setq diff-hl-show-staged-changes nil)
+  (global-diff-hl-mode))
+
+(use-package git-modes
+  :config
+  ;; This works for .dockerignore and other .*ignore files as well.
+  (dolist (pattern '("/.dockerignore\\'"))
+    (add-to-list 'auto-mode-alist (cons pattern #'gitignore-mode))))
+
+(use-package magit
+  :defer t
+  :commands (magit
+             magit-status
+             magit-dispatch)
+  :hook ((git-commit-setup-hook . git-commit-save-message)
+         (git-commit-setup-hook . turn-on-auto-fill))
+  :general
+  (deftpunk-leader-def
+    "gg" '("Magit" . magit)
+    "gs" '("Magit status" . magit-status))
+  :init
+  (if IS-MAC
+      (setq magit-git-executable "/opt/homebrew/bin/git")
+    (setq magit-git-executable "/usr/local/bin/git"))
+  :config
+  ;; Add git-timemachine to the magit-dispatch transient map.
+  (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
+
+  (setq  magit-log-arguments '("--graph" "--decorate" "--color")
+         magit-revert-buffers 'silent
+         magit-revision-show-gravatars '("^Author:     " . "^Commit:     ")
+         magit-diff-refine-hunk t ; show granular diffs in selected hunk
+         ;; Don't autosave repo buffers. This is too magical, and saving can
+         ;; trigger a bunch of unwanted side-effects, like save hooks and
+         ;; formatters. Trust us to know what we're doing.
+         magit-save-repository-buffers nil)
+
+  ;; Open magit-status in entire window & restore the previous window config on close.
+  (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1
+        magit-bury-buffer-function 'magit-restore-window-configuration))
+
+;;  (use-package forge
+;;    :after magit
+;;    :hook (magit-mode . forge-bug-reference-setup))
+
+(use-package magit-delta
+  :defer t
+  :after magit
+  :custom
+  (magit-delta-default-dark-theme "zenburn")
+  :hook (magit-mode . magit-delta-mode))
+
+(use-package sideline-blame)
+;; Show the commit message for the current line.
+(use-package sideline
+  :init
+  (setq sideline-backends-left '((sideline-blame . down))))
+
+(use-package vc-msg
+  :init
+  (setq vc-msg-force-vcs "git"))
 
 (global-unset-key (kbd "M-u"))
 (use-package unfill
@@ -882,6 +1048,14 @@
         (t (self-insert-command (or arg 1)))))
 
 (global-set-key "%" 'match-paren)
+
+(global-set-key (kbd "<pinch>") 'ignore)
+(global-set-key (kbd "<C-wheel-up>") 'ignore)
+(global-set-key (kbd "<C-wheel-down>") 'ignore)
+
+;; Bind backward-kill-word to C-w like it is in Neovim/vim because I can kill the region other ways
+(global-unset-key (kbd "C-w"))
+(global-set-key (kbd "C-w") 'backward-kill-word)
 
 ;; From https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
 (defun prot/keyboard-quit-dwim ()

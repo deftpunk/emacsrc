@@ -198,13 +198,16 @@ this stage of initialization."
 (global-unset-key (kbd "s-y"))     ; ns-paste-secondary
 ;; (global-unset-key (kbd "s-z"))  ; undo
 
+(setq-default cursor-in-non-selected-windows nil)
+(setq highlight-nonselected-windows nil)
+
 ;;; Miscellaneous
 
 (set-language-environment "UTF-8")
 
 (setq
  ;; Increase how much is read from processes in a single chunk
- read-process-output-max (* 1024 1024)
+ read-process-output-max (* 4 1024 1024) ; 4MB
  process-adaptive-read-buffering nil
 
  ;; Don't ping things that look like domain names.
