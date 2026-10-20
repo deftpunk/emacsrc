@@ -746,6 +746,15 @@
   :config
   (add-to-list 'completion-at-point-functions #'yasnippet-capf))
 
+(use-package completion-preview
+  :ensure nil ; built-in
+  :config
+  ;; cycle through the other candidates with M-n/M-p (those two
+  ;; commands have no default bindings)
+  (define-key completion-preview-active-mode-map (kbd "M-n") #'completion-preview-next-candidate)
+  (define-key completion-preview-active-mode-map (kbd "M-p") #'completion-preview-prev-candidate)
+  (global-completion-preview-mode +1))
+
 (use-package org
   :blackout (org-mode . " Org")
   :hook ((org-mode . (lambda ()
@@ -917,6 +926,34 @@
   :bind (("M-$" . jinx-correct)
          ("C-M-$" . jinx-languages)))
 
+(use-package projectile
+  :blackout " Prj"
+  :general
+  (:keymaps 'projectile-mode-map
+	    "s-p" #'projectile-command-map)
+  :custom
+  (projectile-fd-executable "/opt/homebrew/bin/fd")
+  (projectile-project-search-path '("~/WorkStuff/eig" "~/MyStuff"))
+  (projectile-completion-system 'default)
+  (projectile-auto-discover t)
+  (projectile-enable-caching t)
+  (projectile-cache-file (expand-file-name "projectile.cache" no-littering-var-directory))
+  (projectile-known-projects-file (expand-file-name "projectile-known-projects.eld" no-littering-var-directory))
+  (projectile-ignored-projects '("~/" "/tmp" "elpaca" "eln-cache"))
+  (projectile-kill-buffers-filter 'kill-only-files)
+  (projectile-auto-cleanup-known-projects t)
+  :init
+  (global-set-key [remap find-tag] #'projectile-find-tag)
+  (projectile-mode +1))
+
+(use-package consult-projectile
+  :ensure (consult-projectile :type git
+                              :host gitlab
+                              :repo "OlMon/consult-projectile"
+                              :branch "master"))
+
+(use-package rg)
+
 (use-package super-save
   :blackout " SS"
   :config
@@ -1031,6 +1068,44 @@
 (use-package vc-msg
   :init
   (setq vc-msg-force-vcs "git"))
+
+;; Emacs fetches, installs and compiles missing grammars for you automatically.
+(setq treesit-auto-install-grammar 'always)
+
+(use-package ghostel
+  :bind (:map ghostel-semi-char-mode-map
+         ("C-s"  . consult-line)
+         ("C-k"  . my/ghostel-send-C-k-and-kill)
+         ;; I'm used to go up/down the shell history with M-n/p from eshell
+         ;; Simulate this behavior in ghostel by sending C-p and C-n
+         ("M-p" . (lambda () (interactive) (ghostel-send-key "p" "ctrl")))
+         ("M-n" . (lambda () (interactive) (ghostel-send-key "n" "ctrl"))))
+  :config
+  (defun my/ghostel-send-C-k-and-kill ()
+    "Send `C-k' to ghostel.
+Like normal Emacs `C-k'.  Kill to end of line and put content in kill-ring."
+    (interactive)
+    (kill-ring-save (point) (line-end-position))
+    (ghostel-send-key "k" "ctrl"))
+
+  (add-to-list 'ghostel-eval-cmds '("magit-status-setup-buffer" magit-status-setup-buffer)))
+
+;; These are ghostty projects, not projectile/project ones.
+(use-package ghostel-project
+  :bind (:map project-prefix-map
+         ("m" . ghostel-project)
+         ("M" . ghostel-project-list-buffers))
+  :config
+  (add-to-list 'project-switch-commands '(ghostel-project "Ghostel") t)
+  (add-to-list 'project-switch-commands '(ghostel-project-list-buffers "Ghostel buffers") t))
+
+(use-package consult-ghostel
+  :hook (after-init . consult-ghostel-mode)
+  :bind (("C-x m" . consult-ghostel)
+         :map project-prefix-map
+         ("m" . consult-ghostel-project)
+         :map ghostel-semi-char-mode-map
+         ("C-c h" . consult-ghostel-history)))
 
 (global-unset-key (kbd "M-u"))
 (use-package unfill
