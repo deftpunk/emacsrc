@@ -898,7 +898,7 @@
 
 (use-package ace-window
   :general
-  ("C--" #'ace-window)
+  ("s--" #'ace-window)
   :init
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)
         aw-leading-char-style 'path
@@ -912,7 +912,13 @@
   :config
   (set-face-attribute 'aw-leading-char-face nil :height 4.0))
 
-(winner-mode 1)
+(use-package winner
+  :ensure nil
+  :custom
+  ;; Ignore all the *<name>* buffers by regex.
+  (winner-boring-buffers-regexp "^\\*")
+  :config
+  (winner-mode +1))
 
 (use-package windmove
   :ensure nil
@@ -920,6 +926,8 @@
          ("s-j" . windmove-down)
          ("s-k" . windmove-up)
          ("s-l" . windmove-right)))
+
+(use-package google-this)
 
 (use-package jinx
   :hook (emacs-startup . global-jinx-mode)
@@ -1072,6 +1080,71 @@
 ;; Emacs fetches, installs and compiles missing grammars for you automatically.
 (setq treesit-auto-install-grammar 'always)
 
+(use-package dockerfile-mode
+  :defer t
+  :mode "Dockerfile.*\\'")
+
+(use-package yaml-mode
+  :ensure t
+  :defer t
+  :mode "\\.y[a]ml\\'"
+  :mode "\\.y[a]ml\\.j2\\'"
+  :custom-face
+  (font-lock-variable-name-face ((t (:foreground "#cba6f7"))))
+  :config)
+
+(use-package yaml-pro
+  :defer t
+  :hook (yaml-mode . yaml-ts-mode-hook)
+  :config
+  ;; the original bindings will work as well, these are shorter if you prefer them.
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-n" #'yaml-pro-ts-next-subtree)
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-p" #'yaml-pro-ts-prev-subtree)
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-u" #'yaml-pro-ts-up-level)
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-d" #'yaml-pro-ts-down-level)
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-k" #'yaml-pro-ts-kill-subtree)
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-<backspace>" #'yaml-pro-ts-kill-subtree)
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-a" #'yaml-pro-ts-first-sibling)
+  ;;(keymap-set yaml-pro-ts-mode-map "C-M-e" #'yaml-pro-ts-last-sibling)
+
+  (deftpunk-local-leader-def
+    :keymaps 'yaml-pro-ts-mode-map
+    "n" '(yaml-pro-ts-next-subtree :which-key "Next subtree")
+    "p" '(yaml-pro-ts-prev-subtree :which-key "Previous subtree")
+    "u" '(yaml-pro-ts-up-level :which-key "Up subtree")
+    "d" '(yaml-pro-ts-down-level :which-key "Down subtree")
+    "k" '(yaml-pro-ts-kill-subtree :which-key "Kill subtree")
+    "<backspace>" '(yaml-pro-ts-kill-subtree :which-key "Kill subtree")
+    "a" '(yaml-pro-ts-first-sibling :which-key "First sibling")
+    "e" '(yaml-pro-ts-last-sibling :which-key "Last sibling")
+    )
+
+  (defvar-keymap my/yaml-pro/tree-repeat-map
+    :repeat t
+    "n" #'yaml-pro-ts-next-subtree
+    "p" #'yaml-pro-ts-prev-subtree
+    "u" #'yaml-pro-ts-up-level
+    "d" #'yaml-pro-ts-down-level
+    "m" #'yaml-pro-ts-mark-subtree
+    "k" #'yaml-pro-ts-kill-subtree
+    "a" #'yaml-pro-ts-first-sibling
+    "e" #'yaml-pro-ts-last-sibling
+    "SPC" #'my/yaml-pro/set-mark)
+
+  (defun my/yaml-pro/set-mark ()
+    (interactive)
+    (my/region/set-mark 'my/yaml-pro/set-mark))
+
+  (defun my/region/set-mark (command-name)
+    (if (eq last-command command-name)
+        (if (region-active-p)
+            (progn
+              (deactivate-mark)
+              (message "Mark deactivated"))
+          (activate-mark)
+          (message "Mark activated"))
+      (set-mark-command nil))))
+
 (use-package ghostel
   :bind (:map ghostel-semi-char-mode-map
          ("C-s"  . consult-line)
@@ -1127,6 +1200,18 @@ Like normal Emacs `C-k'.  Kill to end of line and put content in kill-ring."
 (global-set-key (kbd "<pinch>") 'ignore)
 (global-set-key (kbd "<C-wheel-up>") 'ignore)
 (global-set-key (kbd "<C-wheel-down>") 'ignore)
+
+;; Figure out hippie-expand
+  ;; From https://stackoverflow.com/a/43665319
+  (defun my-expand-lines ()
+    "My old friend C-x C-l in Emacs"
+    (interactive)
+    (let ((hippie-expand-try-functions-list
+           '(try-expand-line)))
+      (call-interactively 'hippie-expand)))
+
+  (global-unset-key (kbd "C-x C-l")) ; I can downcase the region another way.
+  (global-set-key (kbd "C-x C-l") 'my-expand-lines)
 
 ;; Bind backward-kill-word to C-w like it is in Neovim/vim because I can kill the region other ways
 (global-unset-key (kbd "C-w"))

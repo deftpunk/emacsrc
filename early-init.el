@@ -197,6 +197,8 @@ this stage of initialization."
 ;; (global-unset-key (kbd "s-x"))  ; kill selection
 (global-unset-key (kbd "s-y"))     ; ns-paste-secondary
 ;; (global-unset-key (kbd "s-z"))  ; undo
+(global-unset-key (kbd "s--"))     ; shrink font
+(global-unset-key (kbd "s-+"))     ; enlarge font
 
 (setq-default cursor-in-non-selected-windows nil)
 (setq highlight-nonselected-windows nil)

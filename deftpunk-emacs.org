@@ -299,6 +299,8 @@ We setup use-package and the package archives.
   ;; (global-unset-key (kbd "s-x"))  ; kill selection
   (global-unset-key (kbd "s-y"))     ; ns-paste-secondary
   ;; (global-unset-key (kbd "s-z"))  ; undo
+  (global-unset-key (kbd "s--"))     ; shrink font
+  (global-unset-key (kbd "s-+"))     ; enlarge font
 #+end_src
 
 ** Don't render cursors in non-focused windows
@@ -1606,7 +1608,7 @@ o - maximize current window
 #+begin_src emacs-lisp :name ace-window
   (use-package ace-window
     :general
-    ("C--" #'ace-window)
+    ("s--" #'ace-window)
     :init
     (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)
           aw-leading-char-style 'path
@@ -1630,11 +1632,26 @@ https://blog.kenhuang.io/blog/2023-11-19-emacs-winner-mode/
 C-c - <left> winner-undo
 C-c - <right> winner-redo
 
+TODO: 
+
 #+begin_src emacs-lisp
-  (winner-mode 1)
+  (use-package winner
+    :ensure nil
+    :custom
+    ;; Ignore all the *<name>* buffers by regex.
+    (winner-boring-buffers-regexp "^\\*")
+    :config
+    (winner-mode +1))
 #+end_src
 
-**** windmove
+**** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Window-Convenience.html][windmove]]
+
+Windmove allows us to directionally move between windows.
+
+There are also the following minor modes:
+=follow-mode=
+=compare-windows=
+=scroll-all-mode=
 
 #+begin_src emacs-lisp
   (use-package windmove
@@ -1643,11 +1660,19 @@ C-c - <right> winner-redo
            ("s-j" . windmove-down)
            ("s-k" . windmove-up)
            ("s-l" . windmove-right)))
-#+end_src 
+#+end_src
 
 *** Frame configuration
 
 ** Miscellaneous utilities
+*** [[https://github.com/Malabarba/emacs-google-this][google-this]]
+
+A set of emacs functions and bindings to google under point.
+
+#+begin_src emacs-lisp
+  (use-package google-this)
+#+end_src
+
 *** [[https://github.com/minad/jinx][jinx]]
 
 A modern spell checker built on top of libenchant - by the same guy who does vertico, consult & corfu.
@@ -1718,7 +1743,6 @@ A dependency for using projectile, specifically projectile-ripgrep
 #+begin_src emacs-lisp :name rg
   (use-package rg)
 #+end_src
-
 
 *** [[https://github.com/bbatsov/super-save/][super-save]]
 
@@ -1934,6 +1958,17 @@ https://emacsredux.com/blog/2026/07/29/flycheck-38/
 
 ** Miscellaneous file types
 
+*** [[https://github.com/spotify/dockerfile-mode][Dockerfile]]
+
+A Dockerfile mode for Emacs.
+You can use =C-c C-b= to build from the buffer & =C-c M-b= to bypass the build cache.
+
+#+begin_src emacs-lisp
+  (use-package dockerfile-mode
+    :defer t
+    :mode "Dockerfile.*\\'")
+#+end_src
+
 *** Markdown
 
 **** [[https://github.com/rjprins/markdown-modern][markdown-modern]]
@@ -1948,6 +1983,81 @@ Optional Dependencies
 
 pandoc - For PDF/DOCX export
 
+*** YAML
+**** [[https://github.com/yoshiki/yaml-mode][yaml-mode]]
+
+Yaml minor mode.
+
+#+begin_src emacs-lisp
+  (use-package yaml-mode
+    :ensure t
+    :defer t
+    :mode "\\.y[a]ml\\'"
+    :mode "\\.y[a]ml\\.j2\\'"
+    :custom-face
+    (font-lock-variable-name-face ((t (:foreground "#cba6f7"))))
+    :config)
+#+end_src
+
+**** [[https://github.com/zkry/yaml-pro][yaml-pro]]
+
+Use treesitter to make yaml mode go faster.
+
+#+begin_src emacs-lisp
+  (use-package yaml-pro
+    :defer t
+    :hook (yaml-mode . yaml-ts-mode-hook)
+    :config
+    ;; the original bindings will work as well, these are shorter if you prefer them.
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-n" #'yaml-pro-ts-next-subtree)
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-p" #'yaml-pro-ts-prev-subtree)
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-u" #'yaml-pro-ts-up-level)
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-d" #'yaml-pro-ts-down-level)
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-k" #'yaml-pro-ts-kill-subtree)
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-<backspace>" #'yaml-pro-ts-kill-subtree)
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-a" #'yaml-pro-ts-first-sibling)
+    ;;(keymap-set yaml-pro-ts-mode-map "C-M-e" #'yaml-pro-ts-last-sibling)
+
+    (deftpunk-local-leader-def
+      :keymaps 'yaml-pro-ts-mode-map
+      "n" '(yaml-pro-ts-next-subtree :which-key "Next subtree")
+      "p" '(yaml-pro-ts-prev-subtree :which-key "Previous subtree")
+      "u" '(yaml-pro-ts-up-level :which-key "Up subtree")
+      "d" '(yaml-pro-ts-down-level :which-key "Down subtree")
+      "k" '(yaml-pro-ts-kill-subtree :which-key "Kill subtree")
+      "<backspace>" '(yaml-pro-ts-kill-subtree :which-key "Kill subtree")
+      "a" '(yaml-pro-ts-first-sibling :which-key "First sibling")
+      "e" '(yaml-pro-ts-last-sibling :which-key "Last sibling")
+      )
+
+    (defvar-keymap my/yaml-pro/tree-repeat-map
+      :repeat t
+      "n" #'yaml-pro-ts-next-subtree
+      "p" #'yaml-pro-ts-prev-subtree
+      "u" #'yaml-pro-ts-up-level
+      "d" #'yaml-pro-ts-down-level
+      "m" #'yaml-pro-ts-mark-subtree
+      "k" #'yaml-pro-ts-kill-subtree
+      "a" #'yaml-pro-ts-first-sibling
+      "e" #'yaml-pro-ts-last-sibling
+      "SPC" #'my/yaml-pro/set-mark)
+
+    (defun my/yaml-pro/set-mark ()
+      (interactive)
+      (my/region/set-mark 'my/yaml-pro/set-mark))
+
+    (defun my/region/set-mark (command-name)
+      (if (eq last-command command-name)
+          (if (region-active-p)
+              (progn
+                (deactivate-mark)
+                (message "Mark deactivated"))
+            (activate-mark)
+            (message "Mark activated"))
+        (set-mark-command nil))))
+#+end_src
+
+*
 ** Terminals
 
 *** [[https://github.com/dakra/ghostel][ghostel]]
@@ -2042,9 +2152,21 @@ https://www.reddit.com/r/emacs/comments/1dah5h3/avoid_inadvertently_changing_fon
 *** keybindings
 
 #+begin_src emacs-lisp
-    ;; Bind backward-kill-word to C-w like it is in Neovim/vim because I can kill the region other ways
-    (global-unset-key (kbd "C-w"))
-    (global-set-key (kbd "C-w") 'backward-kill-word)
+    ;; Figure out hippie-expand
+    ;; From https://stackoverflow.com/a/43665319
+    (defun my-expand-lines ()
+      "My old friend C-x C-l in Emacs"
+      (interactive)
+      (let ((hippie-expand-try-functions-list
+             '(try-expand-line)))
+        (call-interactively 'hippie-expand)))
+
+    (global-unset-key (kbd "C-x C-l")) ; I can downcase the region another way.
+    (global-set-key (kbd "C-x C-l") 'my-expand-lines)
+
+  ;; Bind backward-kill-word to C-w like it is in Neovim/vim because I can kill the region other ways
+  (global-unset-key (kbd "C-w"))
+  (global-set-key (kbd "C-w") 'backward-kill-word)
 #+end_src
 
 *** keyboard quit
