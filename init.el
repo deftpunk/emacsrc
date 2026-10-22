@@ -144,6 +144,14 @@
 ;; Monospace/Fixed-pitch/Fixed-width font
 (set-face-attribute 'fixed-pitch nil :family "Hack Nerd Font Mono")
 
+(use-package nerd-icons
+  ;; :custom
+  ;; The Nerd Font you want to use in GUI
+  ;; "Symbols Nerd Font Mono" is the default and is recommended
+  ;; but you can use any other Nerd Font if you want
+  ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
+  )
+
 (use-package modus-zenburn
   :ensure (modus-zenburn :type git
 			 :host github
@@ -157,6 +165,46 @@
   (enable-theme 'modus-zenburn)
   (modus-themes-load-theme 'modus-zenburn)
   )
+
+(use-package doom-modeline
+  :custom
+  (doom-modeline-project-detection 'projectile)
+  (doom-modeline-buffer-file-name-style 'truncate-upto-root)
+  (doom-modeline-buffer-name t)
+  (doom-modeline-vcs-max-length 35)
+  (doom-modeline-env-enable-python nil) ; because we use ipython/conda/etc. & what is Python can change frequently.
+  (doom-modeline-icon t)
+  :init
+  (doom-modeline-mode 1)
+  :config
+  (setq inhibit-compacting-font-caches t) ;; Don´t compact font caches during GC
+
+  ;; This in combination w/ reducing the height allows everything to fit on the modeline.
+  (setq nerd-icons-scale-factor 1.1)
+
+  (unless (eq system-type 'darwin)
+    (if (facep 'mode-line-active)
+        (set-face-attribute 'mode-line-active nil
+                            :family "Hack"
+                            :height 100) ; For 29+
+      (set-face-attribute 'mode-line nil
+                          :family "Hack"
+                          :height 100))
+    (set-face-attribute 'mode-line-inactive nil
+                        :family "Hack"
+                        :height 100))
+
+  (when (eq system-type 'darwin)
+    (if (facep 'mode-line-active)
+        (set-face-attribute 'mode-line-active nil
+                            :family "Hack Nerd Font"
+                            :height 110) ; For 29+
+      (set-face-attribute 'mode-line nil
+                          :family "Hack Nerd Font"
+                          :height 110))
+    (set-face-attribute 'mode-line-inactive nil
+                        :family "Hack Nerd Font"
+                        :height 110)))
 
 (setq-default save-abbrevs 'silently)
 (defvar dftpunk-abbrev-file (expand-file-name "abbrev.el" no-littering-etc-directory))
@@ -1164,13 +1212,13 @@ Like normal Emacs `C-k'.  Kill to end of line and put content in kill-ring."
   (add-to-list 'ghostel-eval-cmds '("magit-status-setup-buffer" magit-status-setup-buffer)))
 
 ;; These are ghostty projects, not projectile/project ones.
-(use-package ghostel-project
-  :bind (:map project-prefix-map
-         ("m" . ghostel-project)
-         ("M" . ghostel-project-list-buffers))
-  :config
-  (add-to-list 'project-switch-commands '(ghostel-project "Ghostel") t)
-  (add-to-list 'project-switch-commands '(ghostel-project-list-buffers "Ghostel buffers") t))
+;; (use-package ghostel-project
+;;   :bind (:map project-prefix-map
+;;          ("m" . ghostel-project)
+;;          ("M" . ghostel-project-list-buffers))
+;;   :config
+;;   (add-to-list 'project-switch-commands '(ghostel-project "Ghostel") t)
+;;   (add-to-list 'project-switch-commands '(ghostel-project-list-buffers "Ghostel buffers") t))
 
 (use-package consult-ghostel
   :hook (after-init . consult-ghostel-mode)

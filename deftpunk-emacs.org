@@ -560,6 +560,20 @@ Mix monospace ("fixed-pitch|fixed-width") and variable pitch ("proportional") fo
   (set-face-attribute 'fixed-pitch nil :family "Hack Nerd Font Mono")
 #+end_src
 
+**** [[https://github.com/rainstormstudio/nerd-icons.el][nerd icons]]
+
+A library for using Nerd Font icons inside Emacs.  Using it with doom modeline.
+
+#+begin_src emacs-lisp
+  (use-package nerd-icons
+    ;; :custom
+    ;; The Nerd Font you want to use in GUI
+    ;; "Symbols Nerd Font Mono" is the default and is recommended
+    ;; but you can use any other Nerd Font if you want
+    ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
+    )
+#+end_src
+
 *** Themes
 
 Other themes based on [[https://github.com/protesilaos/modus-themes][Modus themes]]:
@@ -587,6 +601,51 @@ A zenburn built on modus themes
 #+end_src
 
 *** Modeline
+**** [[https://github.com/seagle0128/doom-modeline][Doom modeline]]
+
+#+begin_src emacs-lisp :name doom-modeline
+  (use-package doom-modeline
+    :custom
+    (doom-modeline-project-detection 'projectile)
+    (doom-modeline-buffer-file-name-style 'truncate-upto-root)
+    (doom-modeline-buffer-name t)
+    (doom-modeline-vcs-max-length 35)
+    (doom-modeline-env-enable-python nil) ; because we use ipython/conda/etc. & what is Python can change frequently.
+    (doom-modeline-icon t)
+    :init
+    (doom-modeline-mode 1)
+    :config
+    (setq inhibit-compacting-font-caches t) ;; Don´t compact font caches during GC
+
+    ;; This in combination w/ reducing the height allows everything to fit on the modeline.
+    (setq nerd-icons-scale-factor 1.1)
+
+    (unless (eq system-type 'darwin)
+      (if (facep 'mode-line-active)
+          (set-face-attribute 'mode-line-active nil
+                              :family "Hack"
+                              :height 100) ; For 29+
+        (set-face-attribute 'mode-line nil
+                            :family "Hack"
+                            :height 100))
+      (set-face-attribute 'mode-line-inactive nil
+                          :family "Hack"
+                          :height 100))
+
+    (when (eq system-type 'darwin)
+      (if (facep 'mode-line-active)
+          (set-face-attribute 'mode-line-active nil
+                              :family "Hack Nerd Font"
+                              :height 110) ; For 29+
+        (set-face-attribute 'mode-line nil
+                            :family "Hack Nerd Font"
+                            :height 110))
+      (set-face-attribute 'mode-line-inactive nil
+                          :family "Hack Nerd Font"
+                          :height 110)))
+#+end_src
+
+
 
 ** Emacs defaults and builtin minor mode configuration.
 
@@ -2057,7 +2116,6 @@ Use treesitter to make yaml mode go faster.
         (set-mark-command nil))))
 #+end_src
 
-*
 ** Terminals
 
 *** [[https://github.com/dakra/ghostel][ghostel]]
@@ -2084,13 +2142,13 @@ Use ghostty inside emacs
     (add-to-list 'ghostel-eval-cmds '("magit-status-setup-buffer" magit-status-setup-buffer)))
 
   ;; These are ghostty projects, not projectile/project ones.
-  (use-package ghostel-project
-    :bind (:map project-prefix-map
-           ("m" . ghostel-project)
-           ("M" . ghostel-project-list-buffers))
-    :config
-    (add-to-list 'project-switch-commands '(ghostel-project "Ghostel") t)
-    (add-to-list 'project-switch-commands '(ghostel-project-list-buffers "Ghostel buffers") t))
+  ;; (use-package ghostel-project
+  ;;   :bind (:map project-prefix-map
+  ;;          ("m" . ghostel-project)
+  ;;          ("M" . ghostel-project-list-buffers))
+  ;;   :config
+  ;;   (add-to-list 'project-switch-commands '(ghostel-project "Ghostel") t)
+  ;;   (add-to-list 'project-switch-commands '(ghostel-project-list-buffers "Ghostel buffers") t))
 #+end_src
 
 **** [[https://github.com/dakra/ghostel/tree/main/extensions/consult-ghostel][consult-ghostel]]
