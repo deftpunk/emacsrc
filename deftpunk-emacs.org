@@ -301,6 +301,7 @@ We setup use-package and the package archives.
   ;; (global-unset-key (kbd "s-z"))  ; undo
   (global-unset-key (kbd "s--"))     ; shrink font
   (global-unset-key (kbd "s-+"))     ; enlarge font
+  (global-unset-key (kbd "s-;"))     ; undefined
 #+end_src
 
 ** Don't render cursors in non-focused windows
@@ -507,7 +508,7 @@ Better management of some keybindings.
   (general-create-definer deftpunk-leader-def
     :keymaps 'override
     :prefix-map 'deftpunk-leader-map
-    :prefix "s-SPC")
+    :prefix "s-;")
 
   ;; local leader
   ;; This allows for finer granularity than hydra-major-mode by binding to individual key maps.
@@ -1962,6 +1963,17 @@ Use [[https://github.com/dandavison/delta][delta]] when displaying diffs.
     :hook (magit-mode . magit-delta-mode))
 #+end_src
 
+*** [[https://github.com/armindarvish/consult-gh][consult-gh]]
+
+#+begin_src emacs-lisp
+  (use-package consult-gh
+    :ensure (consult-gh :type git
+  		      :host github
+  		      :repo "https://github.com/armindarvish/consult-gh"
+  		      :branch "main")
+    :after consult)
+#+end_src
+
 *** [[https://github.com/redguardtoo/vc-msg][vc-msg]]
 
 A maintained version of git-messenger
@@ -1997,7 +2009,8 @@ https://emacsredux.com/blog/2026/07/29/flycheck-38/
 
 #+begin_src emacs-lisp
   ;; Emacs fetches, installs and compiles missing grammars for you automatically.
-  (setq treesit-auto-install-grammar 'always)
+  (setq treesit-auto-install-grammar 'always
+        treesit-enable-modes t)
 #+end_src
 
 *** Software dev languages

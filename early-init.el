@@ -199,6 +199,7 @@ this stage of initialization."
 ;; (global-unset-key (kbd "s-z"))  ; undo
 (global-unset-key (kbd "s--"))     ; shrink font
 (global-unset-key (kbd "s-+"))     ; enlarge font
+(global-unset-key (kbd "s-;"))     ; undefined
 
 (setq-default cursor-in-non-selected-windows nil)
 (setq highlight-nonselected-windows nil)

@@ -118,7 +118,7 @@
 (general-create-definer deftpunk-leader-def
   :keymaps 'override
   :prefix-map 'deftpunk-leader-map
-  :prefix "s-SPC")
+  :prefix "s-;")
 
 ;; local leader
 ;; This allows for finer granularity than hydra-major-mode by binding to individual key maps.
@@ -1115,6 +1115,13 @@
   (magit-delta-default-dark-theme "zenburn")
   :hook (magit-mode . magit-delta-mode))
 
+(use-package consult-gh
+  :ensure (consult-gh :type git
+		      :host github
+		      :repo "https://github.com/armindarvish/consult-gh"
+		      :branch "main")
+  :after consult)
+
 (use-package sideline-blame)
 ;; Show the commit message for the current line.
 (use-package sideline
@@ -1126,7 +1133,8 @@
   (setq vc-msg-force-vcs "git"))
 
 ;; Emacs fetches, installs and compiles missing grammars for you automatically.
-(setq treesit-auto-install-grammar 'always)
+(setq treesit-auto-install-grammar 'always
+      treesit-enable-modes t)
 
 (use-package dockerfile-mode
   :defer t
