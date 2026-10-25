@@ -152,6 +152,10 @@
   ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
   )
 
+(use-package solaire-mode
+  :config
+  (solitaire-global-mode +1))
+
 (use-package modus-zenburn
   :ensure (modus-zenburn :type git
 			 :host github
@@ -165,6 +169,18 @@
   (enable-theme 'modus-zenburn)
   (modus-themes-load-theme 'modus-zenburn)
   )
+
+;; Add some custom support for solaire.
+;; https://www.gnu.org/software/emacs/manual/html_node/modus-themes/DIY-Add-support-for-solaire_002dmode.html
+(defun my-modus-themes-custom-faces (&rest _)
+  (modus-themes-with-colors
+    (custom-set-faces
+     `(solaire-default-face ((,c :inherit default :background ,bg-dim :foreground ,fg-dim)))
+     `(solaire-line-number-face ((,c :inherit solaire-default-face :foreground ,fg-dim)))
+     `(solaire-hl-line-face ((,c :background ,bg-active)))
+     `(solaire-org-hide-face ((,c :background ,bg-dim :foreground ,bg-dim))))))
+
+(add-hook 'modus-themes-after-load-theme-hook #'my-modus-themes-custom-faces)
 
 (use-package doom-modeline
   :custom
@@ -209,6 +225,11 @@
     (set-face-attribute 'mode-line-inactive nil
                         :family "Hack Nerd Font"
                         :height 110)))
+
+(use-package highlight-defined
+  :defer t
+  :hook
+  ((emacs-lisp-mode lisp-interaction-mode) . highlight-defined-mode))
 
 (setq-default save-abbrevs 'silently)
 (defvar dftpunk-abbrev-file (expand-file-name "abbrev.el" no-littering-etc-directory))
@@ -479,6 +500,7 @@
 (blackout 'visual-line-mode)
 
 (use-package crux
+  :commands (crux-smart-line-above)
   :bind (("C-a" . crux-move-beginning-of-line)
          ("C-k" . crux-smart-kill-line)
 	 ("s-o" . crux-smart-line-above)))
@@ -1173,6 +1195,13 @@
 (use-package dockerfile-mode
   :defer t
   :mode "Dockerfile.*\\'")
+
+(use-package toml-ts-mode
+  :ensure (toml-ts-mode :type git
+			:host github
+			:repo "https://github.com/konomanoasa/toml-ts-mode"
+			:branch "main")
+  :mode ("\\.toml\\'" "\\.toml.tmpl\\'"))
 
 (use-package yaml-mode
   :ensure t
