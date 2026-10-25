@@ -1,6 +1,6 @@
 #+title Deftpunk Emacs
 #+author: Erick Bodine <erick.bodine@gmail.com>
-#+property: header-args :tangle "/Users/bodine/.emacs.d/init.el"
+#+property: header-args :tangle "/Users/ebodine/.emacs.d/init.el"
 #+startup: content
 #+auto_tangle: t
 
@@ -58,7 +58,7 @@ Mastering Emacs
 
 * Early-Init
 :properties:
-:header-args: :tangle "/Users/bodine/.emacs.d/early-init.el"
+:header-args: :tangle "/Users/ebodine/.emacs.d/early-init.el"
 :end:
 #+name: early-init-header-block
 #+begin_src emacs-lisp :exports none
@@ -243,7 +243,7 @@ We setup use-package and the package archives.
 #+begin_src emacs-lisp
   ;; Prefer loading newer compiled files.
   (setq load-prefer-newer t)
-  
+
   (setq
    ;; Defining these early guarantees that the behavior and macro expansion of
    ;; use-package are configured before the first use-package form is evaluated in
@@ -605,47 +605,50 @@ A zenburn built on modus themes
 **** [[https://github.com/seagle0128/doom-modeline][Doom modeline]]
 
 #+begin_src emacs-lisp :name doom-modeline
-  (use-package doom-modeline
-    :custom
-    (doom-modeline-project-detection 'projectile)
-    (doom-modeline-buffer-file-name-style 'truncate-upto-root)
-    (doom-modeline-buffer-name t)
-    (doom-modeline-vcs-max-length 35)
-    (doom-modeline-env-enable-python nil) ; because we use ipython/conda/etc. & what is Python can change frequently.
-    (doom-modeline-icon t)
-    :init
-    (doom-modeline-mode 1)
-    :config
-    (setq inhibit-compacting-font-caches t) ;; Don´t compact font caches during GC
+    (use-package doom-modeline
+      :custom
+      (doom-modeline-project-detection 'projectile)
+      ;; If you are experiencing the laggy issue, especially while editing remote files
+      ;; with tramp, use `file-name' style instead.
+      ;; Please refer to https://github.com/bbatsov/projectile/issues/657.
+      (doom-modeline-buffer-file-name-style 'truncate-nil)
+      (doom-modeline-buffer-name t)
+      (doom-modeline-vcs-max-length 35)
+      (doom-modeline-env-enable-python nil) ; because we use ipython/conda/etc. & what is Python can change frequently.
+      (doom-modeline-icon t)
+      (doom-modeline-minor-modes t)
+      :init
+      (doom-modeline-mode 1)
+      :config
+      (setq inhibit-compacting-font-caches t) ;; Don´t compact font caches during GC
 
-    ;; This in combination w/ reducing the height allows everything to fit on the modeline.
-    (setq nerd-icons-scale-factor 1.1)
+      ;; This in combination w/ reducing the height allows everything to fit on the modeline.
+      (setq nerd-icons-scale-factor 1.1)
 
-    (unless (eq system-type 'darwin)
-      (if (facep 'mode-line-active)
-          (set-face-attribute 'mode-line-active nil
+      (unless (eq system-type 'darwin)
+        (if (facep 'mode-line-active)
+            (set-face-attribute 'mode-line-active nil
+                                :family "Hack"
+                                :height 100) ; For 29+
+          (set-face-attribute 'mode-line nil
                               :family "Hack"
-                              :height 100) ; For 29+
-        (set-face-attribute 'mode-line nil
+                              :height 100))
+        (set-face-attribute 'mode-line-inactive nil
                             :family "Hack"
                             :height 100))
-      (set-face-attribute 'mode-line-inactive nil
-                          :family "Hack"
-                          :height 100))
 
-    (when (eq system-type 'darwin)
-      (if (facep 'mode-line-active)
-          (set-face-attribute 'mode-line-active nil
+      (when (eq system-type 'darwin)
+        (if (facep 'mode-line-active)
+            (set-face-attribute 'mode-line-active nil
+                                :family "Hack Nerd Font"
+                                :height 110) ; For 29+
+          (set-face-attribute 'mode-line nil
                               :family "Hack Nerd Font"
-                              :height 110) ; For 29+
-        (set-face-attribute 'mode-line nil
+                              :height 110))
+        (set-face-attribute 'mode-line-inactive nil
                             :family "Hack Nerd Font"
-                            :height 110))
-      (set-face-attribute 'mode-line-inactive nil
-                          :family "Hack Nerd Font"
-                          :height 110)))
+                            :height 110)))
 #+end_src
-
 
 
 ** Emacs defaults and builtin minor mode configuration.
@@ -735,9 +738,9 @@ https://www.gnu.org/software/emacs/manual/html_node/elisp/Making-Backups.html#in
  ;; Modern workflows rely on `global-auto-revert-mode' to handle external file
  ;; changes gracefully, making the restrictive nature of lockfiles unnecessary.
  create-lockfiles nil
- 
+
  tramp-backup-directory-alist backup-directory-alist)
-  
+
     (setq backup-directory-alist `(("." . ,--backup-directory))
           make-backup-files t               ; backup of a file the first time it is saved.
           backup-by-copying t               ; don't clobber symlinks
@@ -1025,7 +1028,7 @@ The breadcrumb file will be managed by no-littering
 Visually wrap lines in Emacs.
 
 #+begin_src emacs-lisp :name visual-line-mode
-  (setq visual-line-fringe-indicators '(nil right-curly-arrow))
+  (setq visual-line-fringe-indicators '(right-curly-arrow))
   (global-visual-line-mode)
   (blackout 'visual-line-mode)
 #+end_src
@@ -1039,7 +1042,8 @@ Some useful interactive commands from bbatsov
 #+begin_src emacs-lisp :name crux
   (use-package crux
     :bind (("C-a" . crux-move-beginning-of-line)
-           ("C-k" . crux-smart-kill-line)))
+           ("C-k" . crux-smart-kill-line)
+  	 ("s-o" . crux-smart-line-above)))
 #+end_src
 
 *** [[https://github.com/jamescherti/wizard.el][wizard.el]]
@@ -1051,6 +1055,19 @@ The philosophy behind this package is simple: use the built-in functions Emacs a
 
 Instead of rewriting complex logic from scratch or adding heavy external dependencies, wizard uses built-in Emacs functions to deliver practical features. (For example, to highlighting symbols uses the built-in hi-lock)
 #+end_quote
+
+#+begin_src emacs-lisp
+(use-package wizard
+  :ensure (wizard
+           :type git
+           :host github
+           :repo "jamescherti/wizard.el")
+  :commands (wizard-hl-todo-mode wizard-toggle-highlight-at-point)
+  :config
+    (wizard-hl-todo-mode 1)            ; highlight todos in your buffers.
+    (wizard-toggle-highlight-at-point) ; highlighting for the symbol under your cursor.
+    )
+#+end_src
 
 ** Minibuffer/buffer completion
 
@@ -1084,7 +1101,7 @@ Instead of rewriting complex logic from scratch or adding heavy external depende
   (vertico-count 45) ;; show more candidates
  (vertico-cycle t) ;; Enable cycling for `vertico-next/previous'
  :init
- 
+
  (defun vertico-move-end-of-line-or-insert (arg)
     "Move to end of line or insert current candidate.
    ARG lines can be used.
@@ -1097,7 +1114,7 @@ Instead of rewriting complex logic from scratch or adding heavy external depende
           (when (= vertico--total 1)
             (vertico-exit)))
       (move-end-of-line arg)))
- 
+
  (vertico-mode))
 #+end_src
 
@@ -1197,7 +1214,7 @@ Instead of rewriting complex logic from scratch or adding heavy external depende
     ;; register formatting, adds thin separator lines, register sorting and hides
     ;; the window mode line.
     (advice-add #'register-preview :override #'consult-register-window)
-    
+
     ;; Optionally configure the register formatting. This improves the register
     (setq register-preview-delay 0.25
           register-preview-function #'consult-register-format)
@@ -1293,7 +1310,7 @@ https://emacsredux.com/blog/2026/07/14/all-aboard-embark/
    :map minibuffer-local-map
    ("C-c C-c" . embark-collect)
    ("C-c C-e" . embark-export))
-   
+
   :init
 
   ;; Optionally replace the key help with a completing-read interface
@@ -1412,13 +1429,13 @@ https://blog.nshephard.dev/posts/emacs-yasnippet/
   (use-package yasnippet
     :ensure t
     :after cape
-    :custom
-    (yas-snippet-dirs
-     '((~/.emacs.d/snippets)))
+    :hook
+    ((prog-mode . yas-minor-mode)
+     (markdown-mode . yas-minor-mode)
+     (yaml-mode . yas-minor-mode)
+     (org-mode . yas-minor-mode))
     :config
-    (yas-reload-all)
-    (add-hook 'prog-mode-hook #'yas-minor-mode)
-    (add-hook 'markdown-mode-hook #'yas-minor-mode))
+    (yas-reload-all))
 #+end_src
 
 **** [[https://github.com/AndreaCrotti/yasnippet-snippets][yasnippet-snippets]]
@@ -1625,7 +1642,6 @@ Make invisible parts of Org elements appear visible - toggles visibilty of empha
 
 ** Buffers, Windows, Frames
 
-
 *** Buffer configuration
 
 #+begin_src emacs-lisp
@@ -1692,7 +1708,7 @@ https://blog.kenhuang.io/blog/2023-11-19-emacs-winner-mode/
 C-c - <left> winner-undo
 C-c - <right> winner-redo
 
-TODO: 
+TODO:
 
 #+begin_src emacs-lisp
   (use-package winner
@@ -1754,6 +1770,15 @@ When point is on a misspelled word a few extra bindings:
     :hook (emacs-startup . global-jinx-mode)
     :bind (("M-$" . jinx-correct)
            ("C-M-$" . jinx-languages)))
+#+end_src
+
+*** [[https://github.com/jamescherti/kirigami.el][kirigami]]
+
+Folding in Emacs the way it should have always worked.
+
+https://jointhefreeworld.org/blog/articles/emacs/emacs-folding-kirigami/index.html
+
+#+begin_src emacs-lisp
 #+end_src
 
 *** [[https://docs.projectile.mx/projectile/index.html][projectile]]
@@ -1997,11 +2022,39 @@ A maintained version of git-messenger
 
 *** Software dev helpers
 
+**** [[https://github.com/DevelopmentCool2449/colorful-mode][colorful mode]]
+
+Minor mode that highlights color formats such as hexadecimal, color names, etc. in real time.
+
+#+begin_src emacs-lisp
+  (use-package colorful-mode
+    :defer t
+    :custom
+    (colorful-use-prefix t)
+    (colorful-only-strings 'only-prog)
+    (css-fontify-colors nil)
+    :hook
+    (prog-mode    . colorful-mode)
+    (conf-mode    . colorful-mode))
+#+end_src
+
 **** flycheck
 
 https://emacsredux.com/blog/2026/07/29/flycheck-38/
 
 **** lsp-mode
+
+**** [[https://github.com/Fanael/rainbow-delimiters][rainbow delimiters]]
+
+Highlight parenthesis/brackets/braces by their depth.
+
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+    :defer t
+    :hook
+    (prog-mode    . rainbow-delimiters-mode)
+    (conf-mode    . rainbow-delimiters-mode))
+#+end_src
 
 **** smartparens or lispy &/or electric-pair-mode
 
@@ -2014,7 +2067,6 @@ https://emacsredux.com/blog/2026/07/29/flycheck-38/
 #+end_src
 
 *** Software dev languages
-
 
 **** Clojure
 
@@ -2144,6 +2196,9 @@ Use ghostty inside emacs
            ;; Simulate this behavior in ghostel by sending C-p and C-n
            ("M-p" . (lambda () (interactive) (ghostel-send-key "p" "ctrl")))
            ("M-n" . (lambda () (interactive) (ghostel-send-key "n" "ctrl"))))
+    :custom
+    (ghostel-timer-delay 0.01)
+    (ghostel-max-scrollback (* 1024 1024))
     :config
     (defun my/ghostel-send-C-k-and-kill ()
       "Send `C-k' to ghostel.

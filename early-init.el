@@ -145,7 +145,7 @@ this stage of initialization."
 
 ;; Prefer loading newer compiled files.
  (setq load-prefer-newer t)
- 
+
  (setq
   ;; Defining these early guarantees that the behavior and macro expansion of
   ;; use-package are configured before the first use-package form is evaluated in

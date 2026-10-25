@@ -169,11 +169,15 @@
 (use-package doom-modeline
   :custom
   (doom-modeline-project-detection 'projectile)
-  (doom-modeline-buffer-file-name-style 'truncate-upto-root)
+  ;; If you are experiencing the laggy issue, especially while editing remote files
+  ;; with tramp, use `file-name' style instead.
+  ;; Please refer to https://github.com/bbatsov/projectile/issues/657.
+  (doom-modeline-buffer-file-name-style 'truncate-nil)
   (doom-modeline-buffer-name t)
   (doom-modeline-vcs-max-length 35)
   (doom-modeline-env-enable-python nil) ; because we use ipython/conda/etc. & what is Python can change frequently.
   (doom-modeline-icon t)
+  (doom-modeline-minor-modes t)
   :init
   (doom-modeline-mode 1)
   :config
@@ -257,9 +261,9 @@
  ;; Modern workflows rely on `global-auto-revert-mode' to handle external file
  ;; changes gracefully, making the restrictive nature of lockfiles unnecessary.
  create-lockfiles nil
- 
+
  tramp-backup-directory-alist backup-directory-alist)
-  
+
     (setq backup-directory-alist `(("." . ,--backup-directory))
           make-backup-files t               ; backup of a file the first time it is saved.
           backup-by-copying t               ; don't clobber symlinks
@@ -470,13 +474,25 @@
       show-paren-when-point-inside-paren t
       show-paren-when-point-in-periphery t)
 
-(setq visual-line-fringe-indicators '(nil right-curly-arrow))
+(setq visual-line-fringe-indicators '(right-curly-arrow))
 (global-visual-line-mode)
 (blackout 'visual-line-mode)
 
 (use-package crux
   :bind (("C-a" . crux-move-beginning-of-line)
-         ("C-k" . crux-smart-kill-line)))
+         ("C-k" . crux-smart-kill-line)
+	 ("s-o" . crux-smart-line-above)))
+
+(use-package wizard
+  :ensure (wizard
+           :type git
+           :host github
+           :repo "jamescherti/wizard.el")
+  :commands (wizard-hl-todo-mode wizard-toggle-highlight-at-point)
+  :config
+    (wizard-hl-todo-mode 1)            ; highlight todos in your buffers.
+    (wizard-toggle-highlight-at-point) ; highlighting for the symbol under your cursor.
+    )
 
 ;; https://github.com/daut/dotfiles/blob/2ad4f5a5e0f1e786c91f17460d8599ec5d57318b/.emacs.d/init.el#L105
 ;;;###autoload
@@ -505,7 +521,7 @@
   (vertico-count 45) ;; show more candidates
  (vertico-cycle t) ;; Enable cycling for `vertico-next/previous'
  :init
- 
+
  (defun vertico-move-end-of-line-or-insert (arg)
     "Move to end of line or insert current candidate.
    ARG lines can be used.
@@ -518,7 +534,7 @@
           (when (= vertico--total 1)
             (vertico-exit)))
       (move-end-of-line arg)))
- 
+
  (vertico-mode))
 
 ;; Using `find-file to initiate TRAMP connections.
@@ -596,7 +612,7 @@
   ;; register formatting, adds thin separator lines, register sorting and hides
   ;; the window mode line.
   (advice-add #'register-preview :override #'consult-register-window)
-  
+
   ;; Optionally configure the register formatting. This improves the register
   (setq register-preview-delay 0.25
         register-preview-function #'consult-register-format)
@@ -684,7 +700,7 @@
    :map minibuffer-local-map
    ("C-c C-c" . embark-collect)
    ("C-c C-e" . embark-export))
-   
+
   :init
 
   ;; Optionally replace the key help with a completing-read interface
@@ -776,13 +792,13 @@
 (use-package yasnippet
   :ensure t
   :after cape
-  :custom
-  (yas-snippet-dirs
-   '((~/.emacs.d/snippets)))
+  :hook
+  ((prog-mode . yas-minor-mode)
+   (markdown-mode . yas-minor-mode)
+   (yaml-mode . yas-minor-mode)
+   (org-mode . yas-minor-mode))
   :config
-  (yas-reload-all)
-  (add-hook 'prog-mode-hook #'yas-minor-mode)
-  (add-hook 'markdown-mode-hook #'yas-minor-mode))
+  (yas-reload-all))
 
 (use-package yasnippet-snippets
   :ensure t
@@ -982,6 +998,8 @@
   :bind (("M-$" . jinx-correct)
          ("C-M-$" . jinx-languages)))
 
+
+
 (use-package projectile
   :blackout " Prj"
   :general
@@ -1132,6 +1150,22 @@
   :init
   (setq vc-msg-force-vcs "git"))
 
+(use-package colorful-mode
+  :defer t
+  :custom
+  (colorful-use-prefix t)
+  (colorful-only-strings 'only-prog)
+  (css-fontify-colors nil)
+  :hook
+  (prog-mode    . colorful-mode)
+  (conf-mode    . colorful-mode))
+
+(use-package rainbow-delimiters
+  :defer t
+  :hook
+  (prog-mode    . rainbow-delimiters-mode)
+  (conf-mode    . rainbow-delimiters-mode))
+
 ;; Emacs fetches, installs and compiles missing grammars for you automatically.
 (setq treesit-auto-install-grammar 'always
       treesit-enable-modes t)
@@ -1209,6 +1243,9 @@
          ;; Simulate this behavior in ghostel by sending C-p and C-n
          ("M-p" . (lambda () (interactive) (ghostel-send-key "p" "ctrl")))
          ("M-n" . (lambda () (interactive) (ghostel-send-key "n" "ctrl"))))
+  :custom
+  (ghostel-timer-delay 0.01)
+  (ghostel-max-scrollback (* 1024 1024))
   :config
   (defun my/ghostel-send-C-k-and-kill ()
     "Send `C-k' to ghostel.
