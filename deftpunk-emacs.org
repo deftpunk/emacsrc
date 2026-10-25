@@ -581,6 +581,17 @@ Other themes based on [[https://github.com/protesilaos/modus-themes][Modus theme
 https://codeberg.org/ashton314/modus-nordic-night (use midnight?)
 https://gitlab.com/magus/modus-catppuccin
 
+
+**** [[https://github.com/hlissner/emacs-solaire-mode][solaire-mode]]
+
+An aesthetic plugin designed to visually distinguish "real" buffers (i.e. file-visiting code buffers where you do most of your work) from "unreal" buffers (like popups, sidebars, log buffers, terminals, etc) by giving the latter a slightly different -- often darker -- background.
+
+#+begin_src emacs-lisp
+  (use-package solaire-mode
+    :config
+    (solitaire-global-mode +1))
+#+end_src
+
 **** [[https://github.com/kiennq/modus-zenburn][modus-zenburn]]
 
 A zenburn built on modus themes
@@ -599,6 +610,18 @@ A zenburn built on modus themes
     (enable-theme 'modus-zenburn)
     (modus-themes-load-theme 'modus-zenburn)
     )
+
+  ;; Add some custom support for solaire.
+  ;; https://www.gnu.org/software/emacs/manual/html_node/modus-themes/DIY-Add-support-for-solaire_002dmode.html
+  (defun my-modus-themes-custom-faces (&rest _)
+    (modus-themes-with-colors
+      (custom-set-faces
+       `(solaire-default-face ((,c :inherit default :background ,bg-dim :foreground ,fg-dim)))
+       `(solaire-line-number-face ((,c :inherit solaire-default-face :foreground ,fg-dim)))
+       `(solaire-hl-line-face ((,c :background ,bg-active)))
+       `(solaire-org-hide-face ((,c :background ,bg-dim :foreground ,bg-dim))))))
+
+  (add-hook 'modus-themes-after-load-theme-hook #'my-modus-themes-custom-faces)
 #+end_src
 
 *** Modeline
@@ -650,6 +673,16 @@ A zenburn built on modus themes
                             :height 110)))
 #+end_src
 
+*** [[https://github.com/Fanael/highlight-defined][highlight-defined]]
+
+Highlight defined emacs-lisp symbols
+
+#+begin_src emacs-lisp
+  (use-package highlight-defined
+    :defer t
+    :hook
+    ((emacs-lisp-mode lisp-interaction-mode) . highlight-defined-mode))
+#+end_src
 
 ** Emacs defaults and builtin minor mode configuration.
 
@@ -1041,6 +1074,7 @@ Some useful interactive commands from bbatsov
 
 #+begin_src emacs-lisp :name crux
   (use-package crux
+    :commands (crux-smart-line-above)
     :bind (("C-a" . crux-move-beginning-of-line)
            ("C-k" . crux-smart-kill-line)
   	 ("s-o" . crux-smart-line-above)))
@@ -1661,6 +1695,10 @@ Make invisible parts of Org elements appear visible - toggles visibilty of empha
       redisplay-skip-fontification-on-input t)
 #+end_src
 
+**** popper
+
+Manaage all of the buffers that popup
+
 *** Window configuration
 **** [[https://github.com/abo-abo/ace-window][ace-window]]
 
@@ -2091,6 +2129,35 @@ You can use =C-c C-b= to build from the buffer & =C-c M-b= to bypass the build c
   (use-package dockerfile-mode
     :defer t
     :mode "Dockerfile.*\\'")
+#+end_src
+
+
+*** JSON
+
+*** TOML
+
+Toms Obvious Markup Language
+
+**** [[https://github.com/konomanoasa/toml-ts-mode][toml-ts-mode]]
+
+Treesitter based major mode for TOML 1.1.0
+
+Features:
+- Comment Commands
+- Electric Pair
+- Font Lock
+- Imenu
+- Indentation
+- Navigation
+- Syntax Table
+
+#+begin_src emacs-lisp
+  (use-package toml-ts-mode
+    :ensure (toml-ts-mode :type git
+  			:host github
+  			:repo "https://github.com/konomanoasa/toml-ts-mode"
+  			:branch "main")
+    :mode ("\\.toml\\'" "\\.toml.tmpl\\'"))
 #+end_src
 
 *** Markdown
