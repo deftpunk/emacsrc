@@ -2101,7 +2101,8 @@ Highlight parenthesis/brackets/braces by their depth.
 #+begin_src emacs-lisp
   ;; Emacs fetches, installs and compiles missing grammars for you automatically.
   (setq treesit-auto-install-grammar 'always
-        treesit-enable-modes t)
+        treesit-enable-modes t
+        treesit-font-lock-level 4)
 #+end_src
 
 *** Software dev languages
