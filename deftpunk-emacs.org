@@ -1697,7 +1697,10 @@ Make invisible parts of Org elements appear visible - toggles visibilty of empha
 
 **** popper
 
-Manaage all of the buffers that popup
+Manage all of the buffers that popup
+
+#+begin_src emacs-lisp
+#+end_src
 
 *** Window configuration
 **** [[https://github.com/abo-abo/ace-window][ace-window]]
@@ -1991,7 +1994,7 @@ https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
       (setq magit-git-executable "/usr/local/bin/git"))
     :config
     ;; Add git-timemachine to the magit-dispatch transient map.
-    (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
+    ;; (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
 
     (setq  magit-log-arguments '("--graph" "--decorate" "--color")
            magit-revert-buffers 'silent

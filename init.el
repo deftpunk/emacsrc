@@ -982,6 +982,8 @@
       ;; Also helps marginally with scrolling performance.
       redisplay-skip-fontification-on-input t)
 
+
+
 (use-package ace-window
   :general
   ("s--" #'ace-window)
@@ -1129,7 +1131,7 @@
     (setq magit-git-executable "/usr/local/bin/git"))
   :config
   ;; Add git-timemachine to the magit-dispatch transient map.
-  (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
+  ;; (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
 
   (setq  magit-log-arguments '("--graph" "--decorate" "--color")
          magit-revert-buffers 'silent
