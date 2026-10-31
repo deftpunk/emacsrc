@@ -1,6 +1,6 @@
 #+title Deftpunk Emacs
 #+author: Erick Bodine <erick.bodine@gmail.com>
-#+property: header-args :tangle "/Users/ebodine/.emacs.d/init.el"
+#+property: header-args :tangle "/Users/bodine/.emacs.d/init.el"
 #+startup: content
 #+auto_tangle: t
 
@@ -58,7 +58,7 @@ Mastering Emacs
 
 * Early-Init
 :properties:
-:header-args: :tangle "/Users/ebodine/.emacs.d/early-init.el"
+:header-args: :tangle "/Users/bodine/.emacs.d/early-init.el"
 :end:
 #+name: early-init-header-block
 #+begin_src emacs-lisp :exports none
@@ -2084,6 +2084,28 @@ Minor mode that highlights color formats such as hexadecimal, color names, etc. 
 https://emacsredux.com/blog/2026/07/29/flycheck-38/
 
 **** lsp-mode
+
+**** [[https://github.com/jdtsmith/indent-bars][indent-bars]]
+
+Indentation guide bars; I have enabled the treesitter enhancement.
+
+#+begin_src emacs-lisp
+  (use-package indent-bars
+    :init
+    (setq indent-bars-color '(highlight :face-bg t :blend 0.2)
+  	indent-bars-pattern "."
+  	indent-bars-width-frac 0.1
+  	indent-bars-pad-frac 0.1
+  	indent-bars-zigzag nil
+  	indent-bars-color-by-depth nil
+  	indent-bars-highlight-current-depth nil
+  	indent-bars-display-on-blank-lines nil)
+    :custom
+    (indent-bars-no-descend-lists 'skip)
+    (indent-bars-treesit-support t)
+    :hook
+    ((emacs-lisp-mode python-base-mode yaml-mode) . indent-bars-mode))
+#+end_src
 
 **** [[https://github.com/Fanael/rainbow-delimiters][rainbow delimiters]]
 

@@ -1184,6 +1184,22 @@
   (prog-mode    . colorful-mode)
   (conf-mode    . colorful-mode))
 
+(use-package indent-bars
+  :init
+  (setq indent-bars-color '(highlight :face-bg t :blend 0.2)
+	indent-bars-pattern "."
+	indent-bars-width-frac 0.1
+	indent-bars-pad-frac 0.1
+	indent-bars-zigzag nil
+	indent-bars-color-by-depth nil
+	indent-bars-highlight-current-depth nil
+	indent-bars-display-on-blank-lines nil)
+  :custom
+  (indent-bars-no-descend-lists 'skip)
+  (indent-bars-treesit-support t)
+  :hook
+  ((emacs-lisp-mode python-base-mode yaml-mode) . indent-bars-mode))
+
 (use-package rainbow-delimiters
   :defer t
   :hook
@@ -1192,7 +1208,8 @@
 
 ;; Emacs fetches, installs and compiles missing grammars for you automatically.
 (setq treesit-auto-install-grammar 'always
-      treesit-enable-modes t)
+      treesit-enable-modes t
+      treesit-font-lock-level 4)
 
 (use-package dockerfile-mode
   :defer t
