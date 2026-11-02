@@ -1,6 +1,6 @@
 #+title Deftpunk Emacs
 #+author: Erick Bodine <erick.bodine@gmail.com>
-#+property: header-args :tangle "/Users/bodine/.emacs.d/init.el"
+#+property: header-args :tangle "/Users/ebodine/.emacs.d/init.el"
 #+startup: content
 #+auto_tangle: t
 
@@ -58,7 +58,7 @@ Mastering Emacs
 
 * Early-Init
 :properties:
-:header-args: :tangle "/Users/bodine/.emacs.d/early-init.el"
+:header-args: :tangle "/Users/ebodine/.emacs.d/early-init.el"
 :end:
 #+name: early-init-header-block
 #+begin_src emacs-lisp :exports none
@@ -984,6 +984,17 @@ Keep track of recently used files.
                               ))
     :init
     (recentf-mode +1))
+#+end_src
+
+*** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Repeating.html][repeat]]
+
+Call multiple commands without having to press the prefix every time.
+See describe-repeat-maps to see all of the maps that are available.
+
+https://karthinks.com/software/it-bears-repeating/
+
+#+begin_src emacs-lisp
+  (repeat-mode +1)
 #+end_src
 
 *** savehist

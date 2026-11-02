@@ -442,6 +442,8 @@
   :init
   (recentf-mode +1))
 
+(repeat-mode +1)
+
 (use-package savehist
   :ensure nil
   :custom
