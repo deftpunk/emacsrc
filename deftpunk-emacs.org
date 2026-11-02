@@ -1833,6 +1833,28 @@ https://jointhefreeworld.org/blog/articles/emacs/emacs-folding-kirigami/index.ht
 #+begin_src emacs-lisp
 #+end_src
 
+*** [[https://github.com/emacsorphanage/osx-trash][osx-trash]]
+
+Make =delete-by-moving-to-trash= do what we expect on MacOSX. Don't forget to =brew install trash= for better performance.
+
+#+begin_src emacs-lisp :name osx-trash
+  (use-package osx-trash
+    :config
+    (when (eq system-type 'darwin)
+      (osx-trash-setup))
+    (setq delete-by-moving-to-trash t))
+#+end_src
+
+*** [[https://github.com/purcell/page-break-lines][page-break-lines]]
+
+Display ugly form feed characters as tidy horizontal rules.
+
+#+begin_src emacs-lisp :name page-break-lines
+  (use-package page-break-lines
+    :blackout t
+    :hook (text-mode . page-break-lines-mode))
+#+end_src
+
 *** [[https://docs.projectile.mx/projectile/index.html][projectile]]
 
 #+begin_src emacs-lisp
@@ -1897,6 +1919,17 @@ Handle saving our files so that we don't have to "C-x C-s" all of the time.
     (setq auto-save-default nil)
     (super-save-mode +1))
 #+end_src
+*** [[https://github.com/purcell/unfill][unfill]]
+
+Funtions providing the inverse of =fill-paragraph= & =fill-region= .  I most care about =unfill-toggle=
+
+#+begin_src emacs-lisp :name unfill
+  (global-unset-key (kbd "M-u"))
+  (use-package unfill
+    :bind
+    (("M-u" . unfill-toggle)))
+#+end_src
+
 ** Navigation
 *** [[https://github.com/abo-abo/ace-link][ace-link]]
 
@@ -1922,8 +1955,7 @@ https://karthinks.com/software/avy-can-do-anything/
     (setq avy-all-windows nil
           avy-background t))
 #+end_src
-
-** source control
+** Source Control
 *** [[https://github.com/dgutov/diff-hl][diff-hl]]
 
 A maintained indicator of git status on the left of the buffer - is supposed to work better with Tramp as well.
@@ -2071,7 +2103,6 @@ A maintained version of git-messenger
 
 ** Software development
 
-
 *** Software dev helpers
 
 **** [[https://github.com/DevelopmentCool2449/colorful-mode][colorful mode]]
@@ -2170,6 +2201,17 @@ You can use =C-c C-b= to build from the buffer & =C-c M-b= to bypass the build c
 
 
 *** JSON
+
+**** [[https://github.com/json-emacs/json-mode][json-mode]]
+
+A JSON mode built on top of builtin js-mode.
+
+#+begin_src emacs-lisp
+  (use-package json-mode
+    :mode (("\\.json\\'" . json-mode))
+    :custom
+    (js-indent-level 2))
+#+end_src
 
 *** TOML
 

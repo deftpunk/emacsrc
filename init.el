@@ -1026,6 +1026,16 @@
 
 
 
+(use-package osx-trash
+  :config
+  (when (eq system-type 'darwin)
+    (osx-trash-setup))
+  (setq delete-by-moving-to-trash t))
+
+(use-package page-break-lines
+  :blackout t
+  :hook (text-mode . page-break-lines-mode))
+
 (use-package projectile
   :blackout " Prj"
   :general
@@ -1064,6 +1074,11 @@
   ;; Disable the built-in auto-save (backup files) since super-save handles it
   (setq auto-save-default nil)
   (super-save-mode +1))
+
+(global-unset-key (kbd "M-u"))
+(use-package unfill
+  :bind
+  (("M-u" . unfill-toggle)))
 
 (use-package ace-link
   :init (ace-link-setup-default))
@@ -1216,6 +1231,11 @@
 (use-package dockerfile-mode
   :defer t
   :mode "Dockerfile.*\\'")
+
+(use-package json-mode
+  :mode (("\\.json\\'" . json-mode))
+  :custom
+  (js-indent-level 2))
 
 (use-package toml-ts-mode
   :ensure (toml-ts-mode :type git
