@@ -1080,6 +1080,19 @@
   :bind
   (("M-u" . unfill-toggle)))
 
+(use-package ws-butler
+  :blackout t
+  :hook ((text-mode . ws-butler-mode)
+         (prog-mode . ws-butler-mode))
+  :custom
+  (ws-butler-keep-whitespace-before-point nil))
+
+;; show trailing whitespace
+(setq show-trailing-whitespace t)
+
+(with-eval-after-load 'ws-butler
+  (blackout 'ws-butler-mode))
+
 (use-package ace-link
   :init (ace-link-setup-default))
 
@@ -1396,6 +1409,25 @@ Like normal Emacs `C-k'.  Kill to end of line and put content in kill-ring."
 ;; Bind backward-kill-word to C-w like it is in Neovim/vim because I can kill the region other ways
 (global-unset-key (kbd "C-w"))
 (global-set-key (kbd "C-w") 'backward-kill-word)
+
+;; https://www.reddit.com/r/emacs/comments/1qpkbv6/post_your_favorite_dwim_commands_packages_or_own/
+(defun +case-cycle ()
+  "Cycle case of current word."
+  (interactive)
+  (save-mark-and-excursion
+    (let (deactivate-mark)
+      (when-let* ((b (or (bounds-of-thing-at-point 'region)
+                         (bounds-of-thing-at-point 'word)))
+                  (w (buffer-substring (car b) (cdr b))))
+        (goto-char (car b))
+        (funcall (cond
+                  ((equal (upcase w) w) #'downcase-region)
+                  ((equal (downcase w) w) #'capitalize-region)
+                  (t #'upcase-region))
+                 (car b) (cdr b))))))
+
+(global-unset-key (kbd "M-c"))
+(global-set-key (kbd "M-c") #'+case-cycle)
 
 ;; From https://protesilaos.com/codelog/2024-11-28-basic-emacs-configuration/
 (defun prot/keyboard-quit-dwim ()
