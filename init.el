@@ -1191,6 +1191,11 @@
   :init
   (setq vc-msg-force-vcs "git"))
 
+(use-package aggressive-indent
+  :defer t
+  :commands (aggressive-indent-mode)
+  :hook ((emacs-lisp-mode) . aggressive-indent-mode))
+
 (use-package colorful-mode
   :defer t
   :custom
@@ -1200,6 +1205,18 @@
   :hook
   (prog-mode    . colorful-mode)
   (conf-mode    . colorful-mode))
+
+(use-package fill-function-arguments
+  :hook
+  ((prog-mode . (lambda ()
+                  (local-set-key (kbd "M-q") #'fill-function-arguments-dwim)))
+   (emacs-lisp-mode . (lambda ()
+                        (setq-local fill-function-arguments-second-argument-same-line t)
+                        (setq-local fill-function-arguments-last-argument-same-line t)
+                        (setq-local fill-function-arguments-argument-separator " "))))
+  :custom
+  (fill-function-arguments-indent-after-fill t)
+  (fill-function-arguments-indent-first-argument-same-line t))
 
 (use-package indent-bars
   :init

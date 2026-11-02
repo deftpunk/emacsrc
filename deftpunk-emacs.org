@@ -2104,6 +2104,16 @@ A maintained version of git-messenger
 ** Software development
 
 *** Software dev helpers
+**** [[https://github.com/Malabarba/aggressive-indent-mode][aggressive-indent]]
+
+Indentation while we type.  This can sometimes be overly aggressive so I only use it for specific languages.
+
+#+begin_src emacs-lisp :name aggressive
+  (use-package aggressive-indent
+    :defer t
+    :commands (aggressive-indent-mode)
+    :hook ((emacs-lisp-mode) . aggressive-indent-mode))
+#+end_src
 
 **** [[https://github.com/DevelopmentCool2449/colorful-mode][colorful mode]]
 
@@ -2121,9 +2131,31 @@ Minor mode that highlights color formats such as hexadecimal, color names, etc. 
     (conf-mode    . colorful-mode))
 #+end_src
 
+**** [[https://github.com/davidshepherd7/fill-function-arguments][fill-function-arguments]]
+
+Add/remove line breaks between function arguments and similar constructs
+
+#+begin_src emacs-lisp :name fill-function-arguments
+  (use-package fill-function-arguments
+    :hook
+    ((prog-mode . (lambda ()
+                    (local-set-key (kbd "M-q") #'fill-function-arguments-dwim)))
+     (emacs-lisp-mode . (lambda ()
+                          (setq-local fill-function-arguments-second-argument-same-line t)
+                          (setq-local fill-function-arguments-last-argument-same-line t)
+                          (setq-local fill-function-arguments-argument-separator " "))))
+    :custom
+    (fill-function-arguments-indent-after-fill t)
+    (fill-function-arguments-indent-first-argument-same-line t))
+#+end_src
+
 **** flycheck
 
 https://emacsredux.com/blog/2026/07/29/flycheck-38/
+
+**** [[https://github.com/konrad1977/flyover][flyover]]
+
+A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover is a full featured package with tons of features for you to customize.
 
 **** lsp-mode
 
