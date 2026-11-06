@@ -231,6 +231,24 @@
   :hook
   ((emacs-lisp-mode lisp-interaction-mode) . highlight-defined-mode))
 
+(use-package hl-todo
+  :ensure (hl-todo :depth nil) ; see https://github.com/alphapapa/magit-todos/issues/171
+  :init
+  (setq hl-todo-highlight-punctuation ":"
+	hl-todo-require-punctuation t
+        hl-todo-keyword-faces '(("TODO" . "#FF0000")
+                                ("FIXME" . "#FF9999")
+                                ("FAIL" . "#FF0000")
+                                ("DEPRECATED" . "#1F39EF")
+                                ("HACK" . "#FF0000")
+                                ("XXX" . "#FF0000")
+                                ("NOTE" . "#1E90FF")))
+  :hook
+  ((prog-mode . hl-todo-mode)
+   (org-src-mode . hl-todo-mode)
+   (org-mode . hl-todo-mode)
+   (markdown-mode . hl-todo-mode)))
+
 (setq-default save-abbrevs 'silently)
 (defvar dftpunk-abbrev-file (expand-file-name "abbrev.el" no-littering-etc-directory))
 (unless (file-exists-p dftpunk-abbrev-file)
@@ -568,7 +586,6 @@
            :repo "jamescherti/wizard.el")
   :commands (wizard-hl-todo-mode wizard-toggle-highlight-at-point)
   :config
-    (wizard-hl-todo-mode 1)            ; highlight todos in your buffers.
     (wizard-toggle-highlight-at-point) ; highlighting for the symbol under your cursor.
     )
 

@@ -545,7 +545,6 @@ Helping keep my emacs directory cleaned up.
 #+end_src
 
 ** Appearance
-
 *** Fonts
 
 Mix monospace ("fixed-pitch|fixed-width") and variable pitch ("proportional") fonts.  Setting fonts comes before setting themes .... just in case.
@@ -682,6 +681,45 @@ Highlight defined emacs-lisp symbols
     :defer t
     :hook
     ((emacs-lisp-mode lisp-interaction-mode) . highlight-defined-mode))
+#+end_src
+
+*** [[https://github.com/tarsius/hl-todo][hl-todo]]
+
+Highlight TODO and similar keywords in comments and strings.
+
+By default it is only active in modes that derive from prog-mode.
+
+Integrations:
+- =magit-hl-todos=
+- =consult-todos=
+
+This package also provides commands for moving to the next or previous keyword,
+to invoke occur with a regexp that matches all known keywords, and to insert a keyword.
+If you want to use these commands, then you should bind them in hl-todo-mode-map, e.g.:
+
+(define-key hl-todo-mode-map (kbd "C-c p") 'hl-todo-previous)
+(define-key hl-todo-mode-map (kbd "C-c n") 'hl-todo-next)
+(define-key hl-todo-mode-map (kbd "C-c o") 'hl-todo-occur)
+(define-key hl-todo-mode-map (kbd "C-c i") 'hl-todo-insert)
+
+#+begin_src emacs-lisp :name hl-todo
+  (use-package hl-todo
+    :ensure (hl-todo :depth nil) ; see https://github.com/alphapapa/magit-todos/issues/171
+    :init
+    (setq hl-todo-highlight-punctuation ":"
+  	hl-todo-require-punctuation t
+          hl-todo-keyword-faces '(("TODO" . "#FF0000")
+                                  ("FIXME" . "#FF9999")
+                                  ("FAIL" . "#FF0000")
+                                  ("DEPRECATED" . "#1F39EF")
+                                  ("HACK" . "#FF0000")
+                                  ("XXX" . "#FF0000")
+                                  ("NOTE" . "#1E90FF")))
+    :hook
+    ((prog-mode . hl-todo-mode)
+     (org-src-mode . hl-todo-mode)
+     (org-mode . hl-todo-mode)
+     (markdown-mode . hl-todo-mode)))
 #+end_src
 
 ** Emacs defaults and builtin minor mode configuration.
@@ -1168,11 +1206,9 @@ Instead of rewriting complex logic from scratch or adding heavy external depende
            :repo "jamescherti/wizard.el")
   :commands (wizard-hl-todo-mode wizard-toggle-highlight-at-point)
   :config
-    (wizard-hl-todo-mode 1)            ; highlight todos in your buffers.
     (wizard-toggle-highlight-at-point) ; highlighting for the symbol under your cursor.
     )
 #+end_src
-
 
 ** Evil
 
