@@ -364,6 +364,60 @@
  ;; Force the mouse to paste text at the active cursor position.
  mouse-yank-at-point t)
 
+(use-package ediff
+  :ensure nil
+  :custom
+  (ediff-diff-options "-w")
+  (ediff-use-long-help-message t)
+  (ediff-window-setup-function #'ediff-setup-windows-plain)
+  (ediff-split-window-function #'split-window-horizontally)
+  (ediff-merge-split-window-function #'split-window-horizontally)
+  :config
+
+;; I just want to restore the previous window layout... so hard.
+;; Added to and modified from https://emacs.stackexchange.com/questions/7482/restoring-windows-and-layout-after-an-ediff-session
+(defvar my-ediff-last-windows nil
+  "Window configuration prior to calling `ediff-buffers',
+`ediff-regions-linewise', or `ediff-regions-wordwise'.")
+
+(defun my-ediff-restore-last-windows ()
+  "Set window configuration to `my-ediff-last-windows'."
+  (cond (my-ediff-last-windows
+         (set-window-configuration my-ediff-last-windows)
+         (setq my-ediff-last-windows nil))))
+
+(add-hook 'ediff-quit-hook #'my-ediff-restore-last-windows)
+
+(defadvice ediff-buffers (before ediff-buffers-advice activate)
+  (setq my-ediff-last-windows (current-window-configuration)))
+
+(defadvice ediff-regions-linewise (before ediff-regions-linewise-advice activate)
+  (setq my-ediff-last-windows (current-window-configuration)))
+
+(defadvice ediff-regions-wordwise (before ediff-regions-wordwise-advice activate)
+  (setq my-ediff-last-windows (current-window-configuration)))
+
+;; For ediff-buffers/ediff-files
+(defvar ediff-last-windows nil
+  "Last ediff window configuration.")
+
+(defun ediff-restore-windows ()
+  "Restore window configuration to `ediff-last-windows'."
+  (set-window-configuration ediff-last-windows)
+  (remove-hook 'ediff-after-quit-hook-internal
+               'ediff-restore-windows))
+
+(defadvice ediff-buffers (around ediff-restore-windows activate)
+  (setq ediff-last-windows (current-window-configuration))
+  (add-hook 'ediff-after-quit-hook-internal 'ediff-restore-windows)
+  ad-do-it)
+
+(defadvice ediff-files (around ediff-restore-windows activate)
+  (setq ediff-last-windows (current-window-configuration))
+  (add-hook 'ediff-after-quit-hook-internal 'ediff-restore-windows)
+  ad-do-it)
+)
+
 (use-package hl-line
   :ensure nil
   :custom
@@ -517,6 +571,46 @@
     (wizard-hl-todo-mode 1)            ; highlight todos in your buffers.
     (wizard-toggle-highlight-at-point) ; highlighting for the symbol under your cursor.
     )
+
+(use-package goto-chg)
+
+(use-package goto-line-preview
+  :custom
+  (goto-line-preview-hl-duration 1.25)
+  :config
+  (global-set-key [remap goto-line] 'goto-line-preview))
+
+(use-package undo-fu)
+
+(use-package undo-fu-session
+  :after undo-fu
+  :config
+  (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
+  (undo-fu-session-global-mode))
+(elpaca-wait)
+
+;; (use-package evil
+;;   :ensure t
+;;   :init
+;;   (setq evil-want-integration   t         ; This is optional since it's already set to t by default.
+;; 	evil-set-initial-state  'normal   ; Initial state should always be "normal"
+;; 	evil-want-Y-yank-to-eol t         ; Y yanks to end of the line.
+;; 	evil-want-keybinding    nil
+;; 	evil-split-window-below t         ; Always split windows below
+;; 	evil-split-window-right t         ; Always split windows to the right.
+;; 	)
+;;   :config
+;;   (evil-mode 1))
+
+;; (elpaca-wait)
+
+;; (use-package evil-collection
+;;     :after evil
+;;     :ensure t
+;;     :config
+;;     (evil-collection-init))
+
+;; (elpaca-wait)
 
 ;; https://github.com/daut/dotfiles/blob/2ad4f5a5e0f1e786c91f17460d8599ec5d57318b/.emacs.d/init.el#L105
 ;;;###autoload
@@ -761,20 +855,21 @@
 ;; TAB cycle if there are only few candidates
   ;; (completion-cycle-threshold 3)
 
+(use-package corfu
+  :init
   ;; Enable indentation+completion using the TAB key.
   ;; `completion-at-point' is often bound to M-TAB.
   (setq tab-always-indent 'complete
 
-	;; Emacs 30 and newer: Disable Ispell completion function.
-	;; Try `cape-dict' as an alternative.
-	text-mode-ispell-word-completion nil
+        ;; Emacs 30 and newer: Disable Ispell completion function.
+        ;; Try `cape-dict' as an alternative.
+        text-mode-ispell-word-completion nil
 
-	;; Hide commands in M-x which do not apply to the current mode.  Corfu
-	;; commands are hidden, since they are not used via M-x. This setting is
-	;; useful beyond Corfu.
-	read-extended-command-predicate #'command-completion-default-include-p)
+        ;; Hide commands in M-x which do not apply to the current mode.  Corfu
+        ;; commands are hidden, since they are not used via M-x. This setting is
+        ;; useful beyond Corfu.
+        read-extended-command-predicate #'command-completion-default-include-p)
 
-(use-package corfu
   :custom
   (corfu-cycle t) ; cycle around to first entry after reaching the last
   (corfu-preview-current nil) ; don't expand text at point until I press return
@@ -782,11 +877,11 @@
   (corfu-on-exact-match 'insert) ; complete if there is only a single candidate
   (corfu-quit-no-match t)
   (corfu-quit-at-boundary t)
-  :init
-  (global-corfu-mode)
   :config
   (setq corfu-popupinfo-delay '(1.25 . 0.5))
   (corfu-popupinfo-mode 1) ; shows documentation next to completions
+
+  (global-corfu-mode 1)
 
   ;; sort by input history
   (with-eval-after-load 'savehist
@@ -1016,6 +1111,13 @@
          ("s-j" . windmove-down)
          ("s-k" . windmove-up)
          ("s-l" . windmove-right)))
+
+(use-package expand-region
+  :bind ("s-=" . er/expand-region))
+
+(elpaca-wait)
+
+(use-package change-inner)
 
 (use-package google-this)
 
