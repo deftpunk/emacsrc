@@ -1007,11 +1007,13 @@
 (with-eval-after-load 'org-indent
   (blackout 'org-indent-mode))
 
-;; Turn off flycheck in our Org src blocks for elisp
-(defun disable-fylcheck-in-org-src-block ()
+;; Turn off flycheck/flymake elisp checker in our Org src blocks for elisp
+;; Turn on electric-pair-mode
+(defun config-org-src-block ()
+  (electric-pair-mode 1)
   (setq-local flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
 
-(add-hook 'org-src-mode-hook 'disable-fylcheck-in-org-src-block)
+(add-hook 'org-src-mode-hook #'config-org-src-block)
 
 (use-package org-auto-tangle
   :hook (org-mode . org-auto-tangle-mode))
@@ -1080,6 +1082,8 @@
       redisplay-skip-fontification-on-input t)
 
 
+
+(setq window-combination-resize t) ; resize windows proportionally
 
 (use-package ace-window
   :general
@@ -1332,6 +1336,19 @@
   :custom
   (fill-function-arguments-indent-after-fill t)
   (fill-function-arguments-indent-first-argument-same-line t))
+
+(use-package flyover
+  :hook
+  ((flycheck-mode . flyover-mode)
+   (flymake-mode . flyover-mode))
+  :custom
+  (flyover-max-line-length 85)
+  (flyover-virtual-line-type 'curved-bold-arrow)
+  (flyover-border-style 'pill)
+  ;; Only show the error at current point – if any ­ on request using `flyover-flash-error-at-point`
+  ;; Useful when you want to control the display of the errors yourself.
+  ;; NOTE: Map the function `flyover-flash-error-at-point` to a convenient key.
+  (flyover-display-mode 'show-only-on-request))
 
 (use-package indent-bars
   :init
