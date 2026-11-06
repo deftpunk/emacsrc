@@ -231,6 +231,10 @@
   :hook
   ((emacs-lisp-mode lisp-interaction-mode) . highlight-defined-mode))
 
+(use-package highlight-symbol
+  :config
+  (highlight-symbol-mode))
+
 (use-package hl-todo
   :ensure (hl-todo :depth nil) ; see https://github.com/alphapapa/magit-todos/issues/171
   :init
@@ -825,6 +829,10 @@
          (caar consult--narrow-keys)))))
   )
 
+(use-package consult-todo
+  :after consult
+  )
+
 ;; Enable embark
 (use-package embark
   :ensure t
@@ -1309,6 +1317,10 @@
   :custom
   (magit-delta-default-dark-theme "zenburn")
   :hook (magit-mode . magit-delta-mode))
+
+(use-package magit-todos
+  :after magit
+  :config (magit-todos-mode 1))
 
 (use-package consult-gh
   :ensure (consult-gh :type git

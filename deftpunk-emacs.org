@@ -580,7 +580,6 @@ Other themes based on [[https://github.com/protesilaos/modus-themes][Modus theme
 https://codeberg.org/ashton314/modus-nordic-night (use midnight?)
 https://gitlab.com/magus/modus-catppuccin
 
-
 **** [[https://github.com/hlissner/emacs-solaire-mode][solaire-mode]]
 
 An aesthetic plugin designed to visually distinguish "real" buffers (i.e. file-visiting code buffers where you do most of your work) from "unreal" buffers (like popups, sidebars, log buffers, terminals, etc) by giving the latter a slightly different -- often darker -- background.
@@ -681,6 +680,15 @@ Highlight defined emacs-lisp symbols
     :defer t
     :hook
     ((emacs-lisp-mode lisp-interaction-mode) . highlight-defined-mode))
+#+end_src
+
+
+*** [[https://github.com/nschum/highlight-symbol.el][highlight-symbol]]
+
+#+begin_src emacs-lisp
+  (use-package highlight-symbol
+    :config
+    (highlight-symbol-mode))
 #+end_src
 
 *** [[https://github.com/tarsius/hl-todo][hl-todo]]
@@ -1510,7 +1518,20 @@ Simple, stable linear undo with redo for Emacs.
 
 **** [[https://github.com/armindarvish/consult-omni][consult-omni]]
 
-*** embark
+**** [[https://github.com/eki3z/consult-todo][consult-todos]]
+
+=consult-todo=: search in current buffer
+=consult-todo-all=: search in all hl-todo-mode enabled buffers
+=consult-todo-dir=: search in selected directory
+=consult-todo-project=: search in current project
+
+#+begin_src emacs-lisp
+  (use-package consult-todo
+    :after consult
+    )
+#+end_src
+
+** embark
 
 https://emacsredux.com/blog/2026/07/14/all-aboard-embark/
 
@@ -1984,6 +2005,8 @@ Expand selection by semantic units.  If you expand too far, you can contract the
   (elpaca-wait)
 #+end_src
 
+TODO: Explore https://github.com/mkleehammer/surround/ instead of expand-region
+
 *** [[https://github.com/magnars/change-inner.el][change-inner]]
 
 change inner/outer contents of string/bracket/brace/quotes, ala vim's =ci= command.
@@ -2290,7 +2313,30 @@ Use [[https://github.com/dandavison/delta][delta]] when displaying diffs.
     :hook (magit-mode . magit-delta-mode))
 #+end_src
 
-*** [[https://github.com/armindarvish/consult-gh][consult-gh]]
+**** [[https://github.com/alphapapa/magit-todos][magit-todos]]
+
+Show TODOs in the =magit-status= buffer.
+
+Key bindings in Magit status buffer:
+
+=j T= Jump to the to-do list. If the section is empty (e.g. when using manual updates), it will scan for items.
+
+With point in to-do list:
+
+=b= Show branch (git diff) to-do list.
+=B= Set commit reference used in branch to-do list.
+=j T= When configured for manual updates, manually update the to-do list.
+=j l= Open dedicated to-do list buffer.
+=RET= Show item at point, or open dedicated buffer if point is on top heading.
+=SPC= Peek at the item at point.
+
+#+begin_src emacs-lisp
+  (use-package magit-todos
+    :after magit
+    :config (magit-todos-mode 1))
+#+end_src
+
+** [[https://github.com/armindarvish/consult-gh][consult-gh]]
 
 #+begin_src emacs-lisp
   (use-package consult-gh
