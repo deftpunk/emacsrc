@@ -1611,3 +1611,19 @@ The DWIM behaviour of this command is as follows:
 ;; (setq gc-cons-threshold 16777216) ; 16MB
 (setq gc-cons-threshold most-positive-fixnum) ; 16MB
 (run-with-idle-timer 1.2 t 'garbage-collect)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(projectile-auto-discover-projects t nil nil "Customized with use-package projectile")
+ '(safe-local-variable-values '((magit-todos-exclude-globs . "*.org"))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(solaire-default-face ((((class color) (min-colors 256)) :inherit default :background "#383838" :foreground "#989890")))
+ '(solaire-hl-line-face ((((class color) (min-colors 256)) :background "#4F4F4F")))
+ '(solaire-line-number-face ((((class color) (min-colors 256)) :inherit solaire-default-face :foreground "#989890")))
+ '(solaire-org-hide-face ((((class color) (min-colors 256)) :background "#383838" :foreground "#383838"))))
