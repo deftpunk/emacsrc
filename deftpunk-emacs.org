@@ -2251,6 +2251,58 @@ Major modes for various Git config files: .gitconfig, .gitattributes, .gitignore
     (add-to-list 'auto-mode-alist (cons pattern #'gitignore-mode))))
 #+end_src
 
+*** [[https://gitlab.com/pidu/git-timemachine][git-timemachine]]
+
+Step through historic versions of a git controlled file.
+
+Visit a git-controlled file and issue M-x git-timemachine (or bind it to a keybinding of your
+choice). If you just need to toggle the time machine you can use M-x git-timemachine-toggle.
+
+Use the following keys to navigate historic version of the file
+
+p Visit previous historic version
+n Visit next historic version
+w Copy the abbreviated hash of the current historic version
+W Copy the full hash of the current historic version
+g Goto nth revision
+t Goto revision by selected commit message
+q Exit the time machine.
+b Run magit-blame on the currently visited revision (if magit available).
+c Show current commit using magit (if magit available).
+
+#+begin_src emacs-lisp :name git-timemachine
+  (use-package git-timemachine
+    :defer t
+    :commands (git-timemachine)
+    :config
+    (setq git-timemachine-abbreviation-length 14
+          git-timemachine-show-minibuffer-details t)
+    (elpaca-wait))
+
+  ;; From redguardtoo - http://blog.binchen.org/posts/new-git-timemachine-ui-based-on-ivy-mode.html
+  (defun my-git-timemachine-show-selected-revision ()
+    "Show last (current) revision of file."
+    (interactive)
+    (let* ((collection (mapcar (lambda (rev)
+                                 ;; re-shape list for the ivy-read
+                                 (cons (concat (substring-no-properties (nth 0 rev) 0 7) "|" (nth 5 rev) "|" (nth 6 rev)) rev))
+                               (git-timemachine--revisions))))
+      (ivy-read "commits:"
+                collection
+                :action (lambda (rev)
+                          ;; compatible with ivy 8+ and later ivy version
+                          (unless (string-match "^[a-z0-9]*$" (car rev))
+                            (setq rev (cdr rev)))
+                          (git-timemachine-show-revision rev)))))
+
+  (defun my-git-timemachine ()
+    "Open git snapshot with the selected version.  Based on ivy-mode."
+    (interactive)
+    (unless (featurep 'git-timemachine)
+      (require 'git-timemachine))
+    (git-timemachine--start #'my-git-timemachine-show-selected-revision))
+#+end_src
+
 *** [[https://magit.vc/][Magit]]
 
 The absolutely best git porcelain on Planet Earth.
@@ -2278,7 +2330,7 @@ https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
       (setq magit-git-executable "/usr/local/bin/git"))
     :config
     ;; Add git-timemachine to the magit-dispatch transient map.
-    ;; (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
+    (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
 
     (setq  magit-log-arguments '("--graph" "--decorate" "--color")
            magit-revert-buffers 'silent
@@ -2288,6 +2340,11 @@ https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
            ;; trigger a bunch of unwanted side-effects, like save hooks and
            ;; formatters. Trust us to know what we're doing.
            magit-save-repository-buffers nil)
+
+    ;; Add worktrees to the status section
+    (magit-add-section-hook 'magit-status-sections-hook
+                            #'magit-insert-worktrees
+                            nil t)
 
     ;; Open magit-status in entire window & restore the previous window config on close.
     (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1
@@ -2514,7 +2571,6 @@ You can use =C-c C-b= to build from the buffer & =C-c M-b= to bypass the build c
     :mode "Dockerfile.*\\'")
 #+end_src
 
-
 *** JSON
 
 **** [[https://github.com/json-emacs/json-mode][json-mode]]
@@ -2556,90 +2612,45 @@ Features:
 
 *** Markdown
 
-**** [[https://github.com/rjprins/markdown-modern][markdown-modern]]
-
-Requirements
-
-Emacs 30.1 or later
-An Emacs build with Tree-sitter support
-The markdown and markdown-inline grammars (see setup)
-Git and a C compiler, to build the grammars
-Optional Dependencies
-
-pandoc - For PDF/DOCX export
-
-*** YAML
-**** [[https://github.com/yoshiki/yaml-mode][yaml-mode]]
-
-Yaml minor mode.
-
 #+begin_src emacs-lisp
-  (use-package yaml-mode
-    :ensure t
-    :defer t
-    :mode "\\.y[a]ml\\'"
-    :mode "\\.y[a]ml\\.j2\\'"
-    :custom-face
-    (font-lock-variable-name-face ((t (:foreground "#cba6f7"))))
-    :config)
+  (setq markdown-header-scaling t)
+
+  ;; render remote images
+  (setq markdown-display-remote-images t)
 #+end_src
 
-**** [[https://github.com/zkry/yaml-pro][yaml-pro]]
+**** [[https://github.com/rjprins/markdown-modern][markdown-modern]]
 
-Use treesitter to make yaml mode go faster.
+Modern visual styling for markdown in Emacs - markdown in place.
+
+Requirements:
+- Emacs 30.1 or later
+- An Emacs build with Tree-sitter support
+- The markdown and markdown-inline grammars (run =markdown-modern-install-grammars=)
+- Git and a C compiler, to build the grammars
+
+Optional Dependencies:
+pandoc - For PDF/DOCX export
 
 #+begin_src emacs-lisp
-  (use-package yaml-pro
-    :defer t
-    :hook (yaml-mode . yaml-ts-mode-hook)
-    :config
-    ;; the original bindings will work as well, these are shorter if you prefer them.
-    ;;(keymap-set yaml-pro-ts-mode-map "C-M-n" #'yaml-pro-ts-next-subtree)
-    ;;(keymap-set yaml-pro-ts-mode-map "C-M-p" #'yaml-pro-ts-prev-subtree)
-    ;;(keymap-set yaml-pro-ts-mode-map "C-M-u" #'yaml-pro-ts-up-level)
-    ;;(keymap-set yaml-pro-ts-mode-map "C-M-d" #'yaml-pro-ts-down-level)
-    ;;(keymap-set yaml-pro-ts-mode-map "C-M-k" #'yaml-pro-ts-kill-subtree)
-    ;;(keymap-set yaml-pro-ts-mode-map "C-M-<backspace>" #'yaml-pro-ts-kill-subtree)
-    ;;(keymap-set yaml-pro-ts-mode-map "C-M-a" #'yaml-pro-ts-first-sibling)
-    ;;(keymap-set yaml-pro-ts-mode-map "C-M-e" #'yaml-pro-ts-last-sibling)
+  (use-package markdown-modern
+    :ensure (markdown-modern
+  	   :type git
+  	   :host github
+  	   :repo "rjprins/markdown-modern"
+  	   :main "lisp/markdown-modern.el"
+  	   :depth nil)
+    :mode ("\\.md\\'" . markdown-modern-mode))
+#+end_src
 
-    (deftpunk-local-leader-def
-      :keymaps 'yaml-pro-ts-mode-map
-      "n" '(yaml-pro-ts-next-subtree :which-key "Next subtree")
-      "p" '(yaml-pro-ts-prev-subtree :which-key "Previous subtree")
-      "u" '(yaml-pro-ts-up-level :which-key "Up subtree")
-      "d" '(yaml-pro-ts-down-level :which-key "Down subtree")
-      "k" '(yaml-pro-ts-kill-subtree :which-key "Kill subtree")
-      "<backspace>" '(yaml-pro-ts-kill-subtree :which-key "Kill subtree")
-      "a" '(yaml-pro-ts-first-sibling :which-key "First sibling")
-      "e" '(yaml-pro-ts-last-sibling :which-key "Last sibling")
-      )
+**** [[https://github.com/ardumont/markdown-toc][markdown-toc]]
 
-    (defvar-keymap my/yaml-pro/tree-repeat-map
-      :repeat t
-      "n" #'yaml-pro-ts-next-subtree
-      "p" #'yaml-pro-ts-prev-subtree
-      "u" #'yaml-pro-ts-up-level
-      "d" #'yaml-pro-ts-down-level
-      "m" #'yaml-pro-ts-mark-subtree
-      "k" #'yaml-pro-ts-kill-subtree
-      "a" #'yaml-pro-ts-first-sibling
-      "e" #'yaml-pro-ts-last-sibling
-      "SPC" #'my/yaml-pro/set-mark)
+Generate a table of contents for a markdown document.
 
-    (defun my/yaml-pro/set-mark ()
-      (interactive)
-      (my/region/set-mark 'my/yaml-pro/set-mark))
+=markdown-toc-generate-or-refresh-toc=
 
-    (defun my/region/set-mark (command-name)
-      (if (eq last-command command-name)
-          (if (region-active-p)
-              (progn
-                (deactivate-mark)
-                (message "Mark deactivated"))
-            (activate-mark)
-            (message "Mark activated"))
-        (set-mark-command nil))))
+#+begin_src emacs-lisp
+  (use-package markdown-toc)
 #+end_src
 
 ** Terminals

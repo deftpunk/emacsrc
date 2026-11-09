@@ -1275,6 +1275,37 @@
   (dolist (pattern '("/.dockerignore\\'"))
     (add-to-list 'auto-mode-alist (cons pattern #'gitignore-mode))))
 
+(use-package git-timemachine
+  :defer t
+  :commands (git-timemachine)
+  :config
+  (setq git-timemachine-abbreviation-length 14
+        git-timemachine-show-minibuffer-details t)
+  (elpaca-wait))
+
+;; From redguardtoo - http://blog.binchen.org/posts/new-git-timemachine-ui-based-on-ivy-mode.html
+(defun my-git-timemachine-show-selected-revision ()
+  "Show last (current) revision of file."
+  (interactive)
+  (let* ((collection (mapcar (lambda (rev)
+                               ;; re-shape list for the ivy-read
+                               (cons (concat (substring-no-properties (nth 0 rev) 0 7) "|" (nth 5 rev) "|" (nth 6 rev)) rev))
+                             (git-timemachine--revisions))))
+    (ivy-read "commits:"
+              collection
+              :action (lambda (rev)
+                        ;; compatible with ivy 8+ and later ivy version
+                        (unless (string-match "^[a-z0-9]*$" (car rev))
+                          (setq rev (cdr rev)))
+                        (git-timemachine-show-revision rev)))))
+
+(defun my-git-timemachine ()
+  "Open git snapshot with the selected version.  Based on ivy-mode."
+  (interactive)
+  (unless (featurep 'git-timemachine)
+    (require 'git-timemachine))
+  (git-timemachine--start #'my-git-timemachine-show-selected-revision))
+
 (use-package magit
   :defer t
   :commands (magit
@@ -1292,7 +1323,7 @@
     (setq magit-git-executable "/usr/local/bin/git"))
   :config
   ;; Add git-timemachine to the magit-dispatch transient map.
-  ;; (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
+  (transient-append-suffix 'magit-dispatch '(0 -1 -1) '("S" "git timemachine" git-timemachine))
 
   (setq  magit-log-arguments '("--graph" "--decorate" "--color")
          magit-revert-buffers 'silent
@@ -1302,6 +1333,11 @@
          ;; trigger a bunch of unwanted side-effects, like save hooks and
          ;; formatters. Trust us to know what we're doing.
          magit-save-repository-buffers nil)
+
+  ;; Add worktrees to the status section
+  (magit-add-section-hook 'magit-status-sections-hook
+                          #'magit-insert-worktrees
+                          nil t)
 
   ;; Open magit-status in entire window & restore the previous window config on close.
   (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1
@@ -1422,66 +1458,21 @@
 			:branch "main")
   :mode ("\\.toml\\'" "\\.toml.tmpl\\'"))
 
-(use-package yaml-mode
-  :ensure t
-  :defer t
-  :mode "\\.y[a]ml\\'"
-  :mode "\\.y[a]ml\\.j2\\'"
-  :custom-face
-  (font-lock-variable-name-face ((t (:foreground "#cba6f7"))))
-  :config)
+(setq markdown-header-scaling t)
 
-(use-package yaml-pro
-  :defer t
-  :hook (yaml-mode . yaml-ts-mode-hook)
-  :config
-  ;; the original bindings will work as well, these are shorter if you prefer them.
-  ;;(keymap-set yaml-pro-ts-mode-map "C-M-n" #'yaml-pro-ts-next-subtree)
-  ;;(keymap-set yaml-pro-ts-mode-map "C-M-p" #'yaml-pro-ts-prev-subtree)
-  ;;(keymap-set yaml-pro-ts-mode-map "C-M-u" #'yaml-pro-ts-up-level)
-  ;;(keymap-set yaml-pro-ts-mode-map "C-M-d" #'yaml-pro-ts-down-level)
-  ;;(keymap-set yaml-pro-ts-mode-map "C-M-k" #'yaml-pro-ts-kill-subtree)
-  ;;(keymap-set yaml-pro-ts-mode-map "C-M-<backspace>" #'yaml-pro-ts-kill-subtree)
-  ;;(keymap-set yaml-pro-ts-mode-map "C-M-a" #'yaml-pro-ts-first-sibling)
-  ;;(keymap-set yaml-pro-ts-mode-map "C-M-e" #'yaml-pro-ts-last-sibling)
+;; render remote images
+(setq markdown-display-remote-images t)
 
-  (deftpunk-local-leader-def
-    :keymaps 'yaml-pro-ts-mode-map
-    "n" '(yaml-pro-ts-next-subtree :which-key "Next subtree")
-    "p" '(yaml-pro-ts-prev-subtree :which-key "Previous subtree")
-    "u" '(yaml-pro-ts-up-level :which-key "Up subtree")
-    "d" '(yaml-pro-ts-down-level :which-key "Down subtree")
-    "k" '(yaml-pro-ts-kill-subtree :which-key "Kill subtree")
-    "<backspace>" '(yaml-pro-ts-kill-subtree :which-key "Kill subtree")
-    "a" '(yaml-pro-ts-first-sibling :which-key "First sibling")
-    "e" '(yaml-pro-ts-last-sibling :which-key "Last sibling")
-    )
+(use-package markdown-modern
+  :ensure (markdown-modern
+	   :type git
+	   :host github
+	   :repo "rjprins/markdown-modern"
+	   :main "lisp/markdown-modern.el"
+	   :depth nil)
+  :mode ("\\.md\\'" . markdown-modern-mode))
 
-  (defvar-keymap my/yaml-pro/tree-repeat-map
-    :repeat t
-    "n" #'yaml-pro-ts-next-subtree
-    "p" #'yaml-pro-ts-prev-subtree
-    "u" #'yaml-pro-ts-up-level
-    "d" #'yaml-pro-ts-down-level
-    "m" #'yaml-pro-ts-mark-subtree
-    "k" #'yaml-pro-ts-kill-subtree
-    "a" #'yaml-pro-ts-first-sibling
-    "e" #'yaml-pro-ts-last-sibling
-    "SPC" #'my/yaml-pro/set-mark)
-
-  (defun my/yaml-pro/set-mark ()
-    (interactive)
-    (my/region/set-mark 'my/yaml-pro/set-mark))
-
-  (defun my/region/set-mark (command-name)
-    (if (eq last-command command-name)
-        (if (region-active-p)
-            (progn
-              (deactivate-mark)
-              (message "Mark deactivated"))
-          (activate-mark)
-          (message "Mark activated"))
-      (set-mark-command nil))))
+(use-package markdown-toc)
 
 (use-package ghostel
   :bind (:map ghostel-semi-char-mode-map
