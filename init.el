@@ -1035,7 +1035,7 @@
 ;; Turn off flycheck/flymake elisp checker in our Org src blocks for elisp
 ;; Turn on electric-pair-mode
 (defun config-org-src-block ()
-  (electric-pair-mode 1)
+  (electric-pair-mode)
   (setq-local flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
 
 (add-hook 'org-src-mode-hook #'config-org-src-block)
@@ -1429,7 +1429,14 @@
   (indent-bars-no-descend-lists 'skip)
   (indent-bars-treesit-support t)
   :hook
-  ((emacs-lisp-mode python-base-mode yaml-mode) . indent-bars-mode))
+  ((python-base-mode yaml-mode) . indent-bars-mode))
+
+(use-package tree-guide
+  :ensure (tree-guide :type git
+		      :host github
+		      :repo "https://github.com/benvvalk/tree-guide.el"
+		      :main "tree-guide.el"
+		      :branch "main"))
 
 (use-package rainbow-delimiters
   :defer t
