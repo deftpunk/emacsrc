@@ -2015,6 +2015,15 @@ change inner/outer contents of string/bracket/brace/quotes, ala vim's =ci= comma
   (use-package change-inner)
 #+end_src
 
+*** [[https://github.com/redguardtoo/evil-nerd-commenter][evil-nerd-commenter]]
+
+A Nerd Commenter emulation, help you comment code efficiently... with or without using evil mode.
+
+#+begin_src emacs-lisp :name evil-nerd-commenter
+  (use-package evil-nerd-commenter
+    :bind (("M-;" . evil-nerd-comment-or-uncomment-lines)))
+#+end_src
+
 *** [[https://github.com/Malabarba/emacs-google-this][google-this]]
 
 A set of emacs functions and bindings to google under point.
