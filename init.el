@@ -154,7 +154,7 @@
 
 (use-package solaire-mode
   :config
-  (solitaire-global-mode +1))
+  (solaire-global-mode +1))
 
 (use-package modus-zenburn
   :ensure (modus-zenburn :type git
@@ -1359,7 +1359,7 @@
 
 (use-package magit-todos
   :after magit
-  :config (magit-todos-mode 1))
+  :config (magit-todos-mode 0))
 
 (use-package consult-gh
   :ensure (consult-gh :type git
@@ -1452,6 +1452,8 @@
       treesit-enable-modes t
       treesit-font-lock-level 4)
 
+(use-package pip-requirements)
+
 (use-package dockerfile-mode
   :defer t
   :mode "Dockerfile.*\\'")
@@ -1521,11 +1523,6 @@ Like normal Emacs `C-k'.  Kill to end of line and put content in kill-ring."
          ("m" . consult-ghostel-project)
          :map ghostel-semi-char-mode-map
          ("C-c h" . consult-ghostel-history)))
-
-(global-unset-key (kbd "M-u"))
-(use-package unfill
-  :bind
-  (("M-u" . unfill-toggle)))
 
 ;; Trying out matching parens
 ;; https://www.gnu.org/software/emacs/manual/html_node/efaq/Matching-parentheses.html

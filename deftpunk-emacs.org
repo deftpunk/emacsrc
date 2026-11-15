@@ -1,6 +1,6 @@
 #+title Deftpunk Emacs
 #+author: Erick Bodine <erick.bodine@gmail.com>
-#+property: header-args :tangle "/Users/bodine/.emacs.d/init.el"
+#+property: header-args :tangle "/Users/ebodine/.emacs.d/init.el"
 #+startup: content
 #+auto_tangle: t
 
@@ -58,7 +58,7 @@ Mastering Emacs
 
 * Early-Init
 :properties:
-:header-args: :tangle "/Users/bodine//.emacs.d/early-init.el"
+:header-args: :tangle "/Users/ebodine//.emacs.d/early-init.el"
 :end:
 #+name: early-init-header-block
 #+begin_src emacs-lisp :exports none
@@ -587,7 +587,7 @@ An aesthetic plugin designed to visually distinguish "real" buffers (i.e. file-v
 #+begin_src emacs-lisp
   (use-package solaire-mode
     :config
-    (solitaire-global-mode +1))
+    (solaire-global-mode +1))
 #+end_src
 
 **** [[https://github.com/kiennq/modus-zenburn][modus-zenburn]]
@@ -2150,6 +2150,7 @@ Handle saving our files so that we don't have to "C-x C-s" all of the time.
     (setq auto-save-default nil)
     (super-save-mode +1))
 #+end_src
+
 *** [[https://github.com/purcell/unfill][unfill]]
 
 Funtions providing the inverse of =fill-paragraph= & =fill-region= .  I most care about =unfill-toggle=
@@ -2160,6 +2161,7 @@ Funtions providing the inverse of =fill-paragraph= & =fill-region= .  I most car
     :bind
     (("M-u" . unfill-toggle)))
 #+end_src
+
 *** [[https://github.com/lewang/ws-butler][ws-butler]]
 
 Back to using the upstream ws-butler package.
@@ -2433,7 +2435,7 @@ A maintained version of git-messenger
 
 ** Software development
 
-*** Software dev helpers
+*** Software development utilities
 **** [[https://github.com/Malabarba/aggressive-indent-mode][aggressive-indent]]
 
 Indentation while we type.  This can sometimes be overly aggressive so I only use it for specific languages.
@@ -2527,7 +2529,6 @@ Indentation guide bars; I have enabled the treesitter enhancement.
 #+end_src
 
 
-
 **** [[https://github.com/benvvalk/tree-guide.el][tree-guide.el]]
 
 A minor mode to render guide lines for lisp source code buffers - this is Lisp languages only.
@@ -2542,7 +2543,6 @@ NOTE: 11/10/26 11:17:14 Trying this out, otherwise optimize indent-bars when usi
   		      :main "tree-guide.el"
   		      :branch "main"))
 #+end_src
-
 
 **** [[https://github.com/Fanael/rainbow-delimiters][rainbow delimiters]]
 
@@ -2582,6 +2582,15 @@ Highlight parenthesis/brackets/braces by their depth.
 **** Nim
 
 **** Python
+***** [[https://github.com/Wilfred/pip-requirements.el][requirements files]]
+
+Some syntax for requirements.txt files.
+
+05/16/25 12:56:56 -> This causes an excessive nesting problem and eats up memory?  Nothing in its "Issues" list.  It is old though.
+
+#+begin_src emacs-lisp
+  (use-package pip-requirements)
+#+end_src
 
 **** Shell
 
@@ -2735,17 +2744,6 @@ Consult integration for the ghostel terminal emulator.
 ** Keybindings and keychord
 
 Keybindings that aren't directly associated with a major/minor mode.
-
-*** [[https://github.com/purcell/unfill][unfill]]
-
-Functions providing the inverse of Emacs' fill-paragraph and fill-region.
-
-#+begin_src emacs-lisp
-  (global-unset-key (kbd "M-u"))
-  (use-package unfill
-    :bind
-    (("M-u" . unfill-toggle)))
-#+end_src
 
 *** matching parens
 
