@@ -1,6 +1,6 @@
 #+title Deftpunk Emacs
 #+author: Erick Bodine <erick.bodine@gmail.com>
-#+property: header-args :tangle "/Users/ebodine/.emacs.d/init.el"
+#+property: header-args :tangle "/Users/bodine/.emacs.d/init.el"
 #+startup: content
 #+auto_tangle: t
 
@@ -58,7 +58,7 @@ Mastering Emacs
 
 * Early-Init
 :properties:
-:header-args: :tangle "/Users/ebodine//.emacs.d/early-init.el"
+:header-args: :tangle "/Users/bodine//.emacs.d/early-init.el"
 :end:
 #+name: early-init-header-block
 #+begin_src emacs-lisp :exports none
@@ -2699,12 +2699,12 @@ Use ghostty inside emacs
 #+begin_src emacs-lisp
   (use-package ghostel
     :bind (:map ghostel-semi-char-mode-map
-           ("C-s"  . consult-line)
-           ("C-k"  . my/ghostel-send-C-k-and-kill)
-           ;; I'm used to go up/down the shell history with M-n/p from eshell
-           ;; Simulate this behavior in ghostel by sending C-p and C-n
-           ("M-p" . (lambda () (interactive) (ghostel-send-key "p" "ctrl")))
-           ("M-n" . (lambda () (interactive) (ghostel-send-key "n" "ctrl"))))
+                ("C-s"  . consult-line)
+                ("C-k"  . my/ghostel-send-C-k-and-kill)
+                ;; I'm used to go up/down the shell history with M-n/p from eshell
+                ;; Simulate this behavior in ghostel by sending C-p and C-n
+                ("M-p" . (lambda () (interactive) (ghostel-send-key "p" "ctrl")))
+                ("M-n" . (lambda () (interactive) (ghostel-send-key "n" "ctrl"))))
     :custom
     (ghostel-timer-delay 0.01)
     (ghostel-max-scrollback (* 1024 1024))
@@ -2716,16 +2716,51 @@ Use ghostty inside emacs
       (kill-ring-save (point) (line-end-position))
       (ghostel-send-key "k" "ctrl"))
 
-    (add-to-list 'ghostel-eval-cmds '("magit-status-setup-buffer" magit-status-setup-buffer)))
+    ;; Modified from
+    ;; https://www.jamescherti.com/emacs-terminal-performance-vterm-eat-ansi-term-ghostel/
+    ;; Speeds up terminals in Emacs.
+    (defun my-speed-up-terminal-buffer ()
+      "Reduce unnecessary Emacs features in terminal buffers."
+      (let ((ghostel-buffer (derived-mode-p 'ghostel-mode)))
+        (setq-local font-lock-defaults '(nil t))
+        (setq-local scroll-conservatively most-positive-fixnum)
+        (setq-local hscroll-margin 0)
+        (setq-local auto-hscroll-mode nil)
+        (setq-local truncate-lines t)
+        (setq-local nobreak-char-display nil)
 
-  ;; These are ghostty projects, not projectile/project ones.
-  ;; (use-package ghostel-project
-  ;;   :bind (:map project-prefix-map
-  ;;          ("m" . ghostel-project)
-  ;;          ("M" . ghostel-project-list-buffers))
-  ;;   :config
-  ;;   (add-to-list 'project-switch-commands '(ghostel-project "Ghostel") t)
-  ;;   (add-to-list 'project-switch-commands '(ghostel-project-list-buffers "Ghostel buffers") t))
+        (setq-local process-adaptive-read-buffering nil)
+        (let ((output-max (* 1024 1024)))
+  	(when (< read-process-output-max output-max)
+  	  (setq-local read-process-output-max output-max)))
+
+        (buffer-disable-undo)
+
+        ;; Disable modes
+        (let ((inhibit-redisplay t)
+              (inhibit-message t)
+              (modes (list 'electric-pair-local-mode
+  			 'electric-indent-local-mode
+  			 'display-line-numbers-mode
+  			 'display-fill-column-indicator-mode
+  			 'hl-line-mode
+  			 'show-paren-local-mode
+  			 'flymake-mode
+  			 ;; Third-party packages
+  			 ;; NOTE: Add more modes here
+  			 'flycheck-mode
+  			 'yas-minor-mode
+  			 'company-mode
+  			 'corfu-mode)))
+
+  	(dolist (mode modes)
+            (when (fboundp mode)
+              ;; Disable the mode
+              (ignore-errors
+                (funcall mode -1)))))))
+
+    (add-to-list 'ghostel-eval-cmds '("magit-status-setup-buffer" magit-status-setup-buffer))
+    (add-hook 'ghostel-mode-hook 'my-speed-up-terminal-buffer t))
 #+end_src
 
 **** [[https://github.com/dakra/ghostel/tree/main/extensions/consult-ghostel][consult-ghostel]]
