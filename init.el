@@ -790,7 +790,7 @@
   ;; Get consult-yank-pop to use the system clipboard
   ;; https://github.com/minad/consult/issues/443
   (defun save-interprogram-paste ()
-  ;; copyied from kill-new
+  ;; copied from kill-new
   (let ((interprogram-paste (and interprogram-paste-function
                                  (funcall interprogram-paste-function))))
     (when interprogram-paste
@@ -1359,7 +1359,7 @@
 
 (use-package magit-todos
   :after magit
-  :config (magit-todos-mode 0))
+  :config (magit-todos-mode 1))
 
 (use-package consult-gh
   :ensure (consult-gh :type git

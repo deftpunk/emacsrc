@@ -1476,7 +1476,7 @@ Simple, stable linear undo with redo for Emacs.
     ;; Get consult-yank-pop to use the system clipboard
     ;; https://github.com/minad/consult/issues/443
     (defun save-interprogram-paste ()
-    ;; copyied from kill-new
+    ;; copied from kill-new
     (let ((interprogram-paste (and interprogram-paste-function
                                    (funcall interprogram-paste-function))))
       (when interprogram-paste
@@ -2504,8 +2504,6 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
     (flyover-display-mode 'show-only-on-request))
 #+end_src
 
-**** lsp-mode
-
 **** [[https://github.com/jdtsmith/indent-bars][indent-bars]]
 
 Indentation guide bars; I have enabled the treesitter enhancement.
@@ -2527,7 +2525,6 @@ Indentation guide bars; I have enabled the treesitter enhancement.
     :hook
     ((python-base-mode yaml-mode) . indent-bars-mode))
 #+end_src
-
 
 **** [[https://github.com/benvvalk/tree-guide.el][tree-guide.el]]
 
@@ -2570,6 +2567,10 @@ Highlight parenthesis/brackets/braces by their depth.
         treesit-enable-modes t
         treesit-font-lock-level 4)
 #+end_src
+
+*** LSP
+
+**** lsp-mode
 
 *** Software dev languages
 
