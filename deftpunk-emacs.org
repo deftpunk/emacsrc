@@ -2381,29 +2381,6 @@ Use [[https://github.com/dandavison/delta][delta]] when displaying diffs.
     :hook (magit-mode . magit-delta-mode))
 #+end_src
 
-**** [[https://github.com/alphapapa/magit-todos][magit-todos]]
-
-Show TODOs in the =magit-status= buffer.
-
-Key bindings in Magit status buffer:
-
-=j T= Jump to the to-do list. If the section is empty (e.g. when using manual updates), it will scan for items.
-
-With point in to-do list:
-
-=b= Show branch (git diff) to-do list.
-=B= Set commit reference used in branch to-do list.
-=j T= When configured for manual updates, manually update the to-do list.
-=j l= Open dedicated to-do list buffer.
-=RET= Show item at point, or open dedicated buffer if point is on top heading.
-=SPC= Peek at the item at point.
-
-#+begin_src emacs-lisp
-  (use-package magit-todos
-    :after magit
-    :config (magit-todos-mode 1))
-#+end_src
-
 ** [[https://github.com/armindarvish/consult-gh][consult-gh]]
 
 #+begin_src emacs-lisp

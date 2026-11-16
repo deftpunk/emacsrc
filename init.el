@@ -1357,10 +1357,6 @@
   (magit-delta-default-dark-theme "zenburn")
   :hook (magit-mode . magit-delta-mode))
 
-(use-package magit-todos
-  :after magit
-  :config (magit-todos-mode 1))
-
 (use-package consult-gh
   :ensure (consult-gh :type git
 		      :host github
