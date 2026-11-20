@@ -625,7 +625,7 @@ A zenburn built on modus themes
 *** Modeline
 **** [[https://github.com/seagle0128/doom-modeline][Doom modeline]]
 
-#+begin_src emacs-lisp :name doom-modeline
+#+begin_src emacs-lisp
     (use-package doom-modeline
       :custom
       (doom-modeline-project-detection 'projectile)
@@ -709,7 +709,7 @@ If you want to use these commands, then you should bind them in hl-todo-mode-map
 (define-key hl-todo-mode-map (kbd "C-c o") 'hl-todo-occur)
 (define-key hl-todo-mode-map (kbd "C-c i") 'hl-todo-insert)
 
-#+begin_src emacs-lisp :name hl-todo
+#+begin_src emacs-lisp
   (use-package hl-todo
     :ensure (hl-todo :depth nil) ; see https://github.com/alphapapa/magit-todos/issues/171
     :init
@@ -742,7 +742,7 @@ Abbreviations also have [[http://xahlee.info/emacs/emacs/elisp_abbrev_properties
 https://www.masteringemacs.org/article/correcting-typos-misspellings-abbrev
 https://en.wikipedia.org/wiki/Wikipedia:Lists_of_common_misspellings/For_machines
 
-#+begin_src emacs-lisp :name abbreviations
+#+begin_src emacs-lisp
   (setq-default save-abbrevs 'silently)
   (defvar dftpunk-abbrev-file (expand-file-name "abbrev.el" no-littering-etc-directory))
   (unless (file-exists-p dftpunk-abbrev-file)
@@ -759,7 +759,7 @@ https://en.wikipedia.org/wiki/Wikipedia:Lists_of_common_misspellings/For_machine
 
 **** Some function based abbreviations
 
-#+begin_src emacs-lisp :name function-abbreviations
+#+begin_src emacs-lisp
   (defun deftpunk/current-time ()
     (interactive)
     (insert (format-time-string "%D %T")))
@@ -772,7 +772,7 @@ Keeping buffers automatically up to date.
 
 Use =auto-revert-tail-mode= to watch logfiles grow.
 
-#+begin_src emacs-lisp :name auto-revert
+#+begin_src emacs-lisp
   ;; Revert Dired and other buffers
   (setq global-auto-revert-non-file-buffers t
               global-auto-revert-ignore-modes '(Buffer-menu-mode))  ; Resolve issue #29
@@ -788,7 +788,7 @@ If you want to avoid backups for a single file, you can use the following:
 #+end_example
 https://www.gnu.org/software/emacs/manual/html_node/elisp/Making-Backups.html#index-backup_002dinhibited-2072
 
-#+begin_src emacs-lisp :name backups
+#+begin_src emacs-lisp
     (defvar --backup-directory (concat user-emacs-directory "backups"))
     (if (not (file-exists-p --backup-directory))
         (make-directory --backup-directory t))
@@ -899,7 +899,7 @@ https://www.masteringemacs.org/article/comint-writing-command-interpreter
 
 Virtually every program out there will delete the selected/highlighted text as soon as the user types something. Emacs does not do this by default, even though it has the functionality available.
 
-#+begin_src emacs-lisp :name delete-selection
+#+begin_src emacs-lisp
   (use-package delsel
     :ensure nil ; no need to install it as it is built-in
     :hook (after-init . delete-selection-mode))
@@ -936,7 +936,7 @@ Virtually every program out there will delete the selected/highlighted text as s
 
 Visual interface to diff and patch.
 
-#+begin_src emacs-lisp :name ediff
+#+begin_src emacs-lisp
   (use-package ediff
     :ensure nil
     :custom
@@ -996,7 +996,7 @@ Visual interface to diff and patch.
 
 Highlight the current line.
 
-#+begin_src emacs-lisp :name hl-line
+#+begin_src emacs-lisp
   (use-package hl-line
     :ensure nil
     :custom
@@ -1065,7 +1065,7 @@ Highlight the current line.
 
 Keep track of recently used files.
 
-#+begin_src emacs-lisp :name recentf
+#+begin_src emacs-lisp
   (defvar dftpunk-recentf-file (expand-file-name "recentf-save.el" no-littering-etc-directory))
     (unless (file-exists-p dftpunk-recentf-file)
       (write-region "" nil dftpunk-recentf-file))
@@ -1175,7 +1175,7 @@ The breadcrumb file will be managed by no-littering
 
 Visually wrap lines in Emacs.
 
-#+begin_src emacs-lisp :name visual-line-mode
+#+begin_src emacs-lisp
   (setq visual-line-fringe-indicators '(right-curly-arrow))
   (global-visual-line-mode)
   (blackout 'visual-line-mode)
@@ -1187,7 +1187,7 @@ Visually wrap lines in Emacs.
 
 Some useful interactive commands from bbatsov
 
-#+begin_src emacs-lisp :name crux
+#+begin_src emacs-lisp
   (use-package crux
     :commands (crux-smart-line-above)
     :bind (("C-a" . crux-move-beginning-of-line)
@@ -1765,7 +1765,7 @@ Bonus: The tangle is async.
 
 Implements a "modern" style for Org buffers.
 
-#+begin_src emacs-lisp :name org-modern
+#+begin_src emacs-lisp
   (use-package org-modern
     :blackout
     :after org
@@ -1870,7 +1870,7 @@ b - split window horizontally
 o - maximize current window
 ? - show these command bindings
 
-#+begin_src emacs-lisp :name ace-window
+#+begin_src emacs-lisp
   (use-package ace-window
     :general
     ("s--" #'ace-window)
@@ -2007,7 +2007,7 @@ https://jointhefreeworld.org/blog/articles/emacs/emacs-folding-kirigami/index.ht
 
 Make =delete-by-moving-to-trash= do what we expect on MacOSX. Don't forget to =brew install trash= for better performance.
 
-#+begin_src emacs-lisp :name osx-trash
+#+begin_src emacs-lisp
   (use-package osx-trash
     :config
     (when (eq system-type 'darwin)
@@ -2019,7 +2019,7 @@ Make =delete-by-moving-to-trash= do what we expect on MacOSX. Don't forget to =b
 
 Display ugly form feed characters as tidy horizontal rules.
 
-#+begin_src emacs-lisp :name page-break-lines
+#+begin_src emacs-lisp
   (use-package page-break-lines
     :blackout t
     :hook (text-mode . page-break-lines-mode))
@@ -2057,7 +2057,7 @@ Incorporate projectile into consult.  This plus persp-projectile allows us to qu
 <F - narrow to files.
 <P - narrow to projects.
 
-#+begin_src emacs-lisp :name consult-projectile
+#+begin_src emacs-lisp
   (use-package consult-projectile
     :ensure (consult-projectile :type git
                                 :host gitlab
@@ -2069,7 +2069,7 @@ Incorporate projectile into consult.  This plus persp-projectile allows us to qu
 
 A dependency for using projectile, specifically projectile-ripgrep
 
-#+begin_src emacs-lisp :name rg
+#+begin_src emacs-lisp
   (use-package rg)
 #+end_src
 
@@ -2094,13 +2094,13 @@ Handle saving our files so that we don't have to "C-x C-s" all of the time.
 
 Simple, stable linear undo with redo for Emacs.
 
-#+begin_src emacs-lisp :name undo-fu
+#+begin_src emacs-lisp
   (use-package undo-fu)
 #+end_src
 
 *** [[https://github.com/emacsmirror/undo-fu-session][undo-fu-session]]
 
-#+begin_src emacs-lisp :name unfo-fu-session
+#+begin_src emacs-lisp
   (use-package undo-fu-session
     :after undo-fu
     :config
@@ -2113,7 +2113,7 @@ Simple, stable linear undo with redo for Emacs.
 
 Funtions providing the inverse of =fill-paragraph= & =fill-region= .  I most care about =unfill-toggle=
 
-#+begin_src emacs-lisp :name unfill
+#+begin_src emacs-lisp
   (global-unset-key (kbd "M-u"))
   (use-package unfill
     :bind
@@ -2126,7 +2126,7 @@ Back to using the upstream ws-butler package.
 
 Unobtrusively trim spaces from the end of a line on save.
 
-#+begin_src emacs-lisp :name ws-butler
+#+begin_src emacs-lisp
   (use-package ws-butler
     :blackout t
     :hook ((text-mode . ws-butler-mode)
@@ -2145,7 +2145,7 @@ Unobtrusively trim spaces from the end of a line on save.
 
 Select a link to jump to in Info, help, woman, org or eww modes
 
-#+begin_src emacs-lisp :name ace-link
+#+begin_src emacs-lisp
    (use-package ace-link
      :init (ace-link-setup-default))
 #+end_src
@@ -2172,7 +2172,7 @@ A maintained indicator of git status on the left of the buffer - is supposed to 
 
 `diff-hl-stage-current-hunk`
 
-#+begin_src emacs-lisp :name diff-hl
+#+begin_src emacs-lisp
   ;; From Doom Emacs ui/vc-gutter/config.el
   ;; UI: make the fringe small enough that the diff bars aren't too domineering,
   ;;   while leaving enough room for other indicators.
@@ -2212,7 +2212,7 @@ A maintained indicator of git status on the left of the buffer - is supposed to 
 
 Major modes for various Git config files: .gitconfig, .gitattributes, .gitignore, etc.
 
-#+begin_src emacs-lisp :name git-modes
+#+begin_src emacs-lisp
 (use-package git-modes
   :config
   ;; This works for .dockerignore and other .*ignore files as well.
@@ -2239,7 +2239,7 @@ q Exit the time machine.
 b Run magit-blame on the currently visited revision (if magit available).
 c Show current commit using magit (if magit available).
 
-#+begin_src emacs-lisp :name git-timemachine
+#+begin_src emacs-lisp
   (use-package git-timemachine
     :defer t
     :commands (git-timemachine)
@@ -2281,7 +2281,7 @@ https://emacsair.me/2017/09/01/magit-walk-through/
 https://emacsair.me/2017/09/01/the-magical-git-interface/
 https://www.masteringemacs.org/article/introduction-magit-emacs-mode-git
 
-#+begin_src emacs-lisp :name magit
+#+begin_src emacs-lisp
   (use-package magit
     :defer t
     :commands (magit
@@ -2330,7 +2330,7 @@ TODO: Another codereview from magit tool https://github.com/blahgeek/emacs-pr-re
 
 Use [[https://github.com/dandavison/delta][delta]] when displaying diffs.
 
-#+begin_src emacs-lisp :name magit-delta
+#+begin_src emacs-lisp
   (use-package magit-delta
     :defer t
     :after magit
@@ -2375,7 +2375,7 @@ A maintained version of git-messenger
 
 Indentation while we type.  This can sometimes be overly aggressive so I only use it for specific languages.
 
-#+begin_src emacs-lisp :name aggressive
+#+begin_src emacs-lisp
   (use-package aggressive-indent
     :defer t
     :commands (aggressive-indent-mode)
@@ -2402,7 +2402,7 @@ Minor mode that highlights color formats such as hexadecimal, color names, etc. 
 
 Add/remove line breaks between function arguments and similar constructs
 
-#+begin_src emacs-lisp :name fill-function-arguments
+#+begin_src emacs-lisp
   (use-package fill-function-arguments
     :hook
     ((prog-mode . (lambda ()
@@ -2444,7 +2444,7 @@ Integrates consult and flycheck with the =consult-flycheck= command.  The follow
     (?w . "Warning")
     (?i . "Info")))
 
-#+begin_src emacs-lisp :name consult-flycheck
+#+begin_src emacs-lisp
   (use-package consult-flycheck
     :after (consult flycheck))
     #+end_src
