@@ -126,7 +126,7 @@ Mastering Emacs
 
 ** time ourselves
 
-#+begin_src emacs-lisp :name startup-hook
+#+begin_src emacs-lisp
 ;; Time how long Emacs starts up.
 ;; Use a hook so the message doesn't get clobbered by other messages.
 (add-hook 'emacs-startup-hook
@@ -271,7 +271,7 @@ We setup use-package and the package archives.
 
 ** Unbind some Command keys
 
-#+begin_src emacs-lisp :name unset-set-keys
+#+begin_src emacs-lisp
   ;; Unbind some Super keys on my Mac
   (global-unset-key (kbd "s-a"))     ; mark-whole-buffer (C-x h)
   (global-unset-key (kbd "s-b"))     ; undefined
@@ -521,7 +521,7 @@ Better management of some keybindings.
 
 The command menu for magit & others.
 
-#+begin_src emacs-lisp :name transient
+#+begin_src emacs-lisp
   (use-package transient)
 #+end_src
 
@@ -681,7 +681,6 @@ Highlight defined emacs-lisp symbols
     :hook
     ((emacs-lisp-mode lisp-interaction-mode) . highlight-defined-mode))
 #+end_src
-
 
 *** [[https://github.com/nschum/highlight-symbol.el][highlight-symbol]]
 
@@ -1218,80 +1217,6 @@ Instead of rewriting complex logic from scratch or adding heavy external depende
     )
 #+end_src
 
-** Evil
-
-*** Evil dependencies
-
-**** [[https://github.com/emacs-evil/goto-chg][goto-chg]]
-
-Go to the point of the most recent edit in the buffer.
-
-#+begin_src emacs-lisp
-  (use-package goto-chg)
-#+end_src
-
-**** [[https://github.com/emacs-vs/goto-line-preview][goto-line-preview]]
-
-Preview a line when executing =goto-line= command.
-
-#+begin_src emacs-lisp
-  (use-package goto-line-preview
-    :custom
-    (goto-line-preview-hl-duration 1.25)
-    :config
-    (global-set-key [remap goto-line] 'goto-line-preview))
-#+end_src
-
-**** [[https://github.com/emacsmirror/undo-fu][undo-fu]]
-
-Simple, stable linear undo with redo for Emacs.
-
-#+begin_src emacs-lisp :name undo-fu
-  (use-package undo-fu)
-#+end_src
-
-**** [[https://github.com/emacsmirror/undo-fu-session][undo-fu-session]]
-
-#+begin_src emacs-lisp :name unfo-fu-session
-  (use-package undo-fu-session
-    :after undo-fu
-    :config
-    (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
-    (undo-fu-session-global-mode))
-  (elpaca-wait)
-#+end_src
-
-*** [[https://evil.readthedocs.io/en/latest/index.html][Evil Configuration]]
-
-#+begin_src emacs-lisp
-  ;; (use-package evil
-  ;;   :ensure t
-  ;;   :init
-  ;;   (setq evil-want-integration   t         ; This is optional since it's already set to t by default.
-  ;; 	evil-set-initial-state  'normal   ; Initial state should always be "normal"
-  ;; 	evil-want-Y-yank-to-eol t         ; Y yanks to end of the line.
-  ;; 	evil-want-keybinding    nil
-  ;; 	evil-split-window-below t         ; Always split windows below
-  ;; 	evil-split-window-right t         ; Always split windows to the right.
-  ;; 	)
-  ;;   :config
-  ;;   (evil-mode 1))
-
-  ;; (elpaca-wait)
-#+end_src
-
-**** evil-collection
-
-#+begin_src emacs-lisp
-  ;; (use-package evil-collection
-  ;;     :after evil
-  ;;     :ensure t
-  ;;     :config
-  ;;     (evil-collection-init))
-
-  ;; (elpaca-wait)
-#+end_src
-
 ** Minibuffer/buffer completion
 
 *** [[https://github.com/minad/vertico][Vertico]]
@@ -1692,11 +1617,22 @@ A bunch of snippets that are ready to go.
 A simple [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Completion-in-Buffers.html][capf]] for completing yasnippet snippets.
 
 #+begin_src emacs-lisp
-(use-package yasnippet-capf
-  :ensure t
-  :after cape
-  :config
-  (add-to-list 'completion-at-point-functions #'yasnippet-capf))
+  (use-package yasnippet-capf
+    :ensure t
+    :after cape
+    :config
+
+    ;; https://www.reddit.com/r/emacs/s/83HaDmthMf
+    ;; https://github.com/minad/corfu/wiki#making-a-cape-super-capf-for-eglot
+    (defun my/eglot-capf ()
+      "A super-capf for eglot & yasnippet."
+      (setq-local completion-at-point-functions
+  		(list (cape-capf-super
+  		       #'eglot-completion-at-point
+  		       #'yasnippet-capf))))
+
+    (add-to-list 'completion-at-point-functions #'yasnippet-capf)
+    (add-hook 'eglot-managed-mode-hook #'my/eglot-capf))
 #+end_src
 
 *** completion-preview-mode
@@ -2032,6 +1968,18 @@ A set of emacs functions and bindings to google under point.
   (use-package google-this)
 #+end_src
 
+*** [[https://github.com/emacs-vs/goto-line-preview][goto-line-preview]]
+
+Preview a line when executing =goto-line= command.
+
+#+begin_src emacs-lisp
+  (use-package goto-line-preview
+    :custom
+    (goto-line-preview-hl-duration 1.25)
+    :config
+    (global-set-key [remap goto-line] 'goto-line-preview))
+#+end_src
+
 *** [[https://github.com/minad/jinx][jinx]]
 
 A modern spell checker built on top of libenchant - by the same guy who does vertico, consult & corfu.
@@ -2149,6 +2097,25 @@ Handle saving our files so that we don't have to "C-x C-s" all of the time.
     ;; Disable the built-in auto-save (backup files) since super-save handles it
     (setq auto-save-default nil)
     (super-save-mode +1))
+#+end_src
+
+*** [[https://github.com/emacsmirror/undo-fu][undo-fu]]
+
+Simple, stable linear undo with redo for Emacs.
+
+#+begin_src emacs-lisp :name undo-fu
+  (use-package undo-fu)
+#+end_src
+
+*** [[https://github.com/emacsmirror/undo-fu-session][undo-fu-session]]
+
+#+begin_src emacs-lisp :name unfo-fu-session
+  (use-package undo-fu-session
+    :after undo-fu
+    :config
+    (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
+    (undo-fu-session-global-mode))
+  (elpaca-wait)
 #+end_src
 
 *** [[https://github.com/purcell/unfill][unfill]]
@@ -2381,7 +2348,7 @@ Use [[https://github.com/dandavison/delta][delta]] when displaying diffs.
     :hook (magit-mode . magit-delta-mode))
 #+end_src
 
-** [[https://github.com/armindarvish/consult-gh][consult-gh]]
+*** [[https://github.com/armindarvish/consult-gh][consult-gh]]
 
 #+begin_src emacs-lisp
   (use-package consult-gh
@@ -2398,7 +2365,7 @@ A maintained version of git-messenger
 
 - Run *vc-msg-show* from magit blame buffer to show commit info.
 
-#+begin_src emacs-lisp :name vc-msg
+#+begin_src emacs-lisp
   (use-package sideline-blame)
   ;; Show the commit message for the current line.
   (use-package sideline
@@ -2462,6 +2429,35 @@ Add/remove line breaks between function arguments and similar constructs
 
 https://emacsredux.com/blog/2026/07/29/flycheck-38/
 
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :custom
+    (flycheck-mode-line nil)
+    :ensure (flycheck
+  	   :type git
+  	   :host github
+  	   :repo "flycheck/flycheck"
+  	   :main "flycheck.el"
+  	   :depth nil)
+    :custom
+    (flycheck-indication-mode 'auto)
+    :hook ((prog-mode . global-flycheck-mode)
+  	 (prog-mode . global-flycheck-annotate-mode)))
+#+end_src
+
+***** [[https://github.com/minad/consult-flycheck][consult-flycheck]]
+
+Integrates consult and flycheck with the =consult-flycheck= command.  The following narrowing options are available:
+
+'((?e . "Error")
+    (?w . "Warning")
+    (?i . "Info")))
+
+#+begin_src emacs-lisp :name consult-flycheck
+  (use-package consult-flycheck
+    :after (consult flycheck))
+    #+end_src
+
 **** [[https://github.com/konrad1977/flyover][flyover]]
 
 A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover is a full featured package with tons of features for you to customize.
@@ -2469,9 +2465,10 @@ A modern, aesthetic overlay display for Flycheck and Flymake in Emacs. Flyover i
 #+begin_src emacs-lisp
   (use-package flyover
     :hook
-    ((flycheck-mode . flyover-mode)
-     (flymake-mode . flyover-mode))
+    ((flycheck-mode . flyover-mode))
     :custom
+    (flyover-debounce-interval 0.2)
+    (flyover-cursor-debounce-interval 0.3)
     (flyover-max-line-length 85)
     (flyover-virtual-line-type 'curved-bold-arrow)
     (flyover-border-style 'pill)
@@ -2547,7 +2544,45 @@ Highlight parenthesis/brackets/braces by their depth.
 
 *** LSP
 
-**** lsp-mode
+**** [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]]
+
+A full-featured client for Language Server Protocol
+
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :custom
+    (lsp-headerline-breadcrumb-segments 'symbols)
+    (lsp-enable-on-type-formatting nil)
+    :init
+    (setq lsp-keymap-prefix "C-c l") ; try out using s-l
+    :hook ((python-base-mode . lsp-deferred)
+  	 (lsp-mode . lsp-headerline-breadcrumb-mode)
+  	 (lsp-mode . lsp-enable-which-key-integration))
+    :commands (lsp lsp-deferred))
+
+  (use-package lsp-ui
+    :custom
+    (lsp-ui-sideline-show-diagnostics nil)
+    (lsp-ui-sideline-show-hover t)
+    (lsp-ui-sideline-show-code-actions t)
+    (lsp-ui-sideline-delay 0.5)
+    (lsp-ui-peek-enable t)
+    (lsp-ui-doc-enable t)
+    (lsp-ui-doc-position 'at-point)
+    (lsp-ui-doc-side 'right)
+    (lsp-ui-doc-delay 0.5)
+    (lsp-ui-doc-show-with-cursor t)
+    (lsp-ui-doc-show-with-mouse t)
+    :bind (:map lsp-ui-mode-map
+  	      ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
+  	      ([remap xref-find-references] . lsp-ui-peek-find-references))
+    :commands lsp-ui-mode)
+#+end_src
+
+**** eglot
+
+#+begin_src emacs-lisp
+#+end_src
 
 *** Software dev languages
 

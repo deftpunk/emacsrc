@@ -593,46 +593,6 @@
     (wizard-toggle-highlight-at-point) ; highlighting for the symbol under your cursor.
     )
 
-(use-package goto-chg)
-
-(use-package goto-line-preview
-  :custom
-  (goto-line-preview-hl-duration 1.25)
-  :config
-  (global-set-key [remap goto-line] 'goto-line-preview))
-
-(use-package undo-fu)
-
-(use-package undo-fu-session
-  :after undo-fu
-  :config
-  (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
-  (undo-fu-session-global-mode))
-(elpaca-wait)
-
-;; (use-package evil
-;;   :ensure t
-;;   :init
-;;   (setq evil-want-integration   t         ; This is optional since it's already set to t by default.
-;; 	evil-set-initial-state  'normal   ; Initial state should always be "normal"
-;; 	evil-want-Y-yank-to-eol t         ; Y yanks to end of the line.
-;; 	evil-want-keybinding    nil
-;; 	evil-split-window-below t         ; Always split windows below
-;; 	evil-split-window-right t         ; Always split windows to the right.
-;; 	)
-;;   :config
-;;   (evil-mode 1))
-
-;; (elpaca-wait)
-
-;; (use-package evil-collection
-;;     :after evil
-;;     :ensure t
-;;     :config
-;;     (evil-collection-init))
-
-;; (elpaca-wait)
-
 ;; https://github.com/daut/dotfiles/blob/2ad4f5a5e0f1e786c91f17460d8599ec5d57318b/.emacs.d/init.el#L105
 ;;;###autoload
 (defun daut/minibuffer-backward-kill (arg)
@@ -952,7 +912,18 @@
   :ensure t
   :after cape
   :config
-  (add-to-list 'completion-at-point-functions #'yasnippet-capf))
+
+  ;; https://www.reddit.com/r/emacs/s/83HaDmthMf
+  ;; https://github.com/minad/corfu/wiki#making-a-cape-super-capf-for-eglot
+  (defun my/eglot-capf ()
+    "A super-capf for eglot & yasnippet."
+    (setq-local completion-at-point-functions
+		(list (cape-capf-super
+		       #'eglot-completion-at-point
+		       #'yasnippet-capf))))
+
+  (add-to-list 'completion-at-point-functions #'yasnippet-capf)
+  (add-hook 'eglot-managed-mode-hook #'my/eglot-capf))
 
 (use-package completion-preview
   :ensure nil ; built-in
@@ -1153,6 +1124,12 @@
 
 (use-package google-this)
 
+(use-package goto-line-preview
+  :custom
+  (goto-line-preview-hl-duration 1.25)
+  :config
+  (global-set-key [remap goto-line] 'goto-line-preview))
+
 (use-package jinx
   :hook (emacs-startup . global-jinx-mode)
   :bind (("M-$" . jinx-correct)
@@ -1208,6 +1185,15 @@
   ;; Disable the built-in auto-save (backup files) since super-save handles it
   (setq auto-save-default nil)
   (super-save-mode +1))
+
+(use-package undo-fu)
+
+(use-package undo-fu-session
+  :after undo-fu
+  :config
+  (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
+  (undo-fu-session-global-mode))
+(elpaca-wait)
 
 (global-unset-key (kbd "M-u"))
 (use-package unfill
@@ -1401,11 +1387,29 @@
   (fill-function-arguments-indent-after-fill t)
   (fill-function-arguments-indent-first-argument-same-line t))
 
+(use-package flycheck
+  :custom
+  (flycheck-mode-line nil)
+  :ensure (flycheck
+	   :type git
+	   :host github
+	   :repo "flycheck/flycheck"
+	   :main "flycheck.el"
+	   :depth nil)
+  :custom
+  (flycheck-indication-mode 'auto)
+  :hook ((prog-mode . global-flycheck-mode)
+	 (prog-mode . global-flycheck-annotate-mode)))
+
+(use-package consult-flycheck
+  :after (consult flycheck))
+
 (use-package flyover
   :hook
-  ((flycheck-mode . flyover-mode)
-   (flymake-mode . flyover-mode))
+  ((flycheck-mode . flyover-mode))
   :custom
+  (flyover-debounce-interval 0.2)
+  (flyover-cursor-debounce-interval 0.3)
   (flyover-max-line-length 85)
   (flyover-virtual-line-type 'curved-bold-arrow)
   (flyover-border-style 'pill)
@@ -1447,6 +1451,37 @@
 (setq treesit-auto-install-grammar 'always
       treesit-enable-modes t
       treesit-font-lock-level 4)
+
+(use-package lsp-mode
+  :custom
+  (lsp-headerline-breadcrumb-segments 'symbols)
+  (lsp-enable-on-type-formatting nil)
+  :init
+  (setq lsp-keymap-prefix "C-c l") ; try out using s-l
+  :hook ((python-base-mode . lsp-deferred)
+	 (lsp-mode . lsp-headerline-breadcrumb-mode)
+	 (lsp-mode . lsp-enable-which-key-integration))
+  :commands (lsp lsp-deferred))
+
+(use-package lsp-ui
+  :custom
+  (lsp-ui-sideline-show-diagnostics nil)
+  (lsp-ui-sideline-show-hover t)
+  (lsp-ui-sideline-show-code-actions t)
+  (lsp-ui-sideline-delay 0.5)
+  (lsp-ui-peek-enable t)
+  (lsp-ui-doc-enable t)
+  (lsp-ui-doc-position 'at-point)
+  (lsp-ui-doc-side 'right)
+  (lsp-ui-doc-delay 0.5)
+  (lsp-ui-doc-show-with-cursor t)
+  (lsp-ui-doc-show-with-mouse t)
+  :bind (:map lsp-ui-mode-map
+	      ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
+	      ([remap xref-find-references] . lsp-ui-peek-find-references))
+  :commands lsp-ui-mode)
+
+
 
 (use-package pip-requirements)
 
