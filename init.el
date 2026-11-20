@@ -1119,9 +1119,6 @@
 
 (use-package change-inner)
 
-(use-package evil-nerd-commenter
-  :bind (("M-;" . evil-nerd-comment-or-uncomment-lines)))
-
 (use-package google-this)
 
 (use-package goto-line-preview
