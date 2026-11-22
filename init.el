@@ -1112,6 +1112,10 @@
          ("s-k" . windmove-up)
          ("s-l" . windmove-right)))
 
+(use-package auto-capitalize
+  :hook
+  text-mode)
+
 (use-package expand-region
   :bind ("s-=" . er/expand-region))
 

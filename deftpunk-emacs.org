@@ -1,6 +1,6 @@
 #+title Deftpunk Emacs
 #+author: Erick Bodine <erick.bodine@gmail.com>
-#+property: header-args :tangle "/Users/bodine/.emacs.d/init.el"
+#+property: header-args :tangle "/Users/ebodine/.emacs.d/init.el"
 #+startup: content
 #+auto_tangle: t
 
@@ -58,7 +58,7 @@ Mastering Emacs
 
 * Early-Init
 :properties:
-:header-args: :tangle "/Users/bodine//.emacs.d/early-init.el"
+:header-args: :tangle "/Users/ebodine//.emacs.d/early-init.el"
 :end:
 #+name: early-init-header-block
 #+begin_src emacs-lisp :exports none
@@ -1930,6 +1930,21 @@ There are also the following minor modes:
 *** Frame configuration
 
 ** Miscellaneous utilities
+*** [[https://github.com/abdulnafe-t/auto-capitalize.el][auto-capitalize]]
+
+There used to be a auto-capitalize mode in Emacs itself but it was removed along with some other Emacswiki packages ... This is a package along the same idea.  There is another package called [[https://elpa.gnu.org/packages/captain.html][captain]] that does the same thing.
+#+begin_quote
+The main user-facing difference between this package and captain is that this package tries hard to define defaults that work out of the box, so that, ideally, you never have to write your own predicates if you don’t want to. Captain, on the other hand, is far lighter and more efficient, and much more modern in its approach.
+#+end_quote
+
+NOTE: Should try this out in prog-modes
+
+#+begin_src emacs-lisp
+  (use-package auto-capitalize
+    :hook
+    text-mode)
+#+end_src
+
 *** expand-region
 
 Expand selection by semantic units.  If you expand too far, you can contract the region by pressing the =-= minus key.
