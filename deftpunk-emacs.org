@@ -731,6 +731,25 @@ If you want to use these commands, then you should bind them in hl-todo-mode-map
 
 ** Emacs defaults and builtin minor mode configuration.
 
+*** Notes
+
+Comments
+https://emacsredux.com/blog/2026/02/25/so-many-ways-to-work-with-comments/
+
+~comment-dwim~ can be kind of confusing, here's a breakdown:
+
+*With an active region*: It calls comment-region to comment out the selected code. But if the region already consists entirely of comments, it calls uncomment-region instead. So it’s effectively a toggle.1
+
+*On an empty line*: It inserts a comment (using comment-start and comment-end) and places point between the delimiters, properly indented.
+
+*On a line with code but no comment*: It adds an end-of-line comment, indented to comment-column (default 32). This is the classic “inline comment” workflow – write your code, hit M-;, type your annotation.
+
+*On a line that already has an end-of-line comment*: It jumps to that comment and reindents it. Pressing ~M-;~ again just keeps you there.
+
+With a prefix argument (~C-u M-;~): It kills the first comment on the current line.
+
+That’s five distinct behaviors from a single keybinding. No wonder people find it confusing at first. If you want something simpler, comment-line (~C-x C-;~, added in Emacs 25.1) just toggles comments on the current line or region – nothing more, nothing less.
+
 *** [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Abbrevs.html][abbrevs]]
 
 Abbreviations.  I use them mostly to correct my spelling :)
@@ -1666,6 +1685,17 @@ emacs -Q -batch -eval "(progn (require 'package) (package-initialize) (package-r
 
 General configuration of org mode.
 
+Emphasis markers in Emacs Org
+#+begin_example
+Marker	Formatting Style
+*text*	Bold
+/text/	Italic
+_text_	Underlined
++text+	Strike-through
+=text=	Verbatim
+~text~	Code
+#+end_example
+
 #+name: org_configuration
 #+begin_src emacs-lisp
   (use-package org
@@ -2155,6 +2185,7 @@ Unobtrusively trim spaces from the end of a line on save.
   (with-eval-after-load 'ws-butler
     (blackout 'ws-butler-mode))
 #+end_src
+
 ** Navigation
 *** [[https://github.com/abo-abo/ace-link][ace-link]]
 
