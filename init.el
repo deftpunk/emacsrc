@@ -1081,20 +1081,22 @@
 
 (setq window-combination-resize t) ; resize windows proportionally
 
+;;;###autoload
+(defun aw-kill-buffer (window)
+  "I want to kill a buffer in the other window, even if I don't really
+know what will take its place."
+  (kill-buffer (window-buffer window)))
+
 (use-package ace-window
-  :general
-  ("s--" #'ace-window)
+  :bind
+  ("s--" . #'ace-window)
   :init
-  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l) ; characters used in window labels.
         aw-leading-char-style 'path
         aw-background t
         aw-dispatch-always t)
-  :general
-  (deftpunk-leader-def
-    "wc" '("close window" . ace-delete-window)
-    "wo" '("close other window" . ace-delete-other-windows)
-    "ww" '("ace window" . ace-window))
   :config
+  (add-to-list 'aw-dispatch-alist '(?w aw-kill-buffer "Delete Buffer"))
   (set-face-attribute 'aw-leading-char-face nil :height 4.0))
 
 (use-package winner
