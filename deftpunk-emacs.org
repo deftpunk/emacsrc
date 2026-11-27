@@ -1,6 +1,6 @@
 #+title Deftpunk Emacs
 #+author: Erick Bodine <erick.bodine@gmail.com>
-#+property: header-args :tangle "/Users/bodine/.emacs.d/init.el"
+#+property: header-args :tangle "/Users/ebodine/.emacs.d/init.el"
 #+startup: content
 #+auto_tangle: t
 
@@ -58,7 +58,7 @@ Mastering Emacs
 
 * Early-Init
 :properties:
-:header-args: :tangle "/Users/bodine//.emacs.d/early-init.el"
+:header-args: :tangle "/Users/ebodine//.emacs.d/early-init.el"
 :end:
 #+name: early-init-header-block
 #+begin_src emacs-lisp :exports none
@@ -1984,7 +1984,7 @@ NOTE: Should try this out in prog-modes
     text-mode)
 #+end_src
 
-*** expand-region
+*** [[https://github.com/magnars/expand-region.el][expand-region]]
 
 Expand selection by semantic units.  If you expand too far, you can contract the region by pressing the =-= minus key.
 
